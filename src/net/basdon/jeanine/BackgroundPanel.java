@@ -43,6 +43,7 @@ public class BackgroundPanel extends JDesktopPane implements MouseListener, Mous
 		g.fillRect(0, 0, w, h);
 	}
 
+	/*MouseMotionListener*/
 	@Override
 	public void mouseDragged(MouseEvent e)
 	{
@@ -50,23 +51,26 @@ public class BackgroundPanel extends JDesktopPane implements MouseListener, Mous
 		int y = e.getY() - this.dragStart.y;
 
 		for (Component c : this.getComponents()) {
-			if (c instanceof CodePanel) {
-				CodePanel cp = (CodePanel) c;
+			if (c instanceof CodeFrame) {
+				CodeFrame cp = (CodeFrame) c;
 				c.setLocation(cp.locationBeforeDrag.x + x, cp.locationBeforeDrag.y + y);
 			}
 		}
 	}
 
+	/*MouseMotionListener*/
 	@Override
 	public void mouseMoved(MouseEvent e)
 	{
 	}
 
 	@Override
+	/*MouseListener*/
 	public void mouseClicked(MouseEvent e)
 	{
 	}
 
+	/*MouseListener*/
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
@@ -74,24 +78,27 @@ public class BackgroundPanel extends JDesktopPane implements MouseListener, Mous
 		this.dragStart.y = e.getY();
 
 		for (Component c : this.getComponents()) {
-			if (c instanceof CodePanel) {
-				CodePanel cp = (CodePanel) c;
+			if (c instanceof CodeFrame) {
+				CodeFrame cp = (CodeFrame) c;
 				cp.locationBeforeDrag.x = cp.getX();
 				cp.locationBeforeDrag.y = cp.getY();
 			}
 		}
 	}
 
+	/*MouseListener*/
 	@Override
 	public void mouseReleased(MouseEvent e)
 	{
 	}
 
+	/*MouseListener*/
 	@Override
 	public void mouseEntered(MouseEvent e)
 	{
 	}
 
+	/*MouseListener*/
 	@Override
 	public void mouseExited(MouseEvent e)
 	{

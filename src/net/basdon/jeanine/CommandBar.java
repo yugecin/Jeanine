@@ -62,11 +62,13 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 		}
 	}
 
+	/*FocusListener*/
 	@Override
 	public void focusGained(FocusEvent e)
 	{
 	}
 
+	/*FocusListener*/
 	@Override
 	public void focusLost(FocusEvent e)
 	{
@@ -85,6 +87,7 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 		g.drawString(':' + this.sb.toString(), 0, this.j.fmaxascend);
 	}
 
+	/*KeyListener*/
 	@Override
 	public void keyTyped(KeyEvent e)
 	{
@@ -95,6 +98,7 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 		}
 	}
 
+	/*KeyListener*/
 	@Override
 	public void keyPressed(KeyEvent e)
 	{
@@ -145,6 +149,7 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 		this.repaint();
 	}
 
+	/*KeyListener*/
 	@Override
 	public void keyReleased(KeyEvent e)
 	{
