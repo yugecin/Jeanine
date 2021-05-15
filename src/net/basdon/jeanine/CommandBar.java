@@ -4,10 +4,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
+import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
@@ -16,7 +18,8 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 {
 	private final Jeanine j;
 
-	private Listener listener;
+	private ArrayList<Listener> listeners;
+	private Component componentToFocusAfter;
 	private StringBuilder sb;
 	private int caretPos;
 
@@ -30,10 +33,17 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 		this.setVisible(false);
 		this.addFocusListener(this);
 		this.addKeyListener(this);
+		this.listeners = new ArrayList<>();
 	}
 
-	public void show(String text, Listener listener)
+	public void addListener(Listener listener)
 	{
+		this.listeners.add(listener);
+	}
+
+	public void show(String text, Component componentToFocusAfter)
+	{
+		this.componentToFocusAfter = componentToFocusAfter;
 		this.sb = new StringBuilder(text);
 		this.caretPos = this.sb.length();
 		Container parent = this.getParent();
@@ -41,19 +51,14 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 		this.setLocation(2, parent.getHeight() - this.getHeight() - 2);
 		this.setVisible(true);
 		this.requestFocusInWindow();
-		this.listener = listener;
 	}
 
 	private void doHide()
 	{
 		this.setVisible(false);
-		if (this.listener != null) {
-			Component c = this.listener.getComponentToFocus();
-			if (c != null) {
-				c.requestFocusInWindow();
-			}
-			this.listener.acceptCommand(this.sb.toString());
-			this.listener = null;
+		if (this.componentToFocusAfter != null) {
+			this.componentToFocusAfter.requestFocusInWindow();
+			this.componentToFocusAfter = null;
 		}
 	}
 
@@ -108,6 +113,7 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 		case KeyEvent.VK_BACK_SPACE:
 			if (this.caretPos == 0) {
 				this.doHide();
+				e.consume();
 				return;
 			}
 			this.caretPos--;
@@ -119,11 +125,23 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 			}
 			break;
 		case KeyEvent.VK_ENTER:
+			String cmd = this.sb.toString();
+			for (int i = this.listeners.size();; ) {
+				if (this.listeners.get(--i).acceptCommand(cmd)) {
+					break;
+				}
+				if (i == 0) {
+					Toolkit.getDefaultToolkit().beep();
+					break;
+				}
+			}
+		case KeyEvent.VK_ESCAPE:
 			this.doHide();
-			break;
+			e.consume();
 		default:
 			return;
 		}
+		e.consume();
 		this.repaint();
 	}
 
@@ -134,7 +152,6 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 
 	public interface Listener
 	{
-		Component getComponentToFocus();
-		void acceptCommand(String command);
+		boolean acceptCommand(String command);
 	}
 }

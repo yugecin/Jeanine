@@ -1,6 +1,5 @@
 package net.basdon.jeanine;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -21,13 +20,15 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 		this.j = j;
 		this.contentPane = new BackgroundPanel(j, this);
 
+		this.setFocusable(true);
 		this.addKeyListener(this);
 		this.commandbar = new CommandBar(j);
+		this.commandbar.addListener(this);
 		this.setContentPane(this.contentPane);
 		this.setLocationByPlatform(true);
 		this.setTitle("Jeanine");
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
-		CodePanel cp = new CodePanel(this.contentPane);
+		CodePanel cp = new CodePanel(this);
 		cp.setLocation(30, 30);
 		cp.setCodeViewSize(20, 20);
 		this.add(cp);
@@ -42,6 +43,7 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 	{
 		if (e.getKeyChar() == ':') {
 			this.commandbar.show("", this);
+			e.consume();
 		}
 	}
 
@@ -56,19 +58,15 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 	}
 
 	@Override
-	public Component getComponentToFocus()
-	{
-		return null;
-	}
-
-	@Override
-	public void acceptCommand(String command)
+	public boolean acceptCommand(String command)
 	{
 		if ("aaa".equals(command)) {
-			CodePanel cp = new CodePanel(this.contentPane);
+			CodePanel cp = new CodePanel(this);
 			cp.setLocation(30, 30);
 			cp.setCodeViewSize(20, 20);
 			this.add(cp);
+			return true;
 		}
+		return false;
 	}
 }

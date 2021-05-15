@@ -2,26 +2,31 @@ package net.basdon.jeanine;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.JInternalFrame;
 
-public class CodePanel extends JInternalFrame implements MouseListener
+public class CodePanel extends JInternalFrame implements MouseListener, KeyListener, CommandBar.Listener
 {
+	private final JeanineFrame jf;
+
 	public Point locationBeforeDrag;
 
-	private BackgroundPanel owner;
 
-	public CodePanel(BackgroundPanel owner)
+	public CodePanel(JeanineFrame jf)
 	{
 		super("hi", false, false, false, false);
+		this.jf = jf;
 		this.locationBeforeDrag = new Point();
-		this.owner = owner;
 		this.setFrameIcon(null);
 		this.setVisible(true);
+		this.setFocusable(true);
 		this.setBackground(Color.white);
 		this.addMouseListener(this);
+		this.addKeyListener(this);
 	}
 
 	public void setCodeViewSize(int rows, int cols)
@@ -60,5 +65,30 @@ public class CodePanel extends JInternalFrame implements MouseListener
 	@Override
 	public void mouseExited(MouseEvent e)
 	{
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e)
+	{
+		if (e.getKeyChar() == ':') {
+			this.jf.commandbar.show("", this);
+			e.consume();
+		}
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e)
+	{
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e)
+	{
+	}
+
+	@Override
+	public boolean acceptCommand(String command)
+	{
+		return false;
 	}
 }
