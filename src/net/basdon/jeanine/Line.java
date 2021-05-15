@@ -119,8 +119,9 @@ public class Line
 		this.segments.add(new Segment(str));
 	}
 
-	public void delete(int fromLogical, int toLogicalExclusive)
+	public String delete(int fromLogical, int toLogicalExclusive)
 	{
+		StringBuilder sb = new StringBuilder();
 		int lengthLeft = toLogicalExclusive - fromLogical;
 		for (int i = 0, max = this.segments.size(); i < max; i++) {
 			Segment seg = this.segments.get(i);
@@ -129,10 +130,13 @@ public class Line
 				if (seg.isTab()) {
 					lengthLeft--;
 					seg.text = null;
+					sb.append('\t');
 				} else if (fromLogical + lengthLeft > seglen) {
+					sb.append(seg.text, fromLogical, seglen);
 					seg.text.delete(fromLogical, seglen);
 					lengthLeft -= seglen - fromLogical;
 				} else {
+					sb.append(seg.text, fromLogical, fromLogical + lengthLeft);
 					seg.text.delete(fromLogical, fromLogical + lengthLeft);
 					break;
 				}
@@ -142,6 +146,7 @@ public class Line
 			}
 		}
 		this.fixup();
+		return sb.toString();
 	}
 
 	/**

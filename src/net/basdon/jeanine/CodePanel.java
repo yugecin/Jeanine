@@ -123,6 +123,7 @@ public class CodePanel
 
 	private void keyTypedInsert(KeyEvent e, char c)
 	{
+		Line line;
 		switch (c) {
 		case KeyEvent.CHAR_UNDEFINED:
 		case /*bs*/8:
@@ -131,12 +132,14 @@ public class CodePanel
 			return;
 		case '\r':
 		case '\n':
-			this.lines.add(new Line());
+			line = this.lines.get(this.carety);
+			String text = line.delete(this.caretx, line.calcLogicalLength());
+			this.lines.add(new Line(text));
 			this.caretx = this.virtualCaretx = 0;
 			this.carety++;
 			break;
 		default:
-			Line line = this.lines.get(this.carety);
+			line = this.lines.get(this.carety);
 			line.insert(this.caretx, c);
 			this.recheckMaxLineLength();
 			this.ensureCodeViewSize();
@@ -220,22 +223,45 @@ public class CodePanel
 			this.mode = NORMAL_MODE;
 			this.virtualCaretx = this.caretx;
 			this.repaint(); // TODO: only should repaint the caret
-			break;
+			e.consume();
+			return;
 		case KeyEvent.VK_BACK_SPACE:
 			if (this.caretx > 0) {
 				this.lines.get(this.carety).delete(this.caretx - 1, this.caretx);
 				this.caretx--;
-				this.recheckMaxLineLength();
-				this.ensureCodeViewSize();
-				this.repaint();
+			} else if (this.carety > 0) {
+				String linecontent = this.lines.get(this.carety).toString();
+				this.lines.remove(this.carety);
+				this.carety--;
+				Line prev = this.lines.get(this.carety);
+				this.caretx = prev.calcLogicalLength();
+				prev.insert(this.caretx, linecontent);
 			} else {
 				Toolkit.getDefaultToolkit().beep();
+				e.consume();
+				return;
+			}
+			break;
+		case KeyEvent.VK_DELETE:
+			Line line = this.lines.get(this.carety);
+			if (this.caretx < line.calcLogicalLength()) {
+				line.delete(this.caretx, this.caretx + 1);
+			} else if (this.carety + 1 < this.lines.size()) {
+				Line next = this.lines.remove(this.carety + 1);
+				line.insert(this.caretx, next.toString());
+			} else {
+				Toolkit.getDefaultToolkit().beep();
+				e.consume();
+				return;
 			}
 			break;
 		default:
 			return;
 		}
 		e.consume();
+		this.recheckMaxLineLength();
+		this.ensureCodeViewSize();
+		this.repaint();
 	}
 
 	/*KeyListener*/

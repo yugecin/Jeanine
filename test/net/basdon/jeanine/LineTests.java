@@ -468,11 +468,12 @@ public class LineTests
 		{
 			Line line = new Line("abcd");
 
-			line.delete(2, 4);
+			String result = line.delete(2, 4);
 
 			assertEquals(1, line.segments.size());
 			assertTrue(!line.segments.get(0).isTab());
 			assertEquals("ab", line.segments.get(0).text.toString());
+			assertEquals("cd", result);
 		}
 
 		@Test
@@ -480,11 +481,12 @@ public class LineTests
 		{
 			Line line = new Line("abcd\t");
 
-			line.delete(4, 5);
+			String result = line.delete(4, 5);
 
 			assertEquals(1, line.segments.size());
 			assertTrue(!line.segments.get(0).isTab());
 			assertEquals("abcd", line.segments.get(0).text.toString());
+			assertEquals("\t", result);
 		}
 
 		@Test
@@ -492,13 +494,14 @@ public class LineTests
 		{
 			Line line = new Line("abcd\t\tefgh\t_\t");
 
-			line.delete(2, 12);
+			String result = line.delete(2, 12);
 
 			assertEquals(2, line.segments.size());
 			assertTrue(!line.segments.get(0).isTab());
 			assertTrue(line.segments.get(1).isTab());
 			assertEquals("ab", line.segments.get(0).text.toString());
 			assertEquals(6, line.segments.get(1).visualLength);
+			assertEquals("cd\t\tefgh\t_", result);
 		}
 
 		@Test
@@ -506,11 +509,12 @@ public class LineTests
 		{
 			Line line = new Line("abcd\t\tefgh");
 
-			line.delete(4, 6);
+			String result = line.delete(4, 6);
 
 			assertEquals(1, line.segments.size());
 			assertTrue(!line.segments.get(0).isTab());
 			assertEquals("abcdefgh", line.segments.get(0).text.toString());
+			assertEquals("\t\t", result);
 		}
 	}
 }
