@@ -51,16 +51,20 @@ public class CodePanel
 	private int virtualCaretx;
 	private int mode;
 
-	public CodePanel(CodeFrame frame, JeanineFrame jf)
+	public CodePanel(CodeFrame frame, JeanineFrame jf, String code)
 	{
 		this.jf = jf;
 		this.j = jf.j;
 		this.lines = new ArrayList<>();
-		this.lines.add(new Line());
 		this.frame = frame;
 		this.setFocusable(true);
 		this.addMouseListener(this);
 		this.addKeyListener(this);
+		for (String line : code.split("\n")) {
+			this.lines.add(new Line(line));
+		}
+		this.recheckMaxLineLength();
+		this.ensureCodeViewSize();
 		// make that we get the TAB key events
 		LookAndFeel.installProperty(this, "focusTraversalKeysForward", Collections.EMPTY_SET);
 		LookAndFeel.installProperty(this, "focusTraversalKeysBackward", Collections.EMPTY_SET);
@@ -100,6 +104,8 @@ public class CodePanel
 
 	private void keyTypedNormal(KeyEvent e, char c)
 	{
+		Line line;
+		int len;
 		switch (c) {
 		case ':':
 			this.jf.commandbar.show("", this);
@@ -113,9 +119,128 @@ public class CodePanel
 			this.ensureCodeViewSize();
 			this.repaint();
 			break;
+		case 'I':
+			int pos = 0;
+			for (char chr : this.lines.get(this.carety).toString().toCharArray()) {
+				if (chr != ' ' && chr != '\t') {
+					break;
+				}
+				pos++;
+			}
+			this.caretx = pos;
 		case 'i':
 			this.mode = INSERT_MODE;
 			this.repaint(); // TODO: only should repaint the caret
+			break;
+		case 'A':
+			this.caretx = this.lines.get(this.carety).calcLogicalLength();
+			this.mode = INSERT_MODE;
+		case 'a':
+			if (this.caretx < this.lines.get(this.carety).calcLogicalLength()) {
+				this.caretx++;
+			}
+			this.mode = INSERT_MODE;
+			this.repaint(); // TODO: only should repaint the caret
+			break;
+		case '^':
+			this.caretx = this.virtualCaretx = 0;
+			this.repaint(); // TODO: only should repaint the caret
+			break;
+		case '$':
+			this.caretx = this.lines.get(this.carety).calcLogicalLength() - 1;
+			if (this.caretx < 0) {
+				this.caretx = 0;
+			}
+			this.virtualCaretx = 999999;
+			this.repaint(); // TODO: only should repaint the caret
+			break;
+		case 'x':
+			line = this.lines.get(this.carety);
+			len = line.calcLogicalLength();
+			if (len > 0) {
+				this.j.pastebuffer = line.delete(this.caretx, this.caretx + 1);
+			}
+			if (this.caretx >= len - 1 && this.caretx > 0) {
+				this.caretx--;
+			}
+			this.virtualCaretx = this.caretx;
+			this.recheckMaxLineLength();
+			this.ensureCodeViewSize();
+			this.repaint();
+			break;
+		case 'p':
+			if (this.j.pastebuffer.endsWith("\n")) {
+
+			} else {
+				line = this.lines.get(this.carety);
+				len = line.calcLogicalLength();
+				if (len == 0) {
+					line.insert(0, this.j.pastebuffer);
+				} else {
+					line.insert(this.caretx + 1, this.j.pastebuffer);
+				}
+				this.caretx += this.j.pastebuffer.length();
+				this.virtualCaretx = this.caretx;
+			}
+			this.recheckMaxLineLength();
+			this.ensureCodeViewSize();
+			this.repaint();
+			break;
+		case 'P':
+			if (this.j.pastebuffer.endsWith("\n")) {
+
+			} else {
+				this.lines.get(this.carety).insert(this.caretx, this.j.pastebuffer);
+				this.caretx += this.j.pastebuffer.length() - 1;
+				this.virtualCaretx = this.caretx;
+			}
+			this.recheckMaxLineLength();
+			this.ensureCodeViewSize();
+			this.repaint();
+			break;
+		case 'h':
+			if (this.caretx > 0) {
+				this.caretx--;
+				this.virtualCaretx = this.caretx;
+				this.repaint(); // TODO: only should repaint the caret
+			} else {
+				Toolkit.getDefaultToolkit().beep();
+			}
+			break;
+		case 'j':
+			if (this.carety < this.lines.size() - 1) {
+				this.carety++;
+				int linelen = this.lines.get(this.carety).calcLogicalLength();
+				this.caretx = this.virtualCaretx;
+				if (this.caretx > linelen - 1) {
+					this.caretx = linelen - 1;
+				}
+				this.repaint(); // TODO: only should repaint the caret
+			} else {
+				Toolkit.getDefaultToolkit().beep();
+			}
+			break;
+		case 'k':
+			if (this.carety > 0) {
+				this.carety--;
+				int linelen = this.lines.get(this.carety).calcLogicalLength();
+				this.caretx = this.virtualCaretx;
+				if (this.caretx > linelen - 1) {
+					this.caretx = linelen - 1;
+				}
+				this.repaint(); // TODO: only should repaint the caret
+			} else {
+				Toolkit.getDefaultToolkit().beep();
+			}
+			break;
+		case 'l':
+			if (this.caretx < this.lines.get(this.carety).calcLogicalLength() - 1) {
+				this.caretx++;
+				this.virtualCaretx = this.caretx;
+				this.repaint(); // TODO: only should repaint the caret
+			} else {
+				Toolkit.getDefaultToolkit().beep();
+			}
 			break;
 		}
 		e.consume();
@@ -167,53 +292,6 @@ public class CodePanel
 
 	private void keyPressedNormal(KeyEvent e, int c)
 	{
-		switch (c) {
-		case KeyEvent.VK_J:
-			if (this.carety < this.lines.size() - 1) {
-				this.carety++;
-				int linelen = this.lines.get(this.carety).calcLogicalLength();
-				this.caretx = this.virtualCaretx;
-				if (this.caretx > linelen) {
-					this.caretx = linelen;
-				}
-				this.repaint(); // TODO: only should repaint the caret
-			} else {
-				Toolkit.getDefaultToolkit().beep();
-			}
-			break;
-		case KeyEvent.VK_K:
-			if (this.carety > 0) {
-				this.carety--;
-				int linelen = this.lines.get(this.carety).calcLogicalLength();
-				this.caretx = this.virtualCaretx;
-				if (this.caretx > linelen) {
-					this.caretx = linelen;
-				}
-				this.repaint(); // TODO: only should repaint the caret
-			} else {
-				Toolkit.getDefaultToolkit().beep();
-			}
-			break;
-		case KeyEvent.VK_H:
-			if (this.caretx > 0) {
-				this.caretx--;
-				this.repaint(); // TODO: only should repaint the caret
-			} else {
-				Toolkit.getDefaultToolkit().beep();
-			}
-			break;
-		case KeyEvent.VK_L:
-			if (this.caretx < this.lines.get(this.carety).calcLogicalLength()) {
-				this.caretx++;
-				this.repaint(); // TODO: only should repaint the caret
-			} else {
-				Toolkit.getDefaultToolkit().beep();
-			}
-			break;
-		default:
-			return;
-		}
-		e.consume();
 	}
 
 	private void keyPressedInsert(KeyEvent e, int c)
@@ -221,6 +299,9 @@ public class CodePanel
 		switch (c) {
 		case KeyEvent.VK_ESCAPE:
 			this.mode = NORMAL_MODE;
+			if (this.caretx > 0) {
+				this.caretx--;
+			}
 			this.virtualCaretx = this.caretx;
 			this.repaint(); // TODO: only should repaint the caret
 			e.consume();

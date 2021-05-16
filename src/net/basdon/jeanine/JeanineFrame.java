@@ -28,7 +28,7 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 		this.setLocationByPlatform(true);
 		this.setTitle("Jeanine");
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
-		CodeFrame cp = new CodeFrame(this);
+		CodeFrame cp = new CodeFrame(this, WELCOMETEXT);
 		cp.setLocation(30, 30);
 		this.add(cp);
 		this.setPreferredSize(new Dimension(800, 800));
@@ -64,7 +64,7 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 	public boolean acceptCommand(String command)
 	{
 		if ("aaa".equals(command)) {
-			CodeFrame cp = new CodeFrame(this);
+			CodeFrame cp = new CodeFrame(this, "empty");
 			cp.setLocation(30, 30);
 			cp.setCodeViewSize(20, 20);
 			this.add(cp);
@@ -72,4 +72,11 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 		}
 		return false;
 	}
+
+	private static final String WELCOMETEXT =
+		"Welcome to Jeanine, a 2d editor with some Vim-like keybindings\n" +
+		"\n" +
+		"Movement: hjkl ^ $\n" +
+		"Insertion: i I a A o O p P\n" +
+		"Deleting: x\n";
 }

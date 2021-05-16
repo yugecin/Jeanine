@@ -15,16 +15,15 @@ public class CodeFrame extends JInternalFrame
 
 	public Point locationBeforeDrag;
 
-	public CodeFrame(JeanineFrame jf)
+	public CodeFrame(JeanineFrame jf, String code)
 	{
 		super("hi", false, false, false, false);
 		this.j = jf.j;
 		this.locationBeforeDrag = new Point();
 		this.setFrameIcon(null);
-		this.setContentPane(new CodePanel(this, jf));
+		this.setContentPane(new CodePanel(this, jf, code));
 		this.setVisible(true);
 		this.setFocusable(false);
-		this.setCodeViewSize(1, 30);
 		this.setFocusTraversalPolicy(null);
 		this.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
 		this.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);

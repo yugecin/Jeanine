@@ -25,6 +25,8 @@ public class Jeanine
 	public final Font font;
 	public final int fx, fy, fmaxascend;
 
+	public String pastebuffer;
+
 	public Jeanine()
 	{
 		this.font = new Font("Courier New", Font.BOLD, 14);
