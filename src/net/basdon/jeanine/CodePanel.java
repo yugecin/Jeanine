@@ -25,7 +25,7 @@ public class CodePanel
 	private final JeanineFrame jf;
 	private final Jeanine j;
 
-	private ArrayList<Line> lines;
+	private ArrayList<StringBuilder> lines;
 	private int maxLineLength;
 	/**
 	 * This is always logical pos (disregarding char/tab width).
@@ -33,7 +33,8 @@ public class CodePanel
 	private int caretx;
 	private int carety;
 	/**
-	 * Stores the last caretx to use when we were on a line that has less chars than the previous one. ie:
+	 * Stores the last visual caretx to use when we were on a line that has less chars than the previous one.
+	 * ie:
 	 * <pre>
 	 * abcdefg[caret] caret=7 virtualcaret=7
 	 * abc
@@ -61,7 +62,7 @@ public class CodePanel
 		this.addMouseListener(this);
 		this.addKeyListener(this);
 		for (String line : code.split("\n")) {
-			this.lines.add(new Line(line));
+			this.lines.add(new StringBuilder(line));
 		}
 		this.recheckMaxLineLength();
 		this.ensureCodeViewSize();
@@ -82,7 +83,7 @@ public class CodePanel
 		} else {
 			g.setColor(Color.red);
 		}
-		int caretx = this.lines.get(this.carety).logicalToVisualPosition(this.caretx);
+		int caretx = Line.logicalToVisualPos(this.lines.get(this.carety), this.caretx);
 		if (this.hasFocus()) {
 			g.fillRect(caretx * this.j.fx, this.carety * this.j.fy, this.j.fx, this.j.fy);
 		} else {
@@ -90,21 +91,15 @@ public class CodePanel
 		}
 		g.setFont(this.j.font);
 		g.setColor(Color.black);
-		for (int iline = 0; iline < this.lines.size(); iline++) {
-			int visualPos = 0;
-			ArrayList<Line.Segment> segs = this.lines.get(iline).segments;
-			for (int i = 0, max = segs.size(); i < max; i++) {
-				Line.Segment seg = segs.get(i);
-				g.drawString(seg.text.toString(), visualPos * this.j.fx, this.j.fmaxascend);
-				visualPos += seg.visualLength;
-			}
+		for (int i = 0; i < this.lines.size(); i++) {
+			g.drawString(Line.tabs2spaces(this.lines.get(i)), 0, this.j.fmaxascend);
 			g.translate(0, this.j.fy);
 		}
 	}
 
 	private void keyTypedNormal(KeyEvent e, char c)
 	{
-		Line line;
+		StringBuilder line;
 		int len;
 		switch (c) {
 		case ':':
@@ -113,7 +108,7 @@ public class CodePanel
 		case 'o':
 			this.carety++;
 		case 'O':
-			this.lines.add(this.carety, new Line());
+			this.lines.add(this.carety, new StringBuilder());
 			this.caretx = 0;
 			this.mode = INSERT_MODE;
 			this.ensureCodeViewSize();
@@ -133,10 +128,10 @@ public class CodePanel
 			this.repaint(); // TODO: only should repaint the caret
 			break;
 		case 'A':
-			this.caretx = this.lines.get(this.carety).calcLogicalLength();
+			this.caretx = this.lines.get(this.carety).length();
 			this.mode = INSERT_MODE;
 		case 'a':
-			if (this.caretx < this.lines.get(this.carety).calcLogicalLength()) {
+			if (this.caretx < this.lines.get(this.carety).length()) {
 				this.caretx++;
 			}
 			this.mode = INSERT_MODE;
@@ -147,7 +142,7 @@ public class CodePanel
 			this.repaint(); // TODO: only should repaint the caret
 			break;
 		case '$':
-			this.caretx = this.lines.get(this.carety).calcLogicalLength() - 1;
+			this.caretx = this.lines.get(this.carety).length() - 1;
 			if (this.caretx < 0) {
 				this.caretx = 0;
 			}
@@ -156,14 +151,16 @@ public class CodePanel
 			break;
 		case 'x':
 			line = this.lines.get(this.carety);
-			len = line.calcLogicalLength();
+			len = line.length();
 			if (len > 0) {
-				this.j.pastebuffer = line.delete(this.caretx, this.caretx + 1);
+				char[] dst = new char[1];
+				line.getChars(this.caretx, this.caretx + 1, dst, 0);
+				this.j.pastebuffer = new String(dst);
 			}
 			if (this.caretx >= len - 1 && this.caretx > 0) {
 				this.caretx--;
 			}
-			this.virtualCaretx = this.caretx;
+			this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			this.recheckMaxLineLength();
 			this.ensureCodeViewSize();
 			this.repaint();
@@ -173,14 +170,14 @@ public class CodePanel
 
 			} else {
 				line = this.lines.get(this.carety);
-				len = line.calcLogicalLength();
+				len = line.length();
 				if (len == 0) {
 					line.insert(0, this.j.pastebuffer);
 				} else {
 					line.insert(this.caretx + 1, this.j.pastebuffer);
 				}
 				this.caretx += this.j.pastebuffer.length();
-				this.virtualCaretx = this.caretx;
+				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			}
 			this.recheckMaxLineLength();
 			this.ensureCodeViewSize();
@@ -190,9 +187,10 @@ public class CodePanel
 			if (this.j.pastebuffer.endsWith("\n")) {
 
 			} else {
-				this.lines.get(this.carety).insert(this.caretx, this.j.pastebuffer);
+				line = this.lines.get(this.carety);
+				line.insert(this.caretx, this.j.pastebuffer);
 				this.caretx += this.j.pastebuffer.length() - 1;
-				this.virtualCaretx = this.caretx;
+				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			}
 			this.recheckMaxLineLength();
 			this.ensureCodeViewSize();
@@ -201,7 +199,7 @@ public class CodePanel
 		case 'h':
 			if (this.caretx > 0) {
 				this.caretx--;
-				this.virtualCaretx = this.caretx;
+				this.virtualCaretx = Line.logicalToVisualPos(this.lines.get(this.carety), this.caretx);
 				this.repaint(); // TODO: only should repaint the caret
 			} else {
 				Toolkit.getDefaultToolkit().beep();
@@ -209,11 +207,19 @@ public class CodePanel
 			break;
 		case 'j':
 			if (this.carety < this.lines.size() - 1) {
+				int visual = Line.logicalToVisualPos(this.lines.get(this.carety), this.caretx);
+				if (this.virtualCaretx > visual) {
+					visual = this.virtualCaretx;
+				}
 				this.carety++;
-				int linelen = this.lines.get(this.carety).calcLogicalLength();
-				this.caretx = this.virtualCaretx;
-				if (this.caretx > linelen - 1) {
-					this.caretx = linelen - 1;
+				line = this.lines.get(this.carety);
+				if (visual > line.length()) {
+					if (visual > this.virtualCaretx) {
+						this.virtualCaretx = visual;
+					}
+					this.caretx = line.length() - 1;
+				} else {
+					this.caretx = Line.visualToLogicalPos(line, visual);
 				}
 				this.repaint(); // TODO: only should repaint the caret
 			} else {
@@ -222,11 +228,20 @@ public class CodePanel
 			break;
 		case 'k':
 			if (this.carety > 0) {
+				line = this.lines.get(this.carety);
+				int visual = Line.logicalToVisualPos(line, this.caretx);
+				if (this.virtualCaretx > visual) {
+					visual = this.virtualCaretx;
+				}
 				this.carety--;
-				int linelen = this.lines.get(this.carety).calcLogicalLength();
-				this.caretx = this.virtualCaretx;
-				if (this.caretx > linelen - 1) {
-					this.caretx = linelen - 1;
+				line = this.lines.get(this.carety);
+				if (visual > line.length()) {
+					if (visual > this.virtualCaretx) {
+						this.virtualCaretx = visual;
+					}
+					this.caretx = line.length() - 1;
+				} else {
+					this.caretx = Line.visualToLogicalPos(line, visual);
 				}
 				this.repaint(); // TODO: only should repaint the caret
 			} else {
@@ -234,9 +249,10 @@ public class CodePanel
 			}
 			break;
 		case 'l':
-			if (this.caretx < this.lines.get(this.carety).calcLogicalLength() - 1) {
+			line = this.lines.get(this.carety);
+			if (this.caretx < line.length() - 1) {
 				this.caretx++;
-				this.virtualCaretx = this.caretx;
+				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 				this.repaint(); // TODO: only should repaint the caret
 			} else {
 				Toolkit.getDefaultToolkit().beep();
@@ -248,7 +264,7 @@ public class CodePanel
 
 	private void keyTypedInsert(KeyEvent e, char c)
 	{
-		Line line;
+		StringBuilder line;
 		switch (c) {
 		case KeyEvent.CHAR_UNDEFINED:
 		case /*bs*/8:
@@ -258,8 +274,10 @@ public class CodePanel
 		case '\r':
 		case '\n':
 			line = this.lines.get(this.carety);
-			String text = line.delete(this.caretx, line.calcLogicalLength());
-			this.lines.add(++this.carety, new Line(text));
+			char[] dst = new char[line.length() - this.caretx];
+			line.getChars(this.caretx, line.length(), dst, 0);
+			line.delete(this.caretx, line.length());
+			this.lines.add(++this.carety, new StringBuilder().append(dst));
 			this.caretx = this.virtualCaretx = 0;
 			this.recheckMaxLineLength();
 			this.ensureCodeViewSize();
@@ -267,7 +285,7 @@ public class CodePanel
 		default:
 			line = this.lines.get(this.carety);
 			line.insert(this.caretx, c);
-			this.virtualCaretx = ++this.caretx;
+			this.virtualCaretx = Line.logicalToVisualPos(line, ++this.caretx);
 			this.recheckMaxLineLength();
 			this.ensureCodeViewSize();
 		}
@@ -297,13 +315,15 @@ public class CodePanel
 
 	private void keyPressedInsert(KeyEvent e, int c)
 	{
+		StringBuilder line;
 		switch (c) {
 		case KeyEvent.VK_ESCAPE:
 			this.mode = NORMAL_MODE;
 			if (this.caretx > 0) {
 				this.caretx--;
 			}
-			this.virtualCaretx = this.caretx;
+			line = this.lines.get(this.carety);
+			this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			this.repaint(); // TODO: only should repaint the caret
 			e.consume();
 			return;
@@ -315,8 +335,8 @@ public class CodePanel
 				String linecontent = this.lines.get(this.carety).toString();
 				this.lines.remove(this.carety);
 				this.carety--;
-				Line prev = this.lines.get(this.carety);
-				this.caretx = prev.calcLogicalLength();
+				StringBuilder prev = this.lines.get(this.carety);
+				this.caretx = prev.length();
 				prev.insert(this.caretx, linecontent);
 			} else {
 				Toolkit.getDefaultToolkit().beep();
@@ -325,11 +345,11 @@ public class CodePanel
 			}
 			break;
 		case KeyEvent.VK_DELETE:
-			Line line = this.lines.get(this.carety);
-			if (this.caretx < line.calcLogicalLength()) {
+			line = this.lines.get(this.carety);
+			if (this.caretx < line.length()) {
 				line.delete(this.caretx, this.caretx + 1);
 			} else if (this.carety + 1 < this.lines.size()) {
-				Line next = this.lines.remove(this.carety + 1);
+				StringBuilder next = this.lines.remove(this.carety + 1);
 				line.insert(this.caretx, next.toString());
 			} else {
 				Toolkit.getDefaultToolkit().beep();
@@ -427,7 +447,7 @@ public class CodePanel
 	{
 		this.maxLineLength = 0;
 		for (int i = this.lines.size(); i > 0;) {
-			int visualLen = this.lines.get(--i).calcVisualLength();
+			int visualLen = this.lines.get(--i).length();
 			if (visualLen > this.maxLineLength) {
 				this.maxLineLength = visualLen;
 			}
