@@ -154,15 +154,18 @@ public class CodePanel
 		case 'x':
 			line = this.lines.get(this.carety);
 			len = line.length();
-			if (len > 0) {
-				char[] dst = new char[1];
-				line.getChars(this.caretx, this.caretx + 1, dst, 0);
-				this.j.pastebuffer = new String(dst);
+			if (len == 0) {
+				Toolkit.getDefaultToolkit().beep();
+				return;
 			}
+			char[] dst = new char[1];
+			line.getChars(this.caretx, this.caretx + 1, dst, 0);
+			line.delete(this.caretx, this.caretx + 1);
+			this.j.pastebuffer = new String(dst);
 			if (this.caretx >= len - 1 && this.caretx > 0) {
 				this.caretx--;
+				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			}
-			this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			this.recheckMaxLineLength();
 			this.ensureCodeViewSize();
 			this.repaint();
