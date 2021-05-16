@@ -103,6 +103,7 @@ public class CodePanel
 	{
 		StringBuilder line;
 		int len;
+		Point pt;
 		switch (c) {
 		case ':':
 			this.jf.commandbar.show("", this);
@@ -263,13 +264,33 @@ public class CodePanel
 				Toolkit.getDefaultToolkit().beep();
 			}
 			break;
-		case 'w':
-			Point res = VimOps.nextWord(this.lines, this.caretx, this.carety);
-			if (res.x == this.caretx && res.y == this.carety) {
+		case 'e':
+			pt = VimOps.forwards(this.lines, this.caretx, this.carety);
+			if (pt.x == this.caretx && pt.y == this.carety) {
 				Toolkit.getDefaultToolkit().beep();
 			} else {
-				this.caretx = res.x;
-				this.carety = res.y;
+				this.caretx = pt.x;
+				this.carety = pt.y;
+				this.repaint(); // TODO: only should repaint the caret
+			}
+			break;
+		case 'w':
+			pt = VimOps.forwardsEx(this.lines, this.caretx, this.carety);
+			if (pt.x == this.caretx && pt.y == this.carety) {
+				Toolkit.getDefaultToolkit().beep();
+			} else {
+				this.caretx = pt.x;
+				this.carety = pt.y;
+				this.repaint(); // TODO: only should repaint the caret
+			}
+			break;
+		case 'b':
+			pt = VimOps.backwards(this.lines, this.caretx, this.carety);
+			if (pt.x == this.caretx && pt.y == this.carety) {
+				Toolkit.getDefaultToolkit().beep();
+			} else {
+				this.caretx = pt.x;
+				this.carety = pt.y;
 				this.repaint(); // TODO: only should repaint the caret
 			}
 			break;
