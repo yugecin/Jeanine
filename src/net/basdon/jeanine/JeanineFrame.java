@@ -1,8 +1,10 @@
 package net.basdon.jeanine;
 
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -19,7 +21,7 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 	{
 		this.j = j;
 		this.contentPane = new BackgroundPanel(j, this);
-
+		this.setIconImage(this.createLogoImg());
 		this.setFocusable(true);
 		this.addKeyListener(this);
 		this.commandbar = new CommandBar(j);
@@ -35,6 +37,39 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 		this.pack();
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		this.setVisible(true);
+	}
+
+	private Image createLogoImg()
+	{
+		char[] logodata = (
+			"\0\0\0\0\1\2\2\2\2\2\2\2\0\0\0\0" +
+			"\0\0\0\1\2\2\2\2\3\3\3\2\2\0\0\0" +
+			"\0\0\1\2\2\2\2\3\4\4\5\3\2\2\0\0" +
+			"\0\1\2\2\2\2\2\3\6\6\5\3\2\2\2\0" +
+			"\1\2\2\2\2\2\2\3\6\6\5\3\2\2\2\2" +
+			"\2\2\2\2\2\2\2\3\6\6\5\3\2\2\2\2" +
+			"\2\2\2\2\2\2\2\3\6\6\5\3\2\2\2\2" +
+			"\2\2\2\2\2\2\2\3\6\6\5\3\2\2\2\2" +
+			"\2\2\2\3\3\2\2\3\6\6\5\3\2\2\2\2" +
+			"\2\2\3\4\4\3\2\3\6\6\5\3\2\2\2\2" +
+			"\2\2\3\6\6\4\3\3\6\6\5\3\2\2\2\2" +
+			"\7\2\3\6\6\6\6\6\6\6\5\3\2\2\2\2" +
+			"\0\7\3\6\6\6\6\6\6\6\5\3\2\2\2\0" +
+			"\0\0\7\3\5\5\5\5\5\5\3\2\2\2\0\0" +
+			"\0\0\0\7\3\3\3\3\3\3\2\2\2\0\0\0" +
+			"\0\0\0\0\7\2\2\2\2\2\2\2\0\0\0\0" +
+			"").toCharArray();
+                int logocolors[] = {
+			0x00000000, 0xffffbbaa, 0xffff7766, 0xff000000,
+			0xffffffff, 0xff888888, 0xffcccccc, 0xffff4433,
+		};
+                int[] d = new int[256];
+                for (int i = 0; i < d.length; i++) {
+			d[i] = logocolors[logodata[i]];
+                }
+		BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB_PRE);
+		img.setRGB(0, 0, 16, 16, d, 0, 16);
+		return img;
 	}
 
 	/*KeyListener*/
