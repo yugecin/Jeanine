@@ -2,7 +2,6 @@ package net.basdon.jeanine;
 
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 
 import javax.swing.JInternalFrame;
@@ -24,9 +23,6 @@ public class CodeFrame extends JInternalFrame
 		this.setContentPane(new CodePanel(this, jf, code));
 		this.setVisible(true);
 		this.setFocusable(false);
-		this.setFocusTraversalPolicy(null);
-		this.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
-		this.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
 	}
 
 	public void ensureCodeViewSize(int rows, int cols)

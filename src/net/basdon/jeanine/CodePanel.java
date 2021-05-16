@@ -48,6 +48,7 @@ public class CodePanel
 	 * abc
 	 * abcdefg[caret]hijkl caret=7 virtualcaret=7
 	 * </pre>
+	 * Note that it is always visual pos.
 	 */
 	private int virtualCaretx;
 	private int mode;
