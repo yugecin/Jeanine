@@ -259,16 +259,17 @@ public class CodePanel
 		case '\n':
 			line = this.lines.get(this.carety);
 			String text = line.delete(this.caretx, line.calcLogicalLength());
-			this.lines.add(new Line(text));
+			this.lines.add(++this.carety, new Line(text));
 			this.caretx = this.virtualCaretx = 0;
-			this.carety++;
+			this.recheckMaxLineLength();
+			this.ensureCodeViewSize();
 			break;
 		default:
 			line = this.lines.get(this.carety);
 			line.insert(this.caretx, c);
+			this.virtualCaretx = ++this.caretx;
 			this.recheckMaxLineLength();
 			this.ensureCodeViewSize();
-			this.virtualCaretx = ++this.caretx;
 		}
 		e.consume();
 		this.ensureCodeViewSize();
