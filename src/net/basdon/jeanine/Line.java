@@ -17,7 +17,7 @@ public class Line
 		}
 	}
 
-	private static char[] getValue(StringBuilder sb)
+	public static char[] getValue(StringBuilder sb)
 	{
 		try {
 			return (char[]) valueField.get(sb);

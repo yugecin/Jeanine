@@ -2,6 +2,7 @@ package net.basdon.jeanine;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -257,6 +258,16 @@ public class CodePanel
 				this.repaint(); // TODO: only should repaint the caret
 			} else {
 				Toolkit.getDefaultToolkit().beep();
+			}
+			break;
+		case 'w':
+			Point res = VimOps.nextWord(this.lines, this.caretx, this.carety);
+			if (res.x == this.caretx && res.y == this.carety) {
+				Toolkit.getDefaultToolkit().beep();
+			} else {
+				this.caretx = res.x;
+				this.carety = res.y;
+				this.repaint(); // TODO: only should repaint the caret
 			}
 			break;
 		}
