@@ -20,7 +20,11 @@ public class CodePanel
 	extends JPanel
 	implements MouseListener, FocusListener, KeyListener, CommandBar.Listener
 {
-	private static final int NORMAL_MODE = 0, INSERT_MODE = 1;
+	private static final int
+		NORMAL_MODE = 0,
+		INSERT_MODE = 1,
+		CHANGE_MODE = 2,
+		CHANGE_IN_MODE = 3;
 
 	private final CodeFrame frame;
 	private final JeanineFrame jf;
@@ -105,6 +109,13 @@ public class CodePanel
 		int len;
 		Point pt;
 		switch (e.c) {
+		case 'c':
+			if (this.caretx >= this.lines.get(this.carety).length()) {
+				e.error = true;
+				return;
+			}
+			this.mode = CHANGE_MODE;
+			break;
 		case ':':
 			this.jf.commandbar.show("", this);
 			break;
@@ -361,6 +372,101 @@ public class CodePanel
 		this.repaint();
 	}
 
+	private void handleInputChange(KeyInput e)
+	{
+		StringBuilder line;
+		char[] dst;
+		Point pt;
+		int from, to;
+		e.consumed = true;
+		switch (e.c) {
+		case 'b':
+			pt = VimOps.backwards(this.lines, this.caretx, this.carety);
+			if (pt.x == this.caretx && pt.y == this.carety) {
+				break;
+			}
+			line = this.lines.get(pt.y);
+			if (pt.y != this.carety) {
+				to = line.length();
+			} else {
+				to = this.caretx;
+			}
+			dst = new char[to - pt.x];
+			line.getChars(pt.x, to, dst, 0);
+			line.delete(pt.x, to);
+			this.j.pastebuffer = new String(dst);
+			this.caretx = pt.x;
+			this.carety = pt.y;
+			this.mode = INSERT_MODE;
+			this.recheckMaxLineLength();
+			this.ensureCodeViewSize();
+			this.repaint();
+			return;
+		case 'w':
+			pt = VimOps.forwards(this.lines, this.caretx, this.carety);
+			if (pt.x == this.caretx && pt.y == this.carety) {
+				break;
+			}
+			line = this.lines.get(pt.y);
+			if (pt.y != this.carety) {
+				from = 0;
+			} else {
+				from = this.caretx;
+			}
+			dst = new char[pt.x + 1 - from];
+			line.getChars(from, pt.x + 1, dst, 0);
+			line.delete(from, pt.x + 1);
+			this.j.pastebuffer = new String(dst);
+			this.caretx = from;
+			this.carety = pt.y;
+			this.mode = INSERT_MODE;
+			this.recheckMaxLineLength();
+			this.ensureCodeViewSize();
+			this.repaint();
+			return;
+		case 'i':
+			this.mode = CHANGE_IN_MODE;
+			return;
+		}
+		this.mode = NORMAL_MODE;
+		e.error = true;
+	}
+
+	private void handleInputChangeIn(KeyInput e)
+	{
+		e.consumed = true;
+		if (e.c == 'w') {
+			StringBuilder line = this.lines.get(this.carety);
+			if (this.caretx >= line.length()) {
+				this.mode = INSERT_MODE;
+				return;
+			}
+			char[] chars = Line.getValue(line);
+			char clazz = VimOps.getCharClass(chars[this.caretx]);
+			int from = this.caretx;
+			int to = this.caretx + 1;
+			while (from > 0 && clazz == VimOps.getCharClass(chars[from - 1])) {
+				from--;
+			}
+			while (to < line.length() && clazz == VimOps.getCharClass(chars[to])) {
+				to++;
+			}
+			char[] dst = new char[to - from];
+			line.getChars(from, to, dst, 0);
+			line.delete(from, to);
+			this.j.pastebuffer = new String(dst);
+			this.caretx = from;
+			this.mode = INSERT_MODE;
+			this.recheckMaxLineLength();
+			this.ensureCodeViewSize();
+			this.repaint();
+			return;
+		}
+		// TODO handle strings?
+		this.mode = NORMAL_MODE;
+		e.error = true;
+	}
+
 	/*KeyListener*/
 	@Override
 	public void keyTyped(KeyEvent e)
@@ -377,6 +483,12 @@ public class CodePanel
 			break;
 		case INSERT_MODE:
 			this.handleInputInsert(event);
+			break;
+		case CHANGE_MODE:
+			this.handleInputChange(event);
+			break;
+		case CHANGE_IN_MODE:
+			this.handleInputChangeIn(event);
 			break;
 		}
 		if (event.error) {

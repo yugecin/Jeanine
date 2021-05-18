@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class VimOps
 {
-	private static char getCharClass(char c)
+	public static char getCharClass(char c)
 	{
 		if (('a' <= c && c <= 'z') ||
 			('A' <= c && c <= 'Z') ||
