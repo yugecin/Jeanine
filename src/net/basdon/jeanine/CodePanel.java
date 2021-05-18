@@ -99,12 +99,12 @@ public class CodePanel
 		}
 	}
 
-	private void keyTypedNormal(KeyEvent e, char c)
+	private void handleInputNormal(KeyInput e)
 	{
 		StringBuilder line;
 		int len;
 		Point pt;
-		switch (c) {
+		switch (e.c) {
 		case ':':
 			this.jf.commandbar.show("", this);
 			break;
@@ -156,7 +156,7 @@ public class CodePanel
 			line = this.lines.get(this.carety);
 			len = line.length();
 			if (len == 0) {
-				Toolkit.getDefaultToolkit().beep();
+				e.error = true;
 				return;
 			}
 			char[] dst = new char[1];
@@ -208,7 +208,7 @@ public class CodePanel
 				this.virtualCaretx = Line.logicalToVisualPos(this.lines.get(this.carety), this.caretx);
 				this.repaint(); // TODO: only should repaint the caret
 			} else {
-				Toolkit.getDefaultToolkit().beep();
+				e.error = true;
 			}
 			break;
 		case 'j':
@@ -229,7 +229,7 @@ public class CodePanel
 				}
 				this.repaint(); // TODO: only should repaint the caret
 			} else {
-				Toolkit.getDefaultToolkit().beep();
+				e.error = true;
 			}
 			break;
 		case 'k':
@@ -251,7 +251,7 @@ public class CodePanel
 				}
 				this.repaint(); // TODO: only should repaint the caret
 			} else {
-				Toolkit.getDefaultToolkit().beep();
+				e.error = true;
 			}
 			break;
 		case 'l':
@@ -261,13 +261,13 @@ public class CodePanel
 				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 				this.repaint(); // TODO: only should repaint the caret
 			} else {
-				Toolkit.getDefaultToolkit().beep();
+				e.error = true;
 			}
 			break;
 		case 'e':
 			pt = VimOps.forwards(this.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
-				Toolkit.getDefaultToolkit().beep();
+				e.error = true;
 			} else {
 				this.caretx = pt.x;
 				this.carety = pt.y;
@@ -277,7 +277,7 @@ public class CodePanel
 		case 'w':
 			pt = VimOps.forwardsEx(this.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
-				Toolkit.getDefaultToolkit().beep();
+				e.error = true;
 			} else {
 				this.caretx = pt.x;
 				this.carety = pt.y;
@@ -287,7 +287,7 @@ public class CodePanel
 		case 'b':
 			pt = VimOps.backwards(this.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
-				Toolkit.getDefaultToolkit().beep();
+				e.error = true;
 			} else {
 				this.caretx = pt.x;
 				this.carety = pt.y;
@@ -295,18 +295,50 @@ public class CodePanel
 			}
 			break;
 		}
-		e.consume();
+		e.consumed = true;
 	}
 
-	private void keyTypedInsert(KeyEvent e, char c)
+	private void handleInputInsert(KeyInput e)
 	{
 		StringBuilder line;
-		switch (c) {
-		case KeyEvent.CHAR_UNDEFINED:
+		switch (e.c) {
 		case /*bs*/8:
+			if (this.caretx > 0) {
+				this.lines.get(this.carety).delete(this.caretx - 1, this.caretx);
+				this.caretx--;
+			} else if (this.carety > 0) {
+				String linecontent = this.lines.get(this.carety).toString();
+				this.lines.remove(this.carety);
+				this.carety--;
+				StringBuilder prev = this.lines.get(this.carety);
+				this.caretx = prev.length();
+				prev.insert(this.caretx, linecontent);
+			} else {
+				e.error = true;
+				return;
+			}
+			break;
+		case /*esc*/27:
+			this.mode = NORMAL_MODE;
+			if (this.caretx > 0) {
+				this.caretx--;
+			}
+			line = this.lines.get(this.carety);
+			this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
+			this.repaint(); // TODO: only should repaint the caret
+			break;
 		case /*del*/127:
-			e.consume();
-			return;
+			line = this.lines.get(this.carety);
+			if (this.caretx < line.length()) {
+				line.delete(this.caretx, this.caretx + 1);
+			} else if (this.carety + 1 < this.lines.size()) {
+				StringBuilder next = this.lines.remove(this.carety + 1);
+				line.insert(this.caretx, next.toString());
+			} else {
+				e.error = true;
+				return;
+			}
+			break;
 		case '\r':
 		case '\n':
 			line = this.lines.get(this.carety);
@@ -320,13 +352,12 @@ public class CodePanel
 			break;
 		default:
 			line = this.lines.get(this.carety);
-			line.insert(this.caretx, c);
+			line.insert(this.caretx, e.c);
 			this.virtualCaretx = Line.logicalToVisualPos(line, ++this.caretx);
 			this.recheckMaxLineLength();
 			this.ensureCodeViewSize();
 		}
-		e.consume();
-		this.ensureCodeViewSize();
+		e.consumed = true;
 		this.repaint();
 	}
 
@@ -334,87 +365,32 @@ public class CodePanel
 	@Override
 	public void keyTyped(KeyEvent e)
 	{
-		char c = e.getKeyChar();
-		switch (mode) {
-		case NORMAL_MODE:
-			this.keyTypedNormal(e, c);
-			break;
-		case INSERT_MODE:
-			this.keyTypedInsert(e, c);
-			break;
-		}
-	}
-
-	private void keyPressedNormal(KeyEvent e, int c)
-	{
-	}
-
-	private void keyPressedInsert(KeyEvent e, int c)
-	{
-		StringBuilder line;
-		switch (c) {
-		case KeyEvent.VK_ESCAPE:
-			this.mode = NORMAL_MODE;
-			if (this.caretx > 0) {
-				this.caretx--;
-			}
-			line = this.lines.get(this.carety);
-			this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
-			this.repaint(); // TODO: only should repaint the caret
+		KeyInput event = new KeyInput();
+		event.c = e.getKeyChar();
+		if (event.c == KeyEvent.CHAR_UNDEFINED) {
 			e.consume();
 			return;
-		case KeyEvent.VK_BACK_SPACE:
-			if (this.caretx > 0) {
-				this.lines.get(this.carety).delete(this.caretx - 1, this.caretx);
-				this.caretx--;
-			} else if (this.carety > 0) {
-				String linecontent = this.lines.get(this.carety).toString();
-				this.lines.remove(this.carety);
-				this.carety--;
-				StringBuilder prev = this.lines.get(this.carety);
-				this.caretx = prev.length();
-				prev.insert(this.caretx, linecontent);
-			} else {
-				Toolkit.getDefaultToolkit().beep();
-				e.consume();
-				return;
-			}
-			break;
-		case KeyEvent.VK_DELETE:
-			line = this.lines.get(this.carety);
-			if (this.caretx < line.length()) {
-				line.delete(this.caretx, this.caretx + 1);
-			} else if (this.carety + 1 < this.lines.size()) {
-				StringBuilder next = this.lines.remove(this.carety + 1);
-				line.insert(this.caretx, next.toString());
-			} else {
-				Toolkit.getDefaultToolkit().beep();
-				e.consume();
-				return;
-			}
-			break;
-		default:
-			return;
 		}
-		e.consume();
-		this.recheckMaxLineLength();
-		this.ensureCodeViewSize();
-		this.repaint();
+		switch (mode) {
+		case NORMAL_MODE:
+			this.handleInputNormal(event);
+			break;
+		case INSERT_MODE:
+			this.handleInputInsert(event);
+			break;
+		}
+		if (event.error) {
+			Toolkit.getDefaultToolkit().beep();
+			e.consume();
+		} else if (event.consumed) {
+			e.consume();
+		}
 	}
 
 	/*KeyListener*/
 	@Override
 	public void keyPressed(KeyEvent e)
 	{
-		int c = e.getKeyCode();
-		switch (mode) {
-		case NORMAL_MODE:
-			this.keyPressedNormal(e, c);
-			break;
-		case INSERT_MODE:
-			this.keyPressedInsert(e, c);
-			break;
-		}
 	}
 
 	/*KeyListener*/
@@ -488,5 +464,12 @@ public class CodePanel
 				this.maxLineLength = visualLen;
 			}
 		}
+	}
+
+	private static class KeyInput
+	{
+		public char c;
+		public boolean consumed;
+		public boolean error;
 	}
 }
