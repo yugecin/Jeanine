@@ -11,6 +11,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import javax.swing.JPanel;
@@ -20,6 +21,10 @@ public class CodePanel
 	extends JPanel
 	implements MouseListener, FocusListener, KeyListener, CommandBar.Listener
 {
+	private static final char
+		BS = 8,
+		ESC = 27,
+		DEL = 127;
 	private static final int
 		NORMAL_MODE = 0,
 		INSERT_MODE = 1,
@@ -31,6 +36,11 @@ public class CodePanel
 	private final Jeanine j;
 
 	private ArrayList<StringBuilder> lines;
+	private boolean creatingCommand;
+	private char storedCommandBuf[];
+	private int storedCommandLength;
+	private char creatingCommandBuf[];
+	private int creatingCommandLength;
 	private int maxLineLength;
 	/**
 	 * This is always logical pos (disregarding char/tab width).
@@ -62,11 +72,13 @@ public class CodePanel
 	{
 		this.jf = jf;
 		this.j = jf.j;
-		this.lines = new ArrayList<>();
 		this.frame = frame;
 		this.setFocusable(true);
 		this.addMouseListener(this);
 		this.addKeyListener(this);
+		this.storedCommandBuf = new char[100];
+		this.creatingCommandBuf = new char[100];
+		this.lines = new ArrayList<>();
 		for (String line : code.split("\n")) {
 			this.lines.add(new StringBuilder(line));
 		}
@@ -108,6 +120,7 @@ public class CodePanel
 		StringBuilder line;
 		int len;
 		Point pt;
+		e.consumed = true;
 		switch (e.c) {
 		case 'c':
 			if (this.caretx >= this.lines.get(this.carety).length()) {
@@ -118,15 +131,15 @@ public class CodePanel
 			break;
 		case ':':
 			this.jf.commandbar.show("", this);
-			break;
+			return;
 		case 'o':
 			this.carety++;
 		case 'O':
 			this.lines.add(this.carety, new StringBuilder());
 			this.caretx = 0;
 			this.mode = INSERT_MODE;
-			this.ensureCodeViewSize();
-			this.repaint();
+			e.needRepaint = true;
+			e.needEnsureViewSize = true;
 			break;
 		case 'I':
 			int pos = 0;
@@ -139,7 +152,7 @@ public class CodePanel
 			this.caretx = pos;
 		case 'i':
 			this.mode = INSERT_MODE;
-			this.repaint(); // TODO: only should repaint the caret
+			e.needRepaintCaret = true;
 			break;
 		case 'A':
 			this.caretx = this.lines.get(this.carety).length();
@@ -149,20 +162,20 @@ public class CodePanel
 				this.caretx++;
 			}
 			this.mode = INSERT_MODE;
-			this.repaint(); // TODO: only should repaint the caret
+			e.needRepaintCaret = true;
 			break;
 		case '^':
 			this.caretx = this.virtualCaretx = 0;
-			this.repaint(); // TODO: only should repaint the caret
-			break;
+			e.needRepaintCaret = true;
+			return;
 		case '$':
 			this.caretx = this.lines.get(this.carety).length() - 1;
 			if (this.caretx < 0) {
 				this.caretx = 0;
 			}
-			this.virtualCaretx = 999999;
-			this.repaint(); // TODO: only should repaint the caret
-			break;
+			this.virtualCaretx = Integer.MAX_VALUE;
+			e.needRepaintCaret = true;
+			return;
 		case 'x':
 			line = this.lines.get(this.carety);
 			len = line.length();
@@ -178,13 +191,13 @@ public class CodePanel
 				this.caretx--;
 				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			}
-			this.recheckMaxLineLength();
-			this.ensureCodeViewSize();
-			this.repaint();
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			e.needRepaint = true;
 			break;
 		case 'p':
 			if (this.j.pastebuffer.endsWith("\n")) {
-
+				// TODO: paste with newlines
 			} else {
 				line = this.lines.get(this.carety);
 				len = line.length();
@@ -196,32 +209,33 @@ public class CodePanel
 				this.caretx += this.j.pastebuffer.length();
 				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			}
-			this.recheckMaxLineLength();
-			this.ensureCodeViewSize();
-			this.repaint();
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			e.needRepaint = true;
 			break;
 		case 'P':
 			if (this.j.pastebuffer.endsWith("\n")) {
-
+				// TODO: paste with newlines
 			} else {
 				line = this.lines.get(this.carety);
 				line.insert(this.caretx, this.j.pastebuffer);
 				this.caretx += this.j.pastebuffer.length() - 1;
 				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			}
-			this.recheckMaxLineLength();
-			this.ensureCodeViewSize();
-			this.repaint();
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			e.needRepaint = true;
+			this.creatingCommandBuf[0] = e.c; this.creatingCommandLength = 1;
 			break;
 		case 'h':
 			if (this.caretx > 0) {
 				this.caretx--;
 				this.virtualCaretx = Line.logicalToVisualPos(this.lines.get(this.carety), this.caretx);
-				this.repaint(); // TODO: only should repaint the caret
+				e.needRepaintCaret = true;
 			} else {
 				e.error = true;
 			}
-			break;
+			return;
 		case 'j':
 			if (this.carety < this.lines.size() - 1) {
 				int visual = Line.logicalToVisualPos(this.lines.get(this.carety), this.caretx);
@@ -238,11 +252,11 @@ public class CodePanel
 				} else {
 					this.caretx = Line.visualToLogicalPos(line, visual);
 				}
-				this.repaint(); // TODO: only should repaint the caret
+				e.needRepaintCaret = true;
 			} else {
 				e.error = true;
 			}
-			break;
+			return;
 		case 'k':
 			if (this.carety > 0) {
 				line = this.lines.get(this.carety);
@@ -260,21 +274,21 @@ public class CodePanel
 				} else {
 					this.caretx = Line.visualToLogicalPos(line, visual);
 				}
-				this.repaint(); // TODO: only should repaint the caret
+				e.needRepaintCaret = true;
 			} else {
 				e.error = true;
 			}
-			break;
+			return;
 		case 'l':
 			line = this.lines.get(this.carety);
 			if (this.caretx < line.length() - 1) {
 				this.caretx++;
 				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
-				this.repaint(); // TODO: only should repaint the caret
+				e.needRepaintCaret = true;
 			} else {
 				e.error = true;
 			}
-			break;
+			return;
 		case 'e':
 			pt = VimOps.forwards(this.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
@@ -282,9 +296,9 @@ public class CodePanel
 			} else {
 				this.caretx = pt.x;
 				this.carety = pt.y;
-				this.repaint(); // TODO: only should repaint the caret
+				e.needRepaintCaret = true;
 			}
-			break;
+			return;
 		case 'w':
 			pt = VimOps.forwardsEx(this.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
@@ -292,9 +306,9 @@ public class CodePanel
 			} else {
 				this.caretx = pt.x;
 				this.carety = pt.y;
-				this.repaint(); // TODO: only should repaint the caret
+				e.needRepaintCaret = true;
 			}
-			break;
+			return;
 		case 'b':
 			pt = VimOps.backwards(this.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
@@ -302,18 +316,30 @@ public class CodePanel
 			} else {
 				this.caretx = pt.x;
 				this.carety = pt.y;
-				this.repaint(); // TODO: only should repaint the caret
+				e.needRepaintCaret = true;
 			}
-			break;
+			return;
+		case '.':
+			if (this.storedCommandLength == 0) {
+				e.error = true;
+			} else {
+				this.replayKeys(this.storedCommandBuf, this.storedCommandLength);
+			}
+			return;
+		default:
+			e.error = true;
+			return;
 		}
-		e.consumed = true;
+		this.creatingCommand = true;
+		this.creatingCommandLength = 0;
 	}
 
 	private void handleInputInsert(KeyInput e)
 	{
+		e.consumed = true;
 		StringBuilder line;
 		switch (e.c) {
-		case /*bs*/8:
+		case BS:
 			if (this.caretx > 0) {
 				this.lines.get(this.carety).delete(this.caretx - 1, this.caretx);
 				this.caretx--;
@@ -329,16 +355,16 @@ public class CodePanel
 				return;
 			}
 			break;
-		case /*esc*/27:
+		case ESC:
 			this.mode = NORMAL_MODE;
 			if (this.caretx > 0) {
 				this.caretx--;
 			}
 			line = this.lines.get(this.carety);
 			this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
-			this.repaint(); // TODO: only should repaint the caret
-			break;
-		case /*del*/127:
+			e.needRepaintCaret = true;
+			return;
+		case DEL:
 			line = this.lines.get(this.carety);
 			if (this.caretx < line.length()) {
 				line.delete(this.caretx, this.caretx + 1);
@@ -358,18 +384,17 @@ public class CodePanel
 			line.delete(this.caretx, line.length());
 			this.lines.add(++this.carety, new StringBuilder().append(dst));
 			this.caretx = this.virtualCaretx = 0;
-			this.recheckMaxLineLength();
-			this.ensureCodeViewSize();
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
 			break;
 		default:
 			line = this.lines.get(this.carety);
 			line.insert(this.caretx, e.c);
 			this.virtualCaretx = Line.logicalToVisualPos(line, ++this.caretx);
-			this.recheckMaxLineLength();
-			this.ensureCodeViewSize();
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
 		}
-		e.consumed = true;
-		this.repaint();
+		e.needRepaint = true;
 	}
 
 	private void handleInputChange(KeyInput e)
@@ -380,6 +405,9 @@ public class CodePanel
 		int from, to;
 		e.consumed = true;
 		switch (e.c) {
+		case ESC:
+			this.mode = NORMAL_MODE;
+			return;
 		case 'b':
 			pt = VimOps.backwards(this.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
@@ -398,9 +426,9 @@ public class CodePanel
 			this.caretx = pt.x;
 			this.carety = pt.y;
 			this.mode = INSERT_MODE;
-			this.recheckMaxLineLength();
-			this.ensureCodeViewSize();
-			this.repaint();
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			e.needRepaint = true;
 			return;
 		case 'w':
 			pt = VimOps.forwards(this.lines, this.caretx, this.carety);
@@ -420,9 +448,9 @@ public class CodePanel
 			this.caretx = from;
 			this.carety = pt.y;
 			this.mode = INSERT_MODE;
-			this.recheckMaxLineLength();
-			this.ensureCodeViewSize();
-			this.repaint();
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			e.needRepaint = true;
 			return;
 		case 'i':
 			this.mode = CHANGE_IN_MODE;
@@ -457,14 +485,32 @@ public class CodePanel
 			this.j.pastebuffer = new String(dst);
 			this.caretx = from;
 			this.mode = INSERT_MODE;
-			this.recheckMaxLineLength();
-			this.ensureCodeViewSize();
-			this.repaint();
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			e.needRepaint = true;
 			return;
 		}
 		// TODO handle strings?
 		this.mode = NORMAL_MODE;
 		e.error = true;
+	}
+
+	private void handleInput(KeyInput e)
+	{
+		switch (mode) {
+		case NORMAL_MODE:
+			this.handleInputNormal(e);
+			break;
+		case INSERT_MODE:
+			this.handleInputInsert(e);
+			break;
+		case CHANGE_MODE:
+			this.handleInputChange(e);
+			break;
+		case CHANGE_IN_MODE:
+			this.handleInputChangeIn(e);
+			break;
+		}
 	}
 
 	/*KeyListener*/
@@ -477,25 +523,63 @@ public class CodePanel
 			e.consume();
 			return;
 		}
-		switch (mode) {
-		case NORMAL_MODE:
-			this.handleInputNormal(event);
-			break;
-		case INSERT_MODE:
-			this.handleInputInsert(event);
-			break;
-		case CHANGE_MODE:
-			this.handleInputChange(event);
-			break;
-		case CHANGE_IN_MODE:
-			this.handleInputChangeIn(event);
-			break;
-		}
+		this.handleInput(event);
 		if (event.error) {
 			Toolkit.getDefaultToolkit().beep();
 			e.consume();
-		} else if (event.consumed) {
-			e.consume();
+		} else {
+			if (event.consumed) {
+				e.consume();
+			}
+			this.postInputEvent(event);
+			this.saveCommandInput(event);
+		}
+	}
+
+	public void replayKeys(char keys[], int length)
+	{
+		KeyInput event = new KeyInput();
+		for (int i = 0; i < length; i++) {
+			event.c = keys[i];
+			this.handleInput(event);
+			if (event.error) {
+				Toolkit.getDefaultToolkit().beep();
+				break;
+			}
+		}
+		this.postInputEvent(event);
+		this.creatingCommand = false; // since replaying can start recording again
+	}
+
+	private void saveCommandInput(KeyInput event)
+	{
+		if (!this.creatingCommand) {
+			return;
+		}
+		if (this.creatingCommandBuf.length <= this.creatingCommandLength) {
+			this.creatingCommandBuf = Arrays.copyOf(this.creatingCommandBuf, this.creatingCommandLength * 2);
+		}
+		this.creatingCommandBuf[this.creatingCommandLength++] = event.c;
+		if (this.mode == NORMAL_MODE) {
+			this.creatingCommand = false;
+			if (this.storedCommandBuf.length != this.creatingCommandBuf.length) {
+				this.storedCommandBuf = new char[this.creatingCommandBuf.length];
+			}
+			System.arraycopy(this.creatingCommandBuf, 0, this.storedCommandBuf, 0, this.creatingCommandLength);
+			this.storedCommandLength = this.creatingCommandLength;
+		}
+	}
+
+	private void postInputEvent(KeyInput event)
+	{
+		if (event.needRepaint || event.needRepaintCaret /*TODO: only repaint caret*/) {
+			this.repaint();
+		}
+		if (event.needCheckLineLength) {
+			this.recheckMaxLineLength();
+		}
+		if (event.needEnsureViewSize) {
+			this.ensureCodeViewSize();
 		}
 	}
 
@@ -583,5 +667,12 @@ public class CodePanel
 		public char c;
 		public boolean consumed;
 		public boolean error;
+		public boolean needRepaint;
+		/**
+		 * ignored when {@link #needRepaint} is already {@code true}
+		 */
+		public boolean needRepaintCaret;
+		public boolean needCheckLineLength;
+		public boolean needEnsureViewSize;
 	}
 }
