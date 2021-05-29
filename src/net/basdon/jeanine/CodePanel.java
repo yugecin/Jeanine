@@ -29,7 +29,9 @@ public class CodePanel
 		NORMAL_MODE = 0,
 		INSERT_MODE = 1,
 		CHANGE_MODE = 2,
-		CHANGE_IN_MODE = 3;
+		CHANGE_IN_MODE = 3,
+		DELETE_MODE = 4,
+		DELETE_IN_MODE = 5;
 
 	private final CodeFrame frame;
 	private final JeanineFrame jf;
@@ -128,6 +130,13 @@ public class CodePanel
 				return;
 			}
 			this.mode = CHANGE_MODE;
+			break;
+		case 'd':
+			if (this.caretx >= this.lines.get(this.carety).length()) {
+				e.error = true;
+				return;
+			}
+			this.mode = DELETE_MODE;
 			break;
 		case ':':
 			this.jf.commandbar.show("", this);
@@ -397,7 +406,7 @@ public class CodePanel
 		e.needRepaint = true;
 	}
 
-	private void handleInputChange(KeyInput e)
+	private void handleInputChangeDelete(KeyInput e, int next_mode, int in_mode)
 	{
 		StringBuilder line;
 		char[] dst;
@@ -425,7 +434,7 @@ public class CodePanel
 			this.j.pastebuffer = new String(dst);
 			this.caretx = pt.x;
 			this.carety = pt.y;
-			this.mode = INSERT_MODE;
+			this.mode = next_mode;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
 			e.needRepaint = true;
@@ -447,26 +456,26 @@ public class CodePanel
 			this.j.pastebuffer = new String(dst);
 			this.caretx = from;
 			this.carety = pt.y;
-			this.mode = INSERT_MODE;
+			this.mode = next_mode;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
 			e.needRepaint = true;
 			return;
 		case 'i':
-			this.mode = CHANGE_IN_MODE;
+			this.mode = in_mode;
 			return;
 		}
 		this.mode = NORMAL_MODE;
 		e.error = true;
 	}
 
-	private void handleInputChangeIn(KeyInput e)
+	private void handleInputChangeDeleteIn(KeyInput e, int next_mode)
 	{
 		e.consumed = true;
 		if (e.c == 'w') {
 			StringBuilder line = this.lines.get(this.carety);
 			if (this.caretx >= line.length()) {
-				this.mode = INSERT_MODE;
+				this.mode = next_mode;
 				return;
 			}
 			char[] chars = Line.getValue(line);
@@ -484,7 +493,7 @@ public class CodePanel
 			line.delete(from, to);
 			this.j.pastebuffer = new String(dst);
 			this.caretx = from;
-			this.mode = INSERT_MODE;
+			this.mode = next_mode;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
 			e.needRepaint = true;
@@ -505,10 +514,16 @@ public class CodePanel
 			this.handleInputInsert(e);
 			break;
 		case CHANGE_MODE:
-			this.handleInputChange(e);
+			this.handleInputChangeDelete(e, INSERT_MODE, CHANGE_IN_MODE);
 			break;
 		case CHANGE_IN_MODE:
-			this.handleInputChangeIn(e);
+			this.handleInputChangeDeleteIn(e, INSERT_MODE);
+			break;
+		case DELETE_MODE:
+			this.handleInputChangeDelete(e, NORMAL_MODE, DELETE_IN_MODE);
+			break;
+		case DELETE_IN_MODE:
+			this.handleInputChangeDeleteIn(e, NORMAL_MODE);
 			break;
 		}
 	}
