@@ -31,7 +31,8 @@ public class CodePanel
 		CHANGE_MODE = 2,
 		CHANGE_IN_MODE = 3,
 		DELETE_MODE = 4,
-		DELETE_IN_MODE = 5;
+		DELETE_IN_MODE = 5,
+		G_MODE = 6;
 
 	private final CodeFrame frame;
 	private final JeanineFrame jf;
@@ -184,6 +185,15 @@ public class CodePanel
 				pos++;
 			}
 			this.caretx = pos;
+		case 'g':
+			this.mode = G_MODE;
+			break;
+		case 'G':
+			visual = this.curVisualX();
+			this.carety = this.lines.size() - 1;
+			this.putCaretX(visual);
+			e.needRepaintCaret = true;
+			break;
 		case 'i':
 			this.mode = INSERT_MODE;
 			e.needRepaintCaret = true;
@@ -506,6 +516,21 @@ public class CodePanel
 		e.error = true;
 	}
 
+	private void handleInputG(KeyInput e)
+	{
+		e.consumed = true;
+		if (e.c == 'g') {
+			int visual = this.curVisualX();
+			this.carety = 0;
+			this.putCaretX(visual);
+			e.needRepaintCaret = true;
+			this.mode = NORMAL_MODE;
+			return;
+		}
+		this.mode = NORMAL_MODE;
+		e.error = true;
+	}
+
 	private void handleInput(KeyInput e)
 	{
 		switch (mode) {
@@ -526,6 +551,9 @@ public class CodePanel
 			break;
 		case DELETE_IN_MODE:
 			this.handleInputChangeDeleteIn(e, NORMAL_MODE);
+			break;
+		case G_MODE:
+			this.handleInputG(e);
 			break;
 		}
 	}

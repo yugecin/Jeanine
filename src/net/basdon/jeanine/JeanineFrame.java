@@ -111,7 +111,7 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 	private static final String WELCOMETEXT =
 		"Welcome to Jeanine, a 2d editor with some Vim-like keybindings\n" +
 		"\n" +
-		"Movement: h j k l ^ $\n" +
+		"Movement: h j k l ^ $ gg G\n" +
 		"Insertion: i I a A o O p P\n" +
 		"Deleting: x dw db diw\n" +
 		"Changing: cw cb ciw\n" +
