@@ -117,10 +117,35 @@ public class CodePanel
 		}
 	}
 
+	private int curVisualX()
+	{
+		int visual = Line.logicalToVisualPos(this.lines.get(this.carety), this.caretx);
+		if (this.virtualCaretx > visual) {
+			return this.virtualCaretx;
+		}
+		return visual;
+	}
+
+	private void putCaretX(int visual)
+	{
+		StringBuilder line = this.lines.get(this.carety);
+		if (visual > line.length()) {
+			if (visual > this.virtualCaretx) {
+				this.virtualCaretx = visual;
+			}
+			this.caretx = line.length() - 1;
+			if (this.caretx < 0) {
+				this.caretx = 0;
+			}
+		} else {
+			this.caretx = Line.visualToLogicalPos(line, visual);
+		}
+	}
+
 	private void handleInputNormal(KeyInput e)
 	{
 		StringBuilder line;
-		int len;
+		int len, visual;
 		Point pt;
 		e.consumed = true;
 		switch (e.c) {
@@ -247,20 +272,9 @@ public class CodePanel
 			return;
 		case 'j':
 			if (this.carety < this.lines.size() - 1) {
-				int visual = Line.logicalToVisualPos(this.lines.get(this.carety), this.caretx);
-				if (this.virtualCaretx > visual) {
-					visual = this.virtualCaretx;
-				}
+				visual = this.curVisualX();
 				this.carety++;
-				line = this.lines.get(this.carety);
-				if (visual > line.length()) {
-					if (visual > this.virtualCaretx) {
-						this.virtualCaretx = visual;
-					}
-					this.caretx = line.length() - 1;
-				} else {
-					this.caretx = Line.visualToLogicalPos(line, visual);
-				}
+				this.putCaretX(visual);
 				e.needRepaintCaret = true;
 			} else {
 				e.error = true;
@@ -268,21 +282,9 @@ public class CodePanel
 			return;
 		case 'k':
 			if (this.carety > 0) {
-				line = this.lines.get(this.carety);
-				int visual = Line.logicalToVisualPos(line, this.caretx);
-				if (this.virtualCaretx > visual) {
-					visual = this.virtualCaretx;
-				}
+				visual = this.curVisualX();
 				this.carety--;
-				line = this.lines.get(this.carety);
-				if (visual > line.length()) {
-					if (visual > this.virtualCaretx) {
-						this.virtualCaretx = visual;
-					}
-					this.caretx = line.length() - 1;
-				} else {
-					this.caretx = Line.visualToLogicalPos(line, visual);
-				}
+				this.putCaretX(visual);
 				e.needRepaintCaret = true;
 			} else {
 				e.error = true;
