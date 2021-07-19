@@ -26,7 +26,7 @@ public class Jeanine
 	public final Font font;
 	public final int fx, fy, fmaxascend;
 
-	public String pastebuffer;
+	public String pastebuffer = "";
 
 	public Jeanine()
 	{
