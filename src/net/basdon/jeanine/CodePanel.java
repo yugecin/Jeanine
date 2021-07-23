@@ -361,6 +361,8 @@ public class CodePanel
 		StringBuilder line;
 		switch (e.c) {
 		case BS:
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
 			if (this.caretx > 0) {
 				this.lines.get(this.carety).delete(this.caretx - 1, this.caretx);
 				this.caretx--;
@@ -370,7 +372,7 @@ public class CodePanel
 				this.carety--;
 				StringBuilder prev = this.lines.get(this.carety);
 				this.caretx = prev.length();
-				prev.insert(this.caretx, linecontent);
+				prev.append(linecontent);
 			} else {
 				e.error = true;
 				return;
@@ -387,6 +389,8 @@ public class CodePanel
 			return;
 		case DEL:
 			line = this.lines.get(this.carety);
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
 			if (this.caretx < line.length()) {
 				line.delete(this.caretx, this.caretx + 1);
 			} else if (this.carety + 1 < this.lines.size()) {
