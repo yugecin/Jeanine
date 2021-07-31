@@ -101,7 +101,6 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 		if ("aaa".equals(command)) {
 			CodeFrame cp = new CodeFrame(this, "empty");
 			cp.setLocation(30, 30);
-			cp.setCodeViewSize(20, 20);
 			this.add(cp);
 			return true;
 		}
