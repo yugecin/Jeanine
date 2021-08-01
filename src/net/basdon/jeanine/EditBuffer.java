@@ -60,8 +60,15 @@ public class EditBuffer
 		this.storedCmdBuf = new char[100];
 		this.creatingCmdBuf = new char[100];
 		this.lines = new ArrayList<>();
-		for (String line : text.split("\n")) {
-			this.lines.add(new StringBuilder(line));
+		StringBuilder sb = new StringBuilder();
+		this.lines.add(sb);
+		for (char c : text.toCharArray()) {
+			if (c == '\n') {
+				sb = new StringBuilder();
+				this.lines.add(sb);
+			} else {
+				sb.append(c);
+			}
 		}
 	}
 
@@ -125,15 +132,6 @@ public class EditBuffer
 			e.needRepaint = true;
 			e.needEnsureViewSize = true;
 			break;
-		case 'I':
-			int pos = 0;
-			for (char chr : this.lines.get(this.carety).toString().toCharArray()) {
-				if (chr != ' ' && chr != '\t') {
-					break;
-				}
-				pos++;
-			}
-			this.caretx = pos;
 		case 'g':
 			this.mode = G_MODE;
 			break;
@@ -143,6 +141,15 @@ public class EditBuffer
 			this.putCaretX(visual);
 			e.needRepaintCaret = true;
 			break;
+		case 'I':
+			int pos = 0;
+			for (char chr : this.lines.get(this.carety).toString().toCharArray()) {
+				if (chr != ' ' && chr != '\t') {
+					break;
+				}
+				pos++;
+			}
+			this.caretx = pos;
 		case 'i':
 			this.mode = INSERT_MODE;
 			e.needRepaintCaret = true;

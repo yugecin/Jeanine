@@ -11,7 +11,6 @@ public class Jeanine
 {
 	public static void main(String args[])
 	{
-		Line.init();
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Throwable t) {}

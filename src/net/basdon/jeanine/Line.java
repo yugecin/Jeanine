@@ -6,7 +6,7 @@ public class Line
 {
 	static Field valueField;
 
-	public static void init()
+	static
 	{
 		try {
 			Class<?> clazz = Class.forName("java.lang.AbstractStringBuilder");
