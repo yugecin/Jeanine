@@ -916,13 +916,13 @@ public class EditBufferTest
 			).executeSuccess(
 				"dw"
 			).assertBuffer(
-				"the <caret>brown"
+				"the <caret> brown"
 			).executeSuccess(
 				"dw"
 			).assertBuffer(
 				"the<caret> "
 			).executeFail(
-				"dw"
+				"dw" // fail because no next word to jump to (different from vim)
 			);
 		}
 
@@ -935,16 +935,18 @@ public class EditBufferTest
 				"dw"
 			).assertBuffer(
 				"b<caret>r"
+			);
+		}
+
+		@Test
+		public void dw_end()
+		{
+			createBuffer(
+				"on<caret>e two"
 			).executeSuccess(
 				"dw"
 			).assertBuffer(
-				"<caret>b"
-			).executeSuccess(
-				"dw"
-			).assertBuffer(
-				"<caret>"
-			).executeFail(
-				"dw"
+				"on<caret>two"
 			);
 		}
 
@@ -1067,7 +1069,7 @@ public class EditBufferTest
 			).executeSuccess(
 				"cwxy<esc>"
 			).assertBuffer(
-				"x<caret>ytwo"
+				"x<caret>y two"
 			);
 		}
 
@@ -1080,6 +1082,30 @@ public class EditBufferTest
 				"cwxy<esc>"
 			).assertBuffer(
 				"onx<caret>ytwo"
+			);
+		}
+
+		@Test
+		public void cb()
+		{
+			createBuffer(
+				"one tw<caret>o"
+			).executeSuccess(
+				"cbxy<esc>"
+			).assertBuffer(
+				"one x<caret>yo"
+			);
+		}
+
+		@Test
+		public void cb_begin()
+		{
+			createBuffer(
+				"one <caret>two"
+			).executeSuccess(
+				"cbxy<esc>"
+			).assertBuffer(
+				"x<caret>ytwo"
 			);
 		}
 
@@ -1351,11 +1377,15 @@ public class EditBufferTest
 			).executeSuccess(
 				"dw"
 			).assertBuffer(
-				"<caret>two three"
+				"<caret> two three" // different from vim (space is left)
 			).executeSuccess(
 				"."
 			).assertBuffer(
-				"<caret>three"
+				"<caret> three"
+			).executeSuccess(
+				"."
+			).assertBuffer(
+				"<caret>"
 			);
 		}
 
@@ -1429,11 +1459,11 @@ public class EditBufferTest
 			).executeSuccess(
 				"cwxy<esc>"
 			).assertBuffer(
-				"x<caret>ytwo"
+				"x<caret>y two"
 			).executeSuccess(
 				"."
 			).assertBuffer(
-				"xx<caret>y"
+				"xx<caret>ytwo"
 			);
 		}
 
@@ -1473,15 +1503,15 @@ public class EditBufferTest
 		public void cb()
 		{
 			createBuffer(
-				"zero one tw<caret>o"
+				"one tw<caret>o"
 			).executeSuccess(
 				"cbxy<esc>"
 			).assertBuffer(
-				"zero x<caret>yo"
+				"one x<caret>yo"
 			).executeSuccess(
 				"."
 			).assertBuffer(
-				"x<caret>yyo"
+				"one x<caret>yyo"
 			);
 		}
 
@@ -1542,8 +1572,8 @@ public class EditBufferTest
 		for (char c : translateCommand(command).toCharArray()) {
 			e.c = c;
 			this.buf.handlePhysicalInput(e);
-			assertTrue(e.error);
 		}
+		assertTrue("did not fail: " + command, e.error);
 		return this;
 	}
 
@@ -1588,9 +1618,13 @@ public class EditBufferTest
 				}
 				StringBuilder line = this.buf.lines.get(i);
 				if (this.buf.carety == i) {
-					sb.append(line, 0, this.buf.caretx);
+					int caretx = this.buf.caretx;
+					if (caretx < 0) {
+						caretx = 0;
+					}
+					sb.append(line, 0, caretx);
 					sb.append("<caret>");
-					sb.append(line, this.buf.caretx, line.length());
+					sb.append(line, caretx, line.length());
 				} else {
 					sb.append(line);
 				}

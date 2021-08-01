@@ -379,7 +379,7 @@ public class EditBuffer
 		e.needRepaint = true;
 	}
 
-	private void handleInputChangeDelete(KeyInput e, int next_mode, int in_mode)
+	private void handleInputChangeDelete(KeyInput e, int next_mode, int next_in_mode)
 	{
 		StringBuilder line;
 		char[] dst;
@@ -413,7 +413,20 @@ public class EditBuffer
 			e.needRepaint = true;
 			return;
 		case 'w':
-			pt = VimOps.forwards(this.lines, this.caretx, this.carety);
+			line = this.lines.get(this.carety);
+			char clss = VimOps.getCharClass(line.charAt(this.caretx));
+			if (this.caretx + 1 < line.length() &&
+				clss != 2 &&
+				clss != VimOps.getCharClass(line.charAt(this.caretx + 1)))
+			{
+				// see tests.. case when caret is on last letter of current word
+				pt = VimOps.forwardsEx(this.lines, this.caretx, this.carety);
+				if (pt.x != this.caretx) {
+					pt.x--;
+				}
+			} else {
+				pt = VimOps.forwards(this.lines, this.caretx, this.carety);
+			}
 			if (pt.x == this.caretx && pt.y == this.carety) {
 				break;
 			}
@@ -428,6 +441,9 @@ public class EditBuffer
 			line.delete(from, pt.x + 1);
 			this.j.pastebuffer = new String(dst);
 			this.caretx = from;
+			if (next_mode != INSERT_MODE && this.caretx == line.length()) {
+				this.caretx--;
+			}
 			this.carety = pt.y;
 			this.mode = next_mode;
 			e.needCheckLineLength = true;
@@ -435,7 +451,7 @@ public class EditBuffer
 			e.needRepaint = true;
 			return;
 		case 'i':
-			this.mode = in_mode;
+			this.mode = next_in_mode;
 			return;
 		}
 		this.mode = NORMAL_MODE;
@@ -466,6 +482,9 @@ public class EditBuffer
 			line.delete(from, to);
 			this.j.pastebuffer = new String(dst);
 			this.caretx = from;
+			if (next_mode != INSERT_MODE && this.caretx == line.length()) {
+				this.caretx--;
+			}
 			this.mode = next_mode;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
