@@ -950,6 +950,7 @@ public class EditBufferTest
 			);
 		}
 
+		/*
 		@Test
 		public void de()
 		{
@@ -973,6 +974,19 @@ public class EditBufferTest
 				"<caret>"
 			);
 		}
+
+		@Test
+		public void de_end()
+		{
+			createBuffer(
+				"on<caret>e two"
+			).executeSuccess(
+				"de"
+			).assertBuffer(
+				"o<caret>n"
+			);
+		}
+		*/
 
 		@Test
 		public void db()
@@ -1007,18 +1021,6 @@ public class EditBufferTest
 				"db"
 			).assertBuffer(
 				"<caret>e"
-			);
-		}
-
-		@Test
-		public void de_end()
-		{
-			createBuffer(
-				"on<caret>e two"
-			).executeSuccess(
-				"de"
-			).assertBuffer(
-				"o<caret>n"
 			);
 		}
 
@@ -1109,6 +1111,7 @@ public class EditBufferTest
 			);
 		}
 
+		/*
 		@Test
 		public void ce()
 		{
@@ -1132,6 +1135,7 @@ public class EditBufferTest
 				"onx<caret>y"
 			);
 		}
+		*/
 
 		@Test
 		public void ciw()
@@ -1389,6 +1393,7 @@ public class EditBufferTest
 			);
 		}
 
+		/*
 		@Test
 		public void de()
 		{
@@ -1420,6 +1425,7 @@ public class EditBufferTest
 				"<caret>o"
 			);
 		}
+		*/
 
 		@Test
 		public void db()
@@ -1483,6 +1489,7 @@ public class EditBufferTest
 			);
 		}
 
+		/*
 		@Test
 		public void ce()
 		{
@@ -1498,6 +1505,7 @@ public class EditBufferTest
 				"xx<caret>y"
 			);
 		}
+		*/
 
 		@Test
 		public void cb()
