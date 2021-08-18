@@ -565,6 +565,11 @@ public class EditBufferTest
 			).assertBuffer(
 				"ab<caret>xc",
 				"def"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"ab<caret>c",
+				"def"
 			);
 		}
 
@@ -578,6 +583,11 @@ public class EditBufferTest
 				"ixx<esc>"
 			).assertBuffer(
 				"xxabc",
+				"def"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc",
 				"def"
 			);
 		}
@@ -598,6 +608,11 @@ public class EditBufferTest
 			).assertBuffer(
 				"abc",
 				"x<caret>x"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc",
+				"<caret>"
 			);
 		}
 
@@ -607,10 +622,14 @@ public class EditBufferTest
 			createBuffer(
 				"ab<caret>c"
 			).executeSuccess(
-				"i\nand "
+				"i\nand <esc>"
 			).assertBuffer(
 				"ab",
-				"and c"
+				"and<caret> c"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"ab<caret>c"
 			);
 		}
 
@@ -621,9 +640,14 @@ public class EditBufferTest
 				"abc",
 				"de<caret>f"
 			).executeSuccess(
-				"i<bs><bs><bs>"
+				"i<bs><bs><bs><esc>"
 			).assertBuffer(
-				"abc<caret>f"
+				"ab<caret>cf"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc",
+				"de<caret>f"
 			);
 		}
 
@@ -634,9 +658,14 @@ public class EditBufferTest
 				"ab<caret>c",
 				"def"
 			).executeSuccess(
-				"i<del><del>"
+				"i<del><del><esc>"
 			).assertBuffer(
-				"ab<caret>def"
+				"a<caret>bdef"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"ab<caret>c",
+				"def"
 			);
 		}
 	}
@@ -649,13 +678,13 @@ public class EditBufferTest
 			createBuffer(
 				"ab<caret>c"
 			).executeSuccess(
-				"Ix"
-			).assertBuffer(
-				"x<caret>abc"
-			).executeSuccess(
-				"<esc>"
+				"Ix<esc>"
 			).assertBuffer(
 				"<caret>xabc"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"ab<caret>c"
 			);
 		}
 
@@ -668,6 +697,10 @@ public class EditBufferTest
 				"Ixx<esc>"
 			).assertBuffer(
 				"xxabc"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc"
 			);
 		}
 
@@ -677,13 +710,13 @@ public class EditBufferTest
 			createBuffer(
 				"<caret>"
 			).executeSuccess(
-				"Ixx"
-			).assertBuffer(
-				"xx<caret>"
-			).executeSuccess(
-				"<esc>"
+				"Ixx<esc>"
 			).assertBuffer(
 				"x<caret>x"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>"
 			);
 		}
 
@@ -693,9 +726,13 @@ public class EditBufferTest
 			createBuffer(
 				"   xx<caret>x"
 			).executeSuccess(
-				"I"
+				"Iy<esc>"
 			).assertBuffer(
-				"   <caret>xxx"
+				"   <caret>yxxx"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"   xx<caret>x"
 			);
 		}
 
@@ -705,9 +742,13 @@ public class EditBufferTest
 			createBuffer(
 				"\t\txx<caret>x"
 			).executeSuccess(
-				"I"
+				"Iy<esc>"
 			).assertBuffer(
-				"\t\t<caret>xxx"
+				"\t\t<caret>yxxx"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"\t\txx<caret>x"
 			);
 		}
 	}
@@ -724,6 +765,10 @@ public class EditBufferTest
 			).assertBuffer(
 				"the quick",
 				"somethin<caret>g"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"the q<caret>uick"
 			);
 		}
 
@@ -738,6 +783,11 @@ public class EditBufferTest
 			).assertBuffer(
 				"the quick",
 				"somethin<caret>g",
+				"abc"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"the q<caret>uick",
 				"abc"
 			);
 		}
@@ -755,6 +805,10 @@ public class EditBufferTest
 			).assertBuffer(
 				"somethin<caret>g",
 				"the quick"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"the q<caret>uick"
 			);
 		}
 
@@ -770,6 +824,11 @@ public class EditBufferTest
 				"abc",
 				"somethin<caret>g",
 				"the quick"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc",
+				"the q<caret>uick"
 			);
 		}
 	}
@@ -783,14 +842,14 @@ public class EditBufferTest
 				"ab<caret>c",
 				"def"
 			).executeSuccess(
-				"ax"
-			).assertBuffer(
-				"abcx<caret>",
-				"def"
-			).executeSuccess(
-				"<esc>"
+				"ax<esc>"
 			).assertBuffer(
 				"abc<caret>x",
+				"def"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"ab<caret>c",
 				"def"
 			);
 		}
@@ -806,6 +865,11 @@ public class EditBufferTest
 			).assertBuffer(
 				"axxbc",
 				"def"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc",
+				"def"
 			);
 		}
 
@@ -816,15 +880,15 @@ public class EditBufferTest
 				"abc",
 				"<caret>"
 			).executeSuccess(
-				"axx"
-			).assertBuffer(
-				"abc",
-				"xx<caret>"
-			).executeSuccess(
-				"<esc>"
+				"axx<esc>"
 			).assertBuffer(
 				"abc",
 				"x<caret>x"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc",
+				"<caret>"
 			);
 		}
 	}
@@ -837,13 +901,13 @@ public class EditBufferTest
 			createBuffer(
 				"ab<caret>c"
 			).executeSuccess(
-				"Ax"
-			).assertBuffer(
-				"abcx<caret>"
-			).executeSuccess(
-				"<esc>"
+				"Ax<esc>"
 			).assertBuffer(
 				"abc<caret>x"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"ab<caret>c"
 			);
 		}
 
@@ -856,6 +920,10 @@ public class EditBufferTest
 				"Axx<esc>"
 			).assertBuffer(
 				"abcxx"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc"
 			);
 		}
 
@@ -865,13 +933,13 @@ public class EditBufferTest
 			createBuffer(
 				"<caret>"
 			).executeSuccess(
-				"Axx"
-			).assertBuffer(
-				"xx<caret>"
-			).executeSuccess(
-				"<esc>"
+				"Axx<esc>"
 			).assertBuffer(
 				"x<caret>x"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>"
 			);
 		}
 	}
@@ -905,6 +973,10 @@ public class EditBufferTest
 				"<caret>", ""
 			).executeFail(
 				"x"
+			).executeSuccess(
+				"uuuuu"
+			).assertBuffer(
+				"bl<caret>ack", ""
 			);
 		}
 
@@ -923,6 +995,10 @@ public class EditBufferTest
 				"the<caret> "
 			).executeFail(
 				"dw" // fail because no next word to jump to (different from vim)
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"the <caret>quick brown"
 			);
 		}
 
@@ -935,6 +1011,10 @@ public class EditBufferTest
 				"dw"
 			).assertBuffer(
 				"b<caret>r"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"br<caret>own"
 			);
 		}
 
@@ -947,6 +1027,10 @@ public class EditBufferTest
 				"dw"
 			).assertBuffer(
 				"on<caret>two"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"on<caret>e two"
 			);
 		}
 
@@ -997,6 +1081,10 @@ public class EditBufferTest
 				"db"
 			).assertBuffer(
 				"one <caret>o"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"one tw<caret>o"
 			);
 		}
 
@@ -1009,6 +1097,10 @@ public class EditBufferTest
 				"db"
 			).assertBuffer(
 				"<caret>two"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"one <caret>two"
 			);
 		}
 
@@ -1021,6 +1113,10 @@ public class EditBufferTest
 				"db"
 			).assertBuffer(
 				"<caret>e"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"on<caret>e"
 			);
 		}
 
@@ -1033,6 +1129,10 @@ public class EditBufferTest
 				"diw"
 			).assertBuffer(
 				"<caret> two"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>one two"
 			);
 		}
 
@@ -1045,6 +1145,10 @@ public class EditBufferTest
 				"diw"
 			).assertBuffer(
 				"<caret> two"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"o<caret>ne two"
 			);
 		}
 
@@ -1057,6 +1161,10 @@ public class EditBufferTest
 				"diw"
 			).assertBuffer(
 				"<caret> two"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"on<caret>e two"
 			);
 		}
 	}
@@ -1072,6 +1180,10 @@ public class EditBufferTest
 				"cwxy<esc>"
 			).assertBuffer(
 				"x<caret>y two"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>one two"
 			);
 		}
 
@@ -1084,6 +1196,10 @@ public class EditBufferTest
 				"cwxy<esc>"
 			).assertBuffer(
 				"onx<caret>ytwo"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"on<caret>e two"
 			);
 		}
 
@@ -1096,6 +1212,10 @@ public class EditBufferTest
 				"cbxy<esc>"
 			).assertBuffer(
 				"one x<caret>yo"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"one tw<caret>o"
 			);
 		}
 
@@ -1108,6 +1228,10 @@ public class EditBufferTest
 				"cbxy<esc>"
 			).assertBuffer(
 				"x<caret>ytwo"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"one <caret>two"
 			);
 		}
 
@@ -1146,6 +1270,10 @@ public class EditBufferTest
 				"ciwxy<esc>"
 			).assertBuffer(
 				"x<caret>y two"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>one two"
 			);
 		}
 
@@ -1158,6 +1286,10 @@ public class EditBufferTest
 				"ciwxy<esc>"
 			).assertBuffer(
 				"x<caret>y two"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"o<caret>ne two"
 			);
 		}
 
@@ -1170,6 +1302,10 @@ public class EditBufferTest
 				"ciwxy<esc>"
 			).assertBuffer(
 				"x<caret>y two"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"on<caret>e two"
 			);
 		}
 	}
@@ -1189,6 +1325,10 @@ public class EditBufferTest
 				"p"
 			).assertBuffer(
 				"oen<caret>n"
+			).executeSuccess(
+				"uuu"
+			).assertBuffer(
+				"o<caret>ne"
 			);
 		}
 
@@ -1205,6 +1345,10 @@ public class EditBufferTest
 				"P"
 			).assertBuffer(
 				"o<caret>nne"
+			).executeSuccess(
+				"uuu"
+			).assertBuffer(
+				"o<caret>ne"
 			);
 		}
 
@@ -1221,6 +1365,10 @@ public class EditBufferTest
 				"p"
 			).assertBuffer(
 				"o<caret>n"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"o<caret>n"
 			);
 		}
 
@@ -1235,6 +1383,10 @@ public class EditBufferTest
 				"<caret>n"
 			).executeSuccess(
 				"P"
+			).assertBuffer(
+				"<caret>on"
+			).executeSuccess(
+				"uu"
 			).assertBuffer(
 				"<caret>on"
 			);
@@ -1256,6 +1408,10 @@ public class EditBufferTest
 				"."
 			).assertBuffer(
 				"aa<caret>bb"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"<caret>"
 			);
 		}
 
@@ -1272,6 +1428,10 @@ public class EditBufferTest
 				"."
 			).assertBuffer(
 				"a<caret>babhello"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"hello<caret>"
 			);
 		}
 
@@ -1294,6 +1454,11 @@ public class EditBufferTest
 				"something",
 				"something",
 				"somethin<caret>g",
+				"abc"
+			).executeSuccess(
+				"uuu"
+			).assertBuffer(
+				"the q<caret>uick",
 				"abc"
 			);
 		}
@@ -1318,6 +1483,11 @@ public class EditBufferTest
 				"something",
 				"something",
 				"the quick"
+			).executeSuccess(
+				"uuu"
+			).assertBuffer(
+				"abc",
+				"the q<caret>uick"
 			);
 		}
 
@@ -1334,6 +1504,10 @@ public class EditBufferTest
 				".."
 			).assertBuffer(
 				"abxyxyx<caret>yc"
+			).executeSuccess(
+				"uuu"
+			).assertBuffer(
+				"a<caret>bc"
 			);
 		}
 
@@ -1350,6 +1524,10 @@ public class EditBufferTest
 				"^."
 			).assertBuffer(
 				"abcxyx<caret>y"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"a<caret>bc"
 			);
 		}
 
@@ -1370,6 +1548,10 @@ public class EditBufferTest
 				"."
 			).assertBuffer(
 				"<caret>"
+			).executeSuccess(
+				"uuu"
+			).assertBuffer(
+				"a<caret>bc"
 			);
 		}
 
@@ -1390,6 +1572,10 @@ public class EditBufferTest
 				"."
 			).assertBuffer(
 				"<caret>"
+			).executeSuccess(
+				"uuu"
+			).assertBuffer(
+				"<caret>one two three"
 			);
 		}
 
@@ -1442,6 +1628,10 @@ public class EditBufferTest
 				"<caret> "
 			).executeFail(
 				"."
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"one two <caret> "
 			);
 		}
 
@@ -1470,6 +1660,10 @@ public class EditBufferTest
 				"."
 			).assertBuffer(
 				"xx<caret>ytwo"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"<caret>one two"
 			);
 		}
 
@@ -1486,6 +1680,10 @@ public class EditBufferTest
 				"."
 			).assertBuffer(
 				"onxx<caret>y"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"on<caret>e two"
 			);
 		}
 
@@ -1520,6 +1718,10 @@ public class EditBufferTest
 				"."
 			).assertBuffer(
 				"one x<caret>yyo"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"one tw<caret>o"
 			);
 		}
 
@@ -1532,6 +1734,67 @@ public class EditBufferTest
 				"ciwblack<esc>ll."
 			).assertBuffer(
 				"the quick black blac<caret>k"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"the quick br<caret>own fox"
+			);
+		}
+	}
+
+	/**
+	 * Most previous test already test undo after their own tests, this thing tests more cases.
+	 */
+	public static class Undo
+	{
+		@Test
+		public void insert_delete_line()
+		{
+			createBuffer(
+				"one",
+				"<caret>two"
+			).executeSuccess(
+				"i<bs><bs><bs><bs><esc>u"
+			).assertBuffer(
+				"one",
+				"<caret>two"
+			);
+		}
+
+		@Test
+		public void insert_multiple_lines()
+		{
+			createBuffer(
+				"one",
+				"<caret>two"
+			).executeSuccess(
+				"i<bs><bs><bs><bs>\n\n\n<esc>u"
+			).assertBuffer(
+				"one",
+				"<caret>two"
+			);
+		}
+
+		@Test
+		public void delete_multiple_lines()
+		{
+			createBuffer(
+				"a",
+				"b",
+				"c",
+				"<caret>d"
+			).executeSuccess(
+				"a<bs><bs><bs><bs><esc>"
+			).assertBuffer(
+				"a",
+				"<caret>b"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"a",
+				"b",
+				"c",
+				"<caret>d"
 			);
 		}
 	}
@@ -1651,8 +1914,11 @@ public class EditBufferTest
 			failComparison(sb.toString(), exp, actual);
 		}
 		for (int i = 0; i < expectedLines.length; i++) {
-			for (char c : Line.getValue(this.buf.lines.get(i))) {
-				if (c == '\n') {
+			StringBuilder line = this.buf.lines.get(i);
+			int len = line.length();
+			char[] chars = Util.getValue(line);
+			for (int j = 0; j < len; j++) {
+				if (chars[j] == '\n') {
 					sb.append("Line ").append(i);
 					sb.append(" has LF, lines shouldn't have LFs:");
 					sb.append("\n>>>\n").append(this.buf.lines.get(i));

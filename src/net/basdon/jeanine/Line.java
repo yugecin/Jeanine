@@ -4,32 +4,10 @@ import java.lang.reflect.Field;
 
 public class Line
 {
-	static Field valueField;
-
-	static
-	{
-		try {
-			Class<?> clazz = Class.forName("java.lang.AbstractStringBuilder");
-			valueField = clazz.getDeclaredField("value");
-			valueField.setAccessible(true);
-		} catch (Throwable t) {
-			throw new RuntimeException(t);
-		}
-	}
-
-	public static char[] getValue(StringBuilder sb)
-	{
-		try {
-			return (char[]) valueField.get(sb);
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	public static int visualLength(StringBuilder sb)
 	{
 		int length = sb.length();
-		char[] value = getValue(sb);
+		char[] value = Util.getValue(sb);
 		int visualLen = 0;
 		for (int i = 0; i < length; i++) {
 			if (value[i] == '\t') {
@@ -47,7 +25,7 @@ public class Line
 			return 0;
 		}
 		int length = sb.length();
-		char[] value = getValue(sb);
+		char[] value = Util.getValue(sb);
 		int visualPos = 0;
 		for (int i = 0; i < length; i++) {
 			if (value[i] == '\t') {
@@ -65,7 +43,7 @@ public class Line
 	public static int visualToLogicalPos(StringBuilder sb, int visualPos)
 	{
 		int length = sb.length();
-		char[] value = getValue(sb);
+		char[] value = Util.getValue(sb);
 		for (int i = 0; i < length; i++) {
 			if (visualPos <= 0) {
 				return i;
@@ -85,7 +63,7 @@ public class Line
 	{
 		StringBuilder sb2 = new StringBuilder(sb.capacity());
 		int length = sb.length();
-		char[] value = getValue(sb);
+		char[] value = Util.getValue(sb);
 		int visualPos = 0;
 		for (int i = 0; i < length; i++) {
 			char c = value[i];

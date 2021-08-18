@@ -45,6 +45,7 @@ public class CodePanel
 	@Override
 	protected void paintComponent(Graphics g)
 	{
+		// TODO: don't draw things that are not visible
 		super.paintComponent(g);
 		EditBuffer ec = this.editContext;
 		g.setColor(Color.white);

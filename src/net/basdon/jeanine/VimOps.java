@@ -29,7 +29,7 @@ public class VimOps
 		Point p = new Point(caretx, carety);
 		StringBuilder sb = lines.get(carety);
 		int length = sb.length();
-		char[] line = Line.getValue(sb);
+		char[] line = Util.getValue(sb);
 		char currentClass = 3;
 		if (caretx < length && length > 0) {
 			currentClass = getCharClass(line[caretx]);
@@ -49,7 +49,7 @@ public class VimOps
 				}
 				sb = lines.get(carety);
 				length = sb.length();
-				line = Line.getValue(sb);
+				line = Util.getValue(sb);
 				p.x = 0;
 				p.y = carety;
 				caretx = -1;
@@ -74,7 +74,7 @@ public class VimOps
 		Point p = new Point(caretx, carety);
 		StringBuilder sb = lines.get(carety);
 		int length = sb.length();
-		char[] line = Line.getValue(sb);
+		char[] line = Util.getValue(sb);
 		char currentClass = 3;
 		if (caretx < length && length > 0) {
 			currentClass = getCharClass(line[caretx]);
@@ -104,7 +104,7 @@ public class VimOps
 				}
 				sb = lines.get(carety);
 				length = sb.length();
-				line = Line.getValue(sb);
+				line = Util.getValue(sb);
 				p.x = 0;
 				p.y = carety;
 				caretx = -1;
@@ -132,7 +132,7 @@ public class VimOps
 		Point p = new Point(caretx, carety);
 		StringBuilder sb = lines.get(carety);
 		int length = sb.length();
-		char[] line = Line.getValue(sb);
+		char[] line = Util.getValue(sb);
 		char currentClass = 3;
 		if (caretx < length && length > 0) {
 			currentClass = getCharClass(line[caretx]);
@@ -159,7 +159,7 @@ public class VimOps
 				}
 				sb = lines.get(carety);
 				length = sb.length();
-				line = Line.getValue(sb);
+				line = Util.getValue(sb);
 				p.x = length - 1;
 				if (p.x < 0) {
 					p.x = 0;
