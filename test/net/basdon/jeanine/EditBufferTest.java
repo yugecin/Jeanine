@@ -1683,6 +1683,12 @@ public class EditBufferTest
 				"one",
 				"three",
 				"two"
+			).executeSuccess(
+				"uuu"
+			).assertBuffer(
+				"one",
+				"<caret>two",
+				"three"
 			);
 		}
 
@@ -1706,6 +1712,12 @@ public class EditBufferTest
 				"<caret>two",
 				"three",
 				"two",
+				"three"
+			).executeSuccess(
+				"uuu"
+			).assertBuffer(
+				"one",
+				"<caret>two",
 				"three"
 			);
 		}
@@ -1731,6 +1743,12 @@ public class EditBufferTest
 				"two",
 				"one",
 				"two"
+			).executeSuccess(
+				"uuu"
+			).assertBuffer(
+				"one",
+				"<caret>two",
+				"three"
 			);
 		}
 	}

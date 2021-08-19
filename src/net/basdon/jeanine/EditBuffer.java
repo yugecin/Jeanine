@@ -318,16 +318,19 @@ public class EditBuffer
 			e.needRepaint = true;
 			break;
 		case 'p':
+			this.writingUndo = new UndoStuff(this.caretx, this.carety);
 			if (this.j.pastebuffer.endsWith("\n")) {
+				this.writingUndo.fromx = this.lines.get(this.carety).length();
 				String lines[] = this.j.pastebuffer.split("\n");
 				for (int i = lines.length - 1; i >= 0; i--) {
 					this.lines.add(this.carety + 1, new StringBuilder(lines[i]));
 				}
+				this.writingUndo.tox = lines[lines.length - 1].length();
+				this.writingUndo.toy = this.carety + lines.length;
 				this.carety++;
 				this.virtualCaretx = this.caretx = 0;
 			} else {
 				// TODO: paste with newlines
-				this.writingUndo = new UndoStuff(this.caretx, this.carety);
 				line = this.lines.get(this.carety);
 				if (line.length() == 0) {
 					line.insert(0, this.j.pastebuffer);
@@ -338,32 +341,35 @@ public class EditBuffer
 				}
 				len = this.j.pastebuffer.length();
 				this.writingUndo.tox = this.writingUndo.fromx + len;
-				this.addCurrentWritingUndo();
 				this.caretx += this.j.pastebuffer.length();
 				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			}
+			this.addCurrentWritingUndo();
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
 			e.needRepaint = true;
 			break;
 		case 'P':
+			this.writingUndo = new UndoStuff(this.caretx, this.carety);
 			if (this.j.pastebuffer.endsWith("\n")) {
 				String lines[] = this.j.pastebuffer.split("\n");
 				for (int i = lines.length - 1; i >= 0; i--) {
 					this.lines.add(this.carety, new StringBuilder(lines[i]));
 				}
 				this.virtualCaretx = this.caretx = 0;
+				this.writingUndo.fromx = 0;
+				this.writingUndo.toy = this.carety + lines.length;
+				this.writingUndo.tox = 0;
 			} else {
 				// TODO: paste with newlines
 				len = this.j.pastebuffer.length();
 				line = this.lines.get(this.carety);
 				line.insert(this.caretx, this.j.pastebuffer);
-				this.writingUndo = new UndoStuff(this.caretx, this.carety);
 				this.writingUndo.tox = this.writingUndo.fromx + len;
-				this.addCurrentWritingUndo();
 				this.caretx += len - 1;
 				this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			}
+			this.addCurrentWritingUndo();
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
 			e.needRepaint = true;
