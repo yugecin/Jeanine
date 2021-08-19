@@ -155,7 +155,7 @@ public class EditBuffer
 			this.mode = CHANGE_MODE;
 			break;
 		case 'd':
-			if (this.caretx >= this.lines.get(this.carety).length()) {
+			if (this.caretx > this.lines.get(this.carety).length()) {
 				e.error = true;
 				return;
 			}
@@ -698,6 +698,39 @@ public class EditBuffer
 		e.error = true;
 	}
 
+	private void handleInputD(KeyInput e)
+	{
+		if (e.c == 'd') {
+			e.consumed = true;
+			String line = this.lines.get(this.carety).toString();
+			this.lines.remove(this.carety);
+			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo.fromx = 0;
+			this.writingUndo.tox = 0;
+			if (this.lines.isEmpty()) {
+				this.lines.add(new StringBuilder());
+				this.writingUndo.replacement.append(line);
+			} else if (this.carety >= this.lines.size()) {
+				this.carety--;
+				int len = this.lines.get(this.carety).length();
+				this.writingUndo.fromy = this.writingUndo.toy = this.carety;
+				this.writingUndo.fromx = this.writingUndo.tox = len;
+				this.writingUndo.replacement.append('\n' + line);
+			} else {
+				this.writingUndo.replacement.append(line + '\n');
+			}
+			this.addCurrentWritingUndo();
+			this.caretx = 0;
+			this.mode = NORMAL_MODE;
+			this.j.pastebuffer = line + '\n';
+			e.needRepaintCaret = true;
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+		} else {
+			this.handleInputChangeDelete(e, NORMAL_MODE, DELETE_IN_MODE);
+		}
+	}
+
 	/**
 	 * Handles an input event, without storing the input in the command buffer.
 	 */
@@ -717,7 +750,7 @@ public class EditBuffer
 			this.handleInputChangeDeleteIn(e, INSERT_MODE);
 			break;
 		case DELETE_MODE:
-			this.handleInputChangeDelete(e, NORMAL_MODE, DELETE_IN_MODE);
+			this.handleInputD(e);
 			break;
 		case DELETE_IN_MODE:
 			this.handleInputChangeDeleteIn(e, NORMAL_MODE);

@@ -1167,6 +1167,95 @@ public class EditBufferTest
 				"on<caret>e two"
 			);
 		}
+
+		@Test
+		public void dd_oneline()
+		{
+			createBuffer(
+				"on<caret>e two"
+			).executeSuccess(
+				"dd"
+			).assertBuffer(
+				"<caret>"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"on<caret>e two"
+			);
+		}
+
+		@Test
+		public void dd_first()
+		{
+			createBuffer(
+				"on<caret>e two",
+				"hey"
+			).executeSuccess(
+				"dd"
+			).assertBuffer(
+				"<caret>hey"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"on<caret>e two",
+				"hey"
+			);
+		}
+
+		@Test
+		public void dd_last()
+		{
+			createBuffer(
+				"hey",
+				"on<caret>e two"
+			).executeSuccess(
+				"dd"
+			).assertBuffer(
+				"<caret>hey"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"hey",
+				"on<caret>e two"
+			);
+		}
+
+		@Test
+		public void dd_empty()
+		{
+			createBuffer(
+				"<caret>"
+			).executeSuccess(
+				"dd"
+			).assertBuffer(
+				"<caret>"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>"
+			);
+		}
+
+		@Test
+		public void dd_empty_between()
+		{
+			createBuffer(
+				"xyz",
+				"<caret>",
+				"abc"
+			).executeSuccess(
+				"dd"
+			).assertBuffer(
+				"xyz",
+				"<caret>abc"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"xyz",
+				"<caret>",
+				"abc"
+			);
+		}
 	}
 
 	public static class Change
