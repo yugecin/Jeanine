@@ -1662,6 +1662,77 @@ public class EditBufferTest
 				"<caret>on"
 			);
 		}
+
+		@Test
+		public void from_dd()
+		{
+			createBuffer(
+				"one",
+				"<caret>two",
+				"three"
+			).executeSuccess(
+				"ddp"
+			).assertBuffer(
+				"one",
+				"three",
+				"<caret>two"
+			).executeSuccess(
+				"ggP"
+			).assertBuffer(
+				"<caret>two",
+				"one",
+				"three",
+				"two"
+			);
+		}
+
+		@Test
+		public void from_dj()
+		{
+			createBuffer(
+				"one",
+				"<caret>two",
+				"three"
+			).executeSuccess(
+				"djp"
+			).assertBuffer(
+				"one",
+				"<caret>two",
+				"three"
+			).executeSuccess(
+				"P"
+			).assertBuffer(
+				"one",
+				"<caret>two",
+				"three",
+				"two",
+				"three"
+			);
+		}
+
+		@Test
+		public void from_dk()
+		{
+			createBuffer(
+				"one",
+				"<caret>two",
+				"three"
+			).executeSuccess(
+				"dkp"
+			).assertBuffer(
+				"three",
+				"<caret>one",
+				"two"
+			).executeSuccess(
+				"P"
+			).assertBuffer(
+				"three",
+				"<caret>one",
+				"two",
+				"one",
+				"two"
+			);
+		}
 	}
 
 	public static class Repeat

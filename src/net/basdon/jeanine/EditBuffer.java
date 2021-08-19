@@ -319,8 +319,14 @@ public class EditBuffer
 			break;
 		case 'p':
 			if (this.j.pastebuffer.endsWith("\n")) {
-				// TODO: paste with newlines
+				String lines[] = this.j.pastebuffer.split("\n");
+				for (int i = lines.length - 1; i >= 0; i--) {
+					this.lines.add(this.carety + 1, new StringBuilder(lines[i]));
+				}
+				this.carety++;
+				this.virtualCaretx = this.caretx = 0;
 			} else {
+				// TODO: paste with newlines
 				this.writingUndo = new UndoStuff(this.caretx, this.carety);
 				line = this.lines.get(this.carety);
 				if (line.length() == 0) {
@@ -342,8 +348,13 @@ public class EditBuffer
 			break;
 		case 'P':
 			if (this.j.pastebuffer.endsWith("\n")) {
-				// TODO: paste with newlines
+				String lines[] = this.j.pastebuffer.split("\n");
+				for (int i = lines.length - 1; i >= 0; i--) {
+					this.lines.add(this.carety, new StringBuilder(lines[i]));
+				}
+				this.virtualCaretx = this.caretx = 0;
 			} else {
+				// TODO: paste with newlines
 				len = this.j.pastebuffer.length();
 				line = this.lines.get(this.carety);
 				line.insert(this.caretx, this.j.pastebuffer);
