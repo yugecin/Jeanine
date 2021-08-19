@@ -112,7 +112,7 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 		"\n" +
 		"Movement: h j k l ^ $ w b e gg G\n" +
 		"Insertion: i I a A o O p P\n" +
-		"Deleting: x dw db diw dd\n" +
+		"Deleting: x dw db diw dd dj dk\n" +
 		"Changing: cw cb ciw\n" +
 		"Other: . u";
 }

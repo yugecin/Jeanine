@@ -1256,6 +1256,188 @@ public class EditBufferTest
 				"abc"
 			);
 		}
+
+		@Test
+		public void dj_bot()
+		{
+			createBuffer(
+				"hey",
+				"on<caret>e two"
+			).executeFail(
+				"dj"
+			);
+		}
+
+		@Test
+		public void dj_first()
+		{
+			createBuffer(
+				"on<caret>e two",
+				"second",
+				"hey"
+			).executeSuccess(
+				"dj"
+			).assertBuffer(
+				"<caret>hey"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"on<caret>e two",
+				"second",
+				"hey"
+			);
+		}
+
+		@Test
+		public void dj_last()
+		{
+			createBuffer(
+				"hey",
+				"on<caret>e two",
+				"second"
+			).executeSuccess(
+				"dj"
+			).assertBuffer(
+				"<caret>hey"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"hey",
+				"on<caret>e two",
+				"second"
+			);
+		}
+
+		@Test
+		public void dj_empty()
+		{
+			createBuffer(
+				"<caret>",
+				""
+			).executeSuccess(
+				"dj"
+			).assertBuffer(
+				"<caret>"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>",
+				""
+			);
+		}
+
+		@Test
+		public void dj_empty_between()
+		{
+			createBuffer(
+				"xyz",
+				"<caret>",
+				"",
+				"abc"
+			).executeSuccess(
+				"dj"
+			).assertBuffer(
+				"xyz",
+				"<caret>abc"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"xyz",
+				"<caret>",
+				"",
+				"abc"
+			);
+		}
+
+		@Test
+		public void dk_top()
+		{
+			createBuffer(
+				"on<caret>e two",
+				"second"
+			).executeFail(
+				"dk"
+			);
+		}
+
+		@Test
+		public void dk_first()
+		{
+			createBuffer(
+				"hey",
+				"on<caret>e two",
+				"second"
+			).executeSuccess(
+				"dk"
+			).assertBuffer(
+				"<caret>second"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"hey",
+				"on<caret>e two",
+				"second"
+			);
+		}
+
+		@Test
+		public void dk_last()
+		{
+			createBuffer(
+				"hey",
+				"on<caret>e two"
+			).executeSuccess(
+				"dk"
+			).assertBuffer(
+				"<caret>"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"hey",
+				"on<caret>e two"
+			);
+		}
+
+		@Test
+		public void dk_empty()
+		{
+			createBuffer(
+				"",
+				"<caret>"
+			).executeSuccess(
+				"dk"
+			).assertBuffer(
+				"<caret>"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"",
+				"<caret>"
+			);
+		}
+
+		@Test
+		public void dk_empty_between()
+		{
+			createBuffer(
+				"xyz",
+				"",
+				"<caret>",
+				"abc"
+			).executeSuccess(
+				"dk"
+			).assertBuffer(
+				"xyz",
+				"<caret>abc"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"xyz",
+				"",
+				"<caret>",
+				"abc"
+			);
+		}
 	}
 
 	public static class Change
@@ -1730,9 +1912,58 @@ public class EditBufferTest
 			createBuffer(
 				"one two"
 			).executeSuccess(
-				"diw$diw"
+				"diw$."
 			).assertBuffer(
 				"<caret> "
+			);
+		}
+
+		@Test
+		public void dd()
+		{
+			createBuffer(
+				"<caret>one",
+				"two",
+				"three"
+			).executeSuccess(
+				"dd."
+			).assertBuffer(
+				"<caret>three"
+			);
+		}
+
+		@Test
+		public void dj()
+		{
+			createBuffer(
+				"<caret>one",
+				"two",
+				"three",
+				"four",
+				"five"
+			).executeSuccess(
+				"dj."
+			).assertBuffer(
+				"<caret>five"
+			).executeFail(
+				"."
+			);
+		}
+
+		@Test
+		public void dk()
+		{
+			createBuffer(
+				"one",
+				"two",
+				"<caret>three",
+				"four"
+			).executeSuccess(
+				"dk."
+			).assertBuffer(
+				"<caret>"
+			).executeFail(
+				"."
 			);
 		}
 

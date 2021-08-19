@@ -700,35 +700,59 @@ public class EditBuffer
 
 	private void handleInputD(KeyInput e)
 	{
+		String line;
 		if (e.c == 'd') {
-			e.consumed = true;
-			String line = this.lines.get(this.carety).toString();
+			line = this.lines.get(this.carety).toString();
 			this.lines.remove(this.carety);
 			this.writingUndo = new UndoStuff(this.caretx, this.carety);
-			this.writingUndo.fromx = 0;
-			this.writingUndo.tox = 0;
-			if (this.lines.isEmpty()) {
-				this.lines.add(new StringBuilder());
-				this.writingUndo.replacement.append(line);
-			} else if (this.carety >= this.lines.size()) {
-				this.carety--;
-				int len = this.lines.get(this.carety).length();
-				this.writingUndo.fromy = this.writingUndo.toy = this.carety;
-				this.writingUndo.fromx = this.writingUndo.tox = len;
-				this.writingUndo.replacement.append('\n' + line);
-			} else {
-				this.writingUndo.replacement.append(line + '\n');
+		} else if (e.c == 'j') {
+			if (this.carety == this.lines.size() - 1) {
+				e.error = true;
+				return;
 			}
-			this.addCurrentWritingUndo();
-			this.caretx = 0;
-			this.mode = NORMAL_MODE;
-			this.j.pastebuffer = line + '\n';
-			e.needRepaintCaret = true;
-			e.needCheckLineLength = true;
-			e.needEnsureViewSize = true;
+			line = this.lines.get(this.carety).toString();
+			this.lines.remove(this.carety);
+			line += '\n' + this.lines.get(this.carety).toString();
+			this.lines.remove(this.carety);
+			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+		} else if (e.c == 'k') {
+			if (this.carety == 0) {
+				e.error = true;
+				return;
+			}
+			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.carety--;
+			line = this.lines.get(this.carety).toString();
+			this.lines.remove(this.carety);
+			line += '\n' + this.lines.get(this.carety).toString();
+			this.lines.remove(this.carety);
+			this.writingUndo.fromy = this.writingUndo.toy = this.carety;
 		} else {
 			this.handleInputChangeDelete(e, NORMAL_MODE, DELETE_IN_MODE);
+			return;
 		}
+		e.consumed = true;
+		this.writingUndo.fromx = 0;
+		this.writingUndo.tox = 0;
+		if (this.lines.isEmpty()) {
+			this.lines.add(new StringBuilder());
+			this.writingUndo.replacement.append(line);
+		} else if (this.carety >= this.lines.size()) {
+			this.carety--;
+			int len = this.lines.get(this.carety).length();
+			this.writingUndo.fromy = this.writingUndo.toy = this.carety;
+			this.writingUndo.fromx = this.writingUndo.tox = len;
+			this.writingUndo.replacement.append('\n' + line);
+		} else {
+			this.writingUndo.replacement.append(line + '\n');
+		}
+		this.addCurrentWritingUndo();
+		this.caretx = 0;
+		this.mode = NORMAL_MODE;
+		this.j.pastebuffer = line + '\n';
+		e.needRepaintCaret = true;
+		e.needCheckLineLength = true;
+		e.needEnsureViewSize = true;
 	}
 
 	/**
