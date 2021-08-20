@@ -1,7 +1,9 @@
 package net.basdon.jeanine;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -45,12 +47,19 @@ public class CodePanel
 	@Override
 	protected void paintComponent(Graphics g)
 	{
-		// TODO: don't draw things that are not visible
 		super.paintComponent(g);
+
+		Point thisloc = this.getLocationOnScreen();
+		Point contentloc = this.jf.getContentPane().getLocationOnScreen();
+		Dimension contentsize = this.jf.getContentPane().getSize();
+		int heightleft = contentsize.height - (thisloc.y - contentloc.y);
+		int rely = thisloc.y - contentloc.y + this.j.fy;
+
 		EditBuffer ec = this.editContext;
 		g.setColor(Color.white);
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
 		g.translate(1, 1);
+		heightleft--;
 		if (this.editContext.mode == EditBuffer.INSERT_MODE) {
 			g.setColor(Color.green);
 		} else {
@@ -64,9 +73,16 @@ public class CodePanel
 		}
 		g.setFont(this.j.font);
 		g.setColor(Color.black);
-		for (int i = 0; i < ec.lines.size(); i++) {
+		int i = 0;
+		while (rely < 0) {
+			i++;
+			g.translate(0, this.j.fy);
+			rely += this.j.fy;
+		}
+		for (; i < ec.lines.size() && heightleft > 0; i++) {
 			g.drawString(Line.tabs2spaces(ec.lines.get(i)), 0, this.j.fmaxascend);
 			g.translate(0, this.j.fy);
+			heightleft -= this.j.fy;
 		}
 	}
 
