@@ -1753,6 +1753,96 @@ public class EditBufferTest
 		}
 	}
 
+	public static class LineSelect
+	{
+		@Test
+		public void delete()
+		{
+			createBuffer(
+				"one",
+				"<caret>two",
+				"three"
+			).executeSuccess(
+				"Vd"
+			).assertBuffer(
+				"one",
+				"<caret>three"
+			).executeSuccess(
+				"."
+			).assertBuffer(
+				"<caret>one"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"one",
+				"<caret>two",
+				"three"
+			);
+		}
+
+		@Test
+		public void delete_multiple_move_up_down()
+		{
+			createBuffer(
+				"a",
+				"<caret>two",
+				"three",
+				"b",
+				"c"
+			).executeSuccess(
+				"Vkjjd"
+			).assertBuffer(
+				"a",
+				"<caret>b",
+				"c"
+			).executeSuccess(
+				"."
+			).assertBuffer(
+				"<caret>a"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"a",
+				"<caret>two",
+				"three",
+				"b",
+				"c"
+			).executeSuccess(
+				"p"
+			).assertBuffer(
+				"a",
+				"two",
+				"<caret>b",
+				"c",
+				"three",
+				"b",
+				"c"
+			);
+		}
+
+		@Test
+		public void jump_other_side()
+		{
+			createBuffer(
+				"a",
+				"<caret>two",
+				"three",
+				"b"
+			).executeSuccess(
+				"Vkojd"
+			).assertBuffer(
+				"<caret>b"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"a",
+				"<caret>two",
+				"three",
+				"b"
+			);
+		}
+	}
+
 	public static class Repeat
 	{
 		@Test

@@ -17,7 +17,8 @@ public class EditBuffer
 		CHANGE_IN_MODE = 3,
 		DELETE_MODE = 4,
 		DELETE_IN_MODE = 5,
-		G_MODE = 6;
+		G_MODE = 6,
+		SELECT_LINE_MODE = 7;
 
 	private final Jeanine j;
 	public final ArrayList<StringBuilder> lines;
@@ -32,6 +33,10 @@ public class EditBuffer
 	 */
 	public int caretx;
 	public int carety;
+	private int lineselectinitial;
+	public int lineselectfrom;
+	/**exclusive*/
+	public int lineselectto;
 	/**
 	 * Stores the last visual caretx to use when we were on a line that has
 	 * less chars than the previous one.
@@ -452,6 +457,12 @@ public class EditBuffer
 				this.replayKeys(this.storedCmdBuf, this.storedCommandLength, e);
 			}
 			return;
+		case 'V':
+			this.lineselectinitial = this.lineselectfrom = this.carety;
+			this.lineselectto = this.carety + 1;
+			this.mode = SELECT_LINE_MODE;
+			e.needRepaint = true;
+			break;
 		default:
 			e.error = true;
 			return;
@@ -772,6 +783,75 @@ public class EditBuffer
 		e.needEnsureViewSize = true;
 	}
 
+	private void handleInputSelectLine(KeyInput e)
+	{
+		switch (e.c) {
+		case 'h':
+		case 'l':
+			this.handleInputNormal(e);
+			break;
+		case 'j':
+		case 'k':
+			this.handleInputNormal(e);
+			if (!e.error) {
+				if (this.carety <= this.lineselectinitial) {
+					this.lineselectfrom = this.carety;
+				}
+				if (this.carety >= this.lineselectinitial) {
+					this.lineselectto = this.carety + 1;
+				}
+				e.needRepaint = true;
+			}
+			break;
+		case 'o':
+			if (this.carety == this.lineselectfrom) {
+				this.carety = this.lineselectto - 1;
+			} else {
+				this.carety = this.lineselectfrom;
+			}
+			this.caretx = this.virtualCaretx = 0;
+			e.needRepaintCaret = true;
+			break;
+		case 'd':
+			this.writingUndo = new UndoStuff(0, this.lineselectinitial);
+			int from = this.lineselectfrom;
+			for (int i = this.lineselectfrom; i < this.lineselectto; i++) {
+				StringBuilder line = this.lines.remove(from);
+				this.writingUndo.replacement.append(line).append('\n');
+			}
+			this.j.pastebuffer = this.writingUndo.replacement.toString();
+			if (this.lines.isEmpty()) {
+				this.lines.add(new StringBuilder());
+			}
+			this.caretx = 0;
+			if (from >= this.lines.size()) {
+				StringBuilder replacement = this.writingUndo.replacement;
+				replacement.setLength(replacement.length() - 1);
+				replacement.insert(0, '\n');
+				this.carety = from - 1;
+				this.writingUndo.fromx = this.lines.get(this.carety).length();
+				this.writingUndo.tox = this.writingUndo.fromx;
+			} else {
+				this.carety = from;
+			}
+			this.writingUndo.fromy = this.writingUndo.toy = this.carety;
+			this.addCurrentWritingUndo();
+			this.mode = NORMAL_MODE;
+			e.needRepaint = true;
+			e.needRepaintCaret = true;
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			break;
+		case ESC:
+			this.mode = NORMAL_MODE;
+			e.needRepaint = true;
+			break;
+		default:
+			e.error = true;
+		}
+		e.consumed = true;
+	}
+
 	/**
 	 * Handles an input event, without storing the input in the command buffer.
 	 */
@@ -798,6 +878,9 @@ public class EditBuffer
 			break;
 		case G_MODE:
 			this.handleInputG(e);
+			break;
+		case SELECT_LINE_MODE:
+			this.handleInputSelectLine(e);
 			break;
 		}
 	}

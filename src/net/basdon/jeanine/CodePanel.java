@@ -21,6 +21,7 @@ public class CodePanel
 	extends JPanel
 	implements MouseListener, FocusListener, KeyListener, CommandBar.Listener
 {
+	private static final Color selectColor = new Color(0x66AAFF);
 	private final CodeFrame frame;
 	private final JeanineFrame jf;
 	private final Jeanine j;
@@ -60,6 +61,12 @@ public class CodePanel
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
 		g.translate(1, 1);
 		heightleft--;
+		if (this.editContext.mode == EditBuffer.SELECT_LINE_MODE) {
+			g.setColor(selectColor);
+			int fromy = this.editContext.lineselectfrom * this.j.fy;
+			int toy = this.editContext.lineselectto * this.j.fy;
+			g.fillRect(0, fromy, this.maxLineLength * this.j.fx, toy - fromy);
+		}
 		if (this.editContext.mode == EditBuffer.INSERT_MODE) {
 			g.setColor(Color.green);
 		} else {
