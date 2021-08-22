@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 public class JeanineFrame extends JFrame implements KeyListener, CommandBar.Listener
@@ -30,9 +31,10 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 		this.setLocationByPlatform(true);
 		this.setTitle("Jeanine");
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
-		CodeFrame cp = new CodeFrame(this, WELCOMETEXT);
-		cp.setLocation(30, 30);
-		this.add(cp);
+		CodeFrame cf = new CodeFrame(this, WELCOMETEXT);
+		cf.setLocation(30, 30);
+		SwingUtilities.invokeLater(cf.codepanel::requestFocusInWindow);
+		this.add(cf);
 		this.setPreferredSize(new Dimension(800, 800));
 		this.pack();
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

@@ -25,7 +25,7 @@ public class CodePanel
 	private final CodeFrame frame;
 	private final JeanineFrame jf;
 	private final Jeanine j;
-	private final EditBuffer editContext;
+	private final EditBuffer buffer;
 
 	private int maxLineLength;
 
@@ -37,7 +37,8 @@ public class CodePanel
 		this.setFocusable(true);
 		this.addMouseListener(this);
 		this.addKeyListener(this);
-		this.editContext = new EditBuffer(jf.j, code);
+		this.addFocusListener(this);
+		this.buffer = new EditBuffer(jf.j, code);
 		this.recheckMaxLineLength();
 		this.ensureCodeViewSize();
 		// make that we get the TAB key events
@@ -56,18 +57,18 @@ public class CodePanel
 		int heightleft = contentsize.height - (thisloc.y - contentloc.y);
 		int rely = thisloc.y - contentloc.y + this.j.fy;
 
-		EditBuffer ec = this.editContext;
+		EditBuffer ec = this.buffer;
 		g.setColor(Color.white);
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
 		g.translate(1, 1);
 		heightleft--;
-		if (this.editContext.mode == EditBuffer.SELECT_LINE_MODE) {
+		if (this.buffer.mode == EditBuffer.SELECT_LINE_MODE) {
 			g.setColor(selectColor);
-			int fromy = this.editContext.lineselectfrom * this.j.fy;
-			int toy = this.editContext.lineselectto * this.j.fy;
+			int fromy = this.buffer.lineselectfrom * this.j.fy;
+			int toy = this.buffer.lineselectto * this.j.fy;
 			g.fillRect(0, fromy, this.maxLineLength * this.j.fx, toy - fromy);
 		}
-		if (this.editContext.mode == EditBuffer.INSERT_MODE) {
+		if (this.buffer.mode == EditBuffer.INSERT_MODE) {
 			g.setColor(Color.green);
 		} else {
 			g.setColor(Color.red);
@@ -103,16 +104,16 @@ public class CodePanel
 			e.consume();
 			return;
 		}
-		this.editContext.handlePhysicalInput(event);
+		this.buffer.handlePhysicalInput(event);
+		e.consume();
+		if (event.error) {
+			if (event.c == ':') {
+				this.jf.commandbar.show("", this);
+			}
+			return;
+		}
 		if (event.error) {
 			Toolkit.getDefaultToolkit().beep();
-			event.consumed = true;
-		}
-		if (event.consumed) {
-			e.consume();
-		} else if (event.c == ':') {
-			this.jf.commandbar.show("", this);
-			e.consume();
 		}
 		if (event.needRepaint || event.needRepaintCaret /*TODO: only repaint caret*/) {
 			this.repaint();
@@ -190,15 +191,15 @@ public class CodePanel
 
 	private void ensureCodeViewSize()
 	{
-		int rows = this.editContext.lines.size();
+		int rows = this.buffer.lines.size();
 		this.frame.ensureCodeViewSize(rows, this.maxLineLength + /*caret*/1);
 	}
 
 	private void recheckMaxLineLength()
 	{
 		this.maxLineLength = 0;
-		for (int i = this.editContext.lines.size(); i > 0;) {
-			int visualLen = this.editContext.lines.get(--i).length();
+		for (int i = this.buffer.lines.size(); i > 0;) {
+			int visualLen = this.buffer.lines.get(--i).length();
 			if (visualLen > this.maxLineLength) {
 				this.maxLineLength = visualLen;
 			}

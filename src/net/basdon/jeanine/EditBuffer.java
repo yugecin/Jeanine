@@ -150,7 +150,6 @@ public class EditBuffer
 		Point pt;
 		int prevCaretx = this.caretx;
 		int prevCarety = this.carety;
-		e.consumed = true;
 		switch (e.c) { // break when the key starts a new command (for .), return otherwise
 		case 'c':
 			if (this.caretx >= this.lines.get(this.carety).length()) {
@@ -166,11 +165,6 @@ public class EditBuffer
 			}
 			this.mode = DELETE_MODE;
 			break;
-		case ':':
-			// Colon should open the command bar,
-			// don't consume the event so the caller can deal with the command bar.
-			e.consumed = false;
-			return;
 		case 'u':
 			if (this.undostuffptr == 0) {
 				e.error = true;
@@ -473,7 +467,6 @@ public class EditBuffer
 
 	private void handleInputInsert(KeyInput e)
 	{
-		e.consumed = true;
 		StringBuilder line;
 		switch (e.c) {
 		case BS:
@@ -573,7 +566,6 @@ public class EditBuffer
 		char[] dst;
 		Point pt;
 		int from, to;
-		e.consumed = true;
 		switch (e.c) {
 		case ESC:
 			this.mode = NORMAL_MODE;
@@ -666,7 +658,6 @@ public class EditBuffer
 
 	private void handleInputChangeDeleteIn(KeyInput e, int next_mode)
 	{
-		e.consumed = true;
 		if (e.c == 'w') {
 			StringBuilder line = this.lines.get(this.carety);
 			if (this.caretx >= line.length()) {
@@ -713,7 +704,6 @@ public class EditBuffer
 
 	private void handleInputG(KeyInput e)
 	{
-		e.consumed = true;
 		if (e.c == 'g') {
 			int visual = this.curVisualX();
 			this.carety = 0;
@@ -759,7 +749,6 @@ public class EditBuffer
 			this.handleInputChangeDelete(e, NORMAL_MODE, DELETE_IN_MODE);
 			return;
 		}
-		e.consumed = true;
 		this.writingUndo.fromx = 0;
 		this.writingUndo.tox = 0;
 		if (this.lines.isEmpty()) {
@@ -849,7 +838,6 @@ public class EditBuffer
 		default:
 			e.error = true;
 		}
-		e.consumed = true;
 	}
 
 	/**

@@ -3,7 +3,6 @@ package net.basdon.jeanine;
 public class KeyInput
 {
 	public char c;
-	public boolean consumed;
 	public boolean error;
 	public boolean needRepaint;
 	/**

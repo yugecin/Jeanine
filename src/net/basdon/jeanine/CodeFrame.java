@@ -13,6 +13,7 @@ public class CodeFrame extends JInternalFrame
 	private int rows, cols;
 
 	public Point locationBeforeDrag;
+	public CodePanel codepanel;
 
 	public CodeFrame(JeanineFrame jf, String code)
 	{
@@ -20,7 +21,7 @@ public class CodeFrame extends JInternalFrame
 		this.j = jf.j;
 		this.locationBeforeDrag = new Point();
 		this.setFrameIcon(null);
-		this.setContentPane(new CodePanel(this, jf, code));
+		this.setContentPane(this.codepanel = new CodePanel(this, jf, code));
 		this.setVisible(true);
 		this.setFocusable(false);
 	}
