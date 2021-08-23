@@ -2,9 +2,11 @@ package net.basdon.jeanine;
 
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -15,26 +17,30 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 {
 	public final CommandBar commandbar;
 	public final Jeanine j;
+	public final ArrayList<CodeGroup> codegroups;
+	public final BackgroundPanel bg;
 
-	private final BackgroundPanel contentPane;
+	public CodeGroup activeGroup;
 
 	public JeanineFrame(Jeanine j)
 	{
 		this.j = j;
-		this.contentPane = new BackgroundPanel(j, this);
+		this.bg = new BackgroundPanel(j, this);
+		this.codegroups = new ArrayList<>();
 		this.setIconImage(this.createLogoImg());
 		this.setFocusable(true);
 		this.addKeyListener(this);
 		this.commandbar = new CommandBar(j);
 		this.commandbar.addListener(this);
-		this.setContentPane(this.contentPane);
+		this.setContentPane(this.bg);
 		this.setLocationByPlatform(true);
-		this.setTitle("Jeanine");
+		this.setError(null);
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
-		CodeFrame cf = new CodeFrame(this, WELCOMETEXT);
-		cf.setLocation(30, 30);
-		SwingUtilities.invokeLater(cf.codepanel::requestFocusInWindow);
-		this.add(cf);
+		CodeGroup cg = new CodeGroup(this);
+		cg.setLocation(30, 30);
+		cg.setContents(WELCOMETEXT);
+		SwingUtilities.invokeLater(cg::requestFocusInWindow);
+		this.codegroups.add(cg);
 		this.setPreferredSize(new Dimension(800, 800));
 		this.pack();
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -100,13 +106,40 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 	@Override
 	public boolean acceptCommand(String command)
 	{
-		if ("aaa".equals(command)) {
-			CodeFrame cp = new CodeFrame(this, "empty");
-			cp.setLocation(30, 30);
-			this.add(cp);
+		if ("bd".equals(command)) {
+			if (this.activeGroup == null) {
+				this.setError("can't close buffer, no code panel focused");
+				return false;
+			}
+			this.activeGroup.dispose();
+			this.activeGroup = null;
+			return true;
+		} else if ("spl".equals(command)) {
+			this.activeGroup.split();
 			return true;
 		}
+		this.setError("unknown command: " + command);
 		return false;
+	}
+
+	public void setError(String error)
+	{
+		if (error == null || error.isEmpty()) {
+			super.setTitle("Jeanine");
+		} else {
+			super.setTitle("Jeanine - " + error);
+			Toolkit.getDefaultToolkit().beep();
+		}
+	}
+
+	public CodePanel getActiveCodePanel()
+	{
+		if (this.activeGroup != null) {
+			if (this.activeGroup.activeFrame != null) {
+				return this.activeGroup.activeFrame.codepanel;
+			}
+		}
+		return null;
 	}
 
 	private static final String WELCOMETEXT =
@@ -116,5 +149,9 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 		"Insertion: i I a A o O p P\n" +
 		"Deleting: x dw db diw dd dj dk\n" +
 		"Changing: cw cb ciw\n" +
-		"Other: . u";
+		"Other: . u\n" +
+		"Selecting: ctrl-v\n" +
+		"\n" +
+		"Commands:\n" +
+		":spl - split current view based on the visual line selection (ctrl-v)";
 }

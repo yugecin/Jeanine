@@ -22,10 +22,12 @@ public class CodePanel
 	implements MouseListener, FocusListener, KeyListener, CommandBar.Listener
 {
 	private static final Color selectColor = new Color(0x66AAFF);
-	private final CodeFrame frame;
-	private final JeanineFrame jf;
-	private final Jeanine j;
-	private final EditBuffer buffer;
+
+	public final CodeFrame frame;
+	public final CodeGroup group;
+	public final JeanineFrame jf;
+	public final Jeanine j;
+	public final EditBuffer buffer;
 
 	private int maxLineLength;
 
@@ -34,6 +36,7 @@ public class CodePanel
 		this.jf = jf;
 		this.j = jf.j;
 		this.frame = frame;
+		this.group = frame.group;
 		this.setFocusable(true);
 		this.addMouseListener(this);
 		this.addKeyListener(this);
@@ -74,10 +77,8 @@ public class CodePanel
 			g.setColor(Color.red);
 		}
 		int caretx = Line.logicalToVisualPos(ec.lines.get(ec.carety), ec.caretx);
-		if (this.hasFocus()) {
+		if (this.hasFocus() || this.buffer.mode != EditBuffer.NORMAL_MODE) {
 			g.fillRect(caretx * this.j.fx, ec.carety * this.j.fy, this.j.fx, this.j.fy);
-		} else {
-			g.drawRect(caretx * this.j.fx, ec.carety * this.j.fy, this.j.fx, this.j.fy);
 		}
 		g.setFont(this.j.font);
 		g.setColor(Color.black);
@@ -109,8 +110,8 @@ public class CodePanel
 		if (event.error) {
 			if (event.c == ':') {
 				this.jf.commandbar.show("", this);
+				return;
 			}
-			return;
 		}
 		if (event.error) {
 			Toolkit.getDefaultToolkit().beep();
@@ -149,7 +150,9 @@ public class CodePanel
 	@Override
 	public void focusGained(FocusEvent e)
 	{
-		this.repaint(); // TODO: should only repaint the cursor really
+		if (this.group.focusGained(this.frame)) {
+			this.repaint(); // TODO: should only repaint the cursor really
+		}
 	}
 
 	/*FocusListener*/
@@ -189,13 +192,13 @@ public class CodePanel
 	{
 	}
 
-	private void ensureCodeViewSize()
+	public void ensureCodeViewSize()
 	{
 		int rows = this.buffer.lines.size();
 		this.frame.ensureCodeViewSize(rows, this.maxLineLength + /*caret*/1);
 	}
 
-	private void recheckMaxLineLength()
+	public void recheckMaxLineLength()
 	{
 		this.maxLineLength = 0;
 		for (int i = this.buffer.lines.size(); i > 0;) {

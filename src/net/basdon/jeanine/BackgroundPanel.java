@@ -1,7 +1,6 @@
 package net.basdon.jeanine;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -49,12 +48,11 @@ public class BackgroundPanel extends JDesktopPane implements MouseListener, Mous
 	{
 		int x = e.getX() - this.dragStart.x;
 		int y = e.getY() - this.dragStart.y;
+		this.dragStart.x = e.getX();
+		this.dragStart.y = e.getY();
 
-		for (Component c : this.getComponents()) {
-			if (c instanceof CodeFrame) {
-				CodeFrame cp = (CodeFrame) c;
-				c.setLocation(cp.locationBeforeDrag.x + x, cp.locationBeforeDrag.y + y);
-			}
+		for (CodeGroup cg : this.jf.codegroups) {
+			cg.mouseDragged(x, y);
 		}
 	}
 
@@ -76,14 +74,6 @@ public class BackgroundPanel extends JDesktopPane implements MouseListener, Mous
 	{
 		this.dragStart.x = e.getX();
 		this.dragStart.y = e.getY();
-
-		for (Component c : this.getComponents()) {
-			if (c instanceof CodeFrame) {
-				CodeFrame cp = (CodeFrame) c;
-				cp.locationBeforeDrag.x = cp.getX();
-				cp.locationBeforeDrag.y = cp.getY();
-			}
-		}
 	}
 
 	/*MouseListener*/

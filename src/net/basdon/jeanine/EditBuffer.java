@@ -100,12 +100,14 @@ public class EditBuffer
 		this.lines = new ArrayList<>();
 		StringBuilder sb = new StringBuilder();
 		this.lines.add(sb);
-		for (char c : text.toCharArray()) {
-			if (c == '\n') {
-				sb = new StringBuilder();
-				this.lines.add(sb);
-			} else {
-				sb.append(c);
+		if (text != null) {
+			for (char c : text.toCharArray()) {
+				if (c == '\n') {
+					sb = new StringBuilder();
+					this.lines.add(sb);
+				} else {
+					sb.append(c);
+				}
 			}
 		}
 	}
