@@ -229,6 +229,9 @@ implements
 		y = (y - 1) / this.j.fy; // -1 for panel padding
 		y = Math.min(y, this.buffer.lines.size() - 1);
 		x = Math.min(x, this.buffer.lines.get(y).length() - 1);
+		if (x < 0) {
+			x = 0;
+		}
 		if (this.buffer.carety != y || this.buffer.caretx != x) {
 			this.buffer.carety = y;
 			this.buffer.caretx = x;
