@@ -11,4 +11,13 @@ public class KeyInput
 	public boolean needRepaintCaret;
 	public boolean needCheckLineLength;
 	public boolean needEnsureViewSize;
+
+	public KeyInput(char c)
+	{
+		this.c = c;
+	}
+
+	public KeyInput()
+	{
+	}
 }

@@ -21,11 +21,11 @@ public class EditBuffer
 		SELECT_LINE_MODE = 7;
 
 	private final Jeanine j;
+	private final CodePanel codepanel;
+
 	public final ArrayList<StringBuilder> lines;
 
 	private boolean creatingCommand;
-	private char storedCmdBuf[];
-	private int storedCommandLength;
 	private char creatingCmdBuf[];
 	private int creatingCmdLength;
 	/**
@@ -58,44 +58,15 @@ public class EditBuffer
 	 */
 	public int virtualCaretx;
 	public int mode;
-	private ArrayList<UndoStuff> undostuff = new ArrayList<>();
-	private int undostuffptr;
 	/**
 	 * The undo stuff that is currently being written (ie because we're in insert mode).
 	 */
-	private UndoStuff writingUndo;
+	private Undo writingUndo;
 
-	public static class UndoStuff
-	{
-		/**Start position x of the content that should be replaced with
-		{@link #replacement} when performing the undo.*/
-		public int fromx;
-		/**Start position y of the content that should be replaced with
-		{@link #replacement} when performing the undo.*/
-		public int fromy;
-		/**exclusive*/
-		public int tox;
-		public int toy;
-		/**Caret position before this operation
-		(can be different from {@link #fromx} eg when the O command was used).*/
-		public int caretx;
-		/**Caret position before this operation
-		(can be different from {@link #fromy} eg when the O command was used).*/
-		public int carety;
-		public StringBuilder replacement = new StringBuilder();
-		public boolean isBlock;
-
-		public UndoStuff(int caretx, int carety)
-		{
-			this.tox = this.fromx = this.caretx = caretx;
-			this.toy = this.fromy = this.carety = carety;
-		}
-	}
-
-	public EditBuffer(Jeanine j, String text)
+	public EditBuffer(Jeanine j, CodePanel codepanel, String text)
 	{
 		this.j = j;
-		this.storedCmdBuf = new char[100];
+		this.codepanel = codepanel;
 		this.creatingCmdBuf = new char[100];
 		this.lines = new ArrayList<>();
 		StringBuilder sb = new StringBuilder();
@@ -139,9 +110,9 @@ public class EditBuffer
 
 	private void addCurrentWritingUndo()
 	{
-		Util.setArrayListSize(this.undostuff, this.undostuffptr);
-		this.undostuff.add(this.writingUndo);
-		this.undostuffptr++;
+		Util.setArrayListSize(this.j.undolist, this.j.undolistptr);
+		this.j.undolist.add(this.writingUndo);
+		this.j.undolistptr++;
 		this.writingUndo = null;
 	}
 
@@ -168,11 +139,15 @@ public class EditBuffer
 			this.mode = DELETE_MODE;
 			break;
 		case 'u':
-			if (this.undostuffptr == 0) {
+			if (this.j.undolistptr == 0) {
 				e.error = true;
 			} else {
-				this.undostuffptr--;
-				UndoStuff u = this.undostuff.get(this.undostuffptr);
+				Undo u = this.j.undolist.get(this.j.undolistptr - 1);
+				if (u.codepanel != this.codepanel) {
+					this.codepanel.group.doUndo(u);
+					return;
+				}
+				this.j.undolistptr--;
 				line = this.lines.get(u.fromy);
 				char[] toappend;
 				if (u.toy > u.fromy) {
@@ -218,7 +193,7 @@ public class EditBuffer
 			}
 			return;
 		case 'o':
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = this.lines.get(this.carety).length();
 			this.writingUndo.fromy = this.carety;
 			this.writingUndo.tox = 0;
@@ -231,7 +206,7 @@ public class EditBuffer
 			e.needEnsureViewSize = true;
 			break;
 		case 'O':
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = 0;
 			this.writingUndo.fromy = this.carety;
 			this.writingUndo.tox = 0;
@@ -259,7 +234,7 @@ public class EditBuffer
 				}
 				pos++;
 			}
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = this.writingUndo.tox = pos;
 			this.caretx = pos;
 			this.mode = INSERT_MODE;
@@ -268,13 +243,13 @@ public class EditBuffer
 		case 'i':
 			this.mode = INSERT_MODE;
 			e.needRepaintCaret = true;
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			break;
 		case 'A':
 			this.caretx = this.lines.get(this.carety).length();
 			this.mode = INSERT_MODE;
 		case 'a':
-			this.writingUndo = new UndoStuff(prevCaretx, prevCarety);
+			this.writingUndo = this.newUndo(prevCaretx, prevCarety);
 			if (this.caretx < this.lines.get(this.carety).length()) {
 				this.caretx++;
 			}
@@ -306,7 +281,7 @@ public class EditBuffer
 			line.getChars(this.caretx, this.caretx + 1, dst, 0);
 			line.delete(this.caretx, this.caretx + 1);
 			this.j.pastebuffer = new String(dst);
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.replacement = new StringBuilder();
 			this.writingUndo.replacement.append(dst[0]);
 			this.addCurrentWritingUndo();
@@ -319,7 +294,7 @@ public class EditBuffer
 			e.needRepaint = true;
 			break;
 		case 'p':
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			if (this.j.pastebuffer.endsWith("\n")) {
 				this.writingUndo.fromx = this.lines.get(this.carety).length();
 				String lines[] = this.j.pastebuffer.split("\n");
@@ -351,7 +326,7 @@ public class EditBuffer
 			e.needRepaint = true;
 			break;
 		case 'P':
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			if (this.j.pastebuffer.endsWith("\n")) {
 				String lines[] = this.j.pastebuffer.split("\n");
 				for (int i = lines.length - 1; i >= 0; i--) {
@@ -447,10 +422,10 @@ public class EditBuffer
 			}
 			return;
 		case '.':
-			if (this.storedCommandLength == 0) {
+			if (this.j.commandLength == 0) {
 				e.error = true;
 			} else {
-				this.replayKeys(this.storedCmdBuf, this.storedCommandLength, e);
+				this.replayKeys(this.j.commandBuf, this.j.commandLength, e);
 			}
 			return;
 		case 'V':
@@ -587,7 +562,7 @@ public class EditBuffer
 			line.getChars(pt.x, to, dst, 0);
 			line.delete(pt.x, to);
 			this.j.pastebuffer = new String(dst);
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = pt.x;
 			this.writingUndo.fromy = this.carety;
 			this.writingUndo.tox = pt.x;
@@ -631,7 +606,7 @@ public class EditBuffer
 			line.getChars(from, pt.x + 1, dst, 0);
 			line.delete(from, pt.x + 1);
 			this.j.pastebuffer = new String(dst);
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = from;
 			this.writingUndo.fromy = this.carety;
 			this.writingUndo.tox = from;
@@ -680,7 +655,7 @@ public class EditBuffer
 			line.getChars(from, to, dst, 0);
 			line.delete(from, to);
 			this.j.pastebuffer = new String(dst);
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = from;
 			this.writingUndo.fromy = this.carety;
 			this.writingUndo.tox = from;
@@ -724,7 +699,7 @@ public class EditBuffer
 		if (e.c == 'd') {
 			line = this.lines.get(this.carety).toString();
 			this.lines.remove(this.carety);
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 		} else if (e.c == 'j') {
 			if (this.carety == this.lines.size() - 1) {
 				e.error = true;
@@ -734,13 +709,13 @@ public class EditBuffer
 			this.lines.remove(this.carety);
 			line += '\n' + this.lines.get(this.carety).toString();
 			this.lines.remove(this.carety);
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 		} else if (e.c == 'k') {
 			if (this.carety == 0) {
 				e.error = true;
 				return;
 			}
-			this.writingUndo = new UndoStuff(this.caretx, this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.carety--;
 			line = this.lines.get(this.carety).toString();
 			this.lines.remove(this.carety);
@@ -804,7 +779,7 @@ public class EditBuffer
 			e.needRepaintCaret = true;
 			break;
 		case 'd':
-			this.writingUndo = new UndoStuff(0, this.lineselectinitial);
+			this.writingUndo = this.newUndo(0, this.lineselectinitial);
 			int from = this.lineselectfrom;
 			for (int i = this.lineselectfrom; i < this.lineselectto; i++) {
 				StringBuilder line = this.lines.remove(from);
@@ -905,13 +880,13 @@ public class EditBuffer
 			this.creatingCmdBuf[this.creatingCmdLength++] = e.c;
 			if (this.mode == NORMAL_MODE) {
 				this.creatingCommand = false;
-				if (this.storedCmdBuf.length != this.creatingCmdBuf.length) {
-					this.storedCmdBuf = new char[this.creatingCmdBuf.length];
-				}
-				int len = this.creatingCmdLength;
-				System.arraycopy(this.creatingCmdBuf, 0, this.storedCmdBuf, 0, len);
-				this.storedCommandLength = this.creatingCmdLength;
+				this.j.storeCommand(this.creatingCmdBuf, this.creatingCmdLength);
 			}
 		}
+	}
+
+	private Undo newUndo(int x, int y)
+	{
+		return new Undo(this.codepanel, x, y);
 	}
 }

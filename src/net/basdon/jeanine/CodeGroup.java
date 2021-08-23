@@ -133,6 +133,8 @@ public class CodeGroup
 		}
 
 		SwingUtilities.invokeLater(this.activeFrame.codepanel::requestFocusInWindow);
+
+		// TODO: patch the undo's
 	}
 
 	private CodeFrame add(
@@ -209,6 +211,20 @@ public class CodeGroup
 			}
 		}
 		return max;
+	}
+
+	public void doUndo(Undo undo)
+	{
+		for (CodeFrame frame : this.frames.values()) {
+			if (frame.codepanel == undo.codepanel) {
+				this.activeFrame = frame;
+				frame.codepanel.requestFocusInWindow();
+				frame.codepanel.handleInput(new KeyInput('u'));
+				return;
+			}
+		}
+		// TODO what now
+		this.jf.j.undolistptr--;
 	}
 
 	public void dispose()

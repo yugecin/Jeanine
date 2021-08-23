@@ -46,7 +46,7 @@ implements
 		this.addMouseMotionListener(this);
 		this.addKeyListener(this);
 		this.addFocusListener(this);
-		this.buffer = new EditBuffer(jf.j, code);
+		this.buffer = new EditBuffer(jf.j, this, code);
 		this.recheckMaxLineLength();
 		this.ensureCodeViewSize();
 		// make that we get the TAB key events
@@ -104,14 +104,16 @@ implements
 	@Override
 	public void keyTyped(KeyEvent e)
 	{
-		KeyInput event = new KeyInput();
-		event.c = e.getKeyChar();
+		e.consume();
+		this.handleInput(new KeyInput(e.getKeyChar()));
+	}
+
+	public void handleInput(KeyInput event)
+	{
 		if (event.c == KeyEvent.CHAR_UNDEFINED) {
-			e.consume();
 			return;
 		}
 		this.buffer.handlePhysicalInput(event);
-		e.consume();
 		if (event.error) {
 			if (event.c == ':') {
 				this.jf.commandbar.show("", this);

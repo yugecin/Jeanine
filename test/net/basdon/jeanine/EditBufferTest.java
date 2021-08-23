@@ -2310,7 +2310,7 @@ public class EditBufferTest
 				carety = i;
 			}
 		}
-		test.buf = new EditBuffer(new Jeanine(), String.join("\n", lines));
+		test.buf = new EditBuffer(new Jeanine(), null, String.join("\n", lines));
 		test.buf.caretx = caretx;
 		test.buf.carety = carety;
 		return test;
