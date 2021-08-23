@@ -56,7 +56,7 @@ public class EditBuffer
 	 * </pre>
 	 * Note that it is always visual pos.
 	 */
-	private int virtualCaretx;
+	public int virtualCaretx;
 	public int mode;
 	private ArrayList<UndoStuff> undostuff = new ArrayList<>();
 	private int undostuffptr;

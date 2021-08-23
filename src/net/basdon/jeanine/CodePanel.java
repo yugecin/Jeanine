@@ -11,15 +11,19 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 import javax.swing.JPanel;
 import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
 
 import static java.util.Collections.EMPTY_SET;
 
 public class CodePanel
-	extends JPanel
-	implements MouseListener, FocusListener, KeyListener, CommandBar.Listener
+extends JPanel
+implements
+	MouseListener, MouseMotionListener, FocusListener,
+	KeyListener, CommandBar.Listener
 {
 	private static final Color selectColor = new Color(0x66AAFF);
 
@@ -39,6 +43,7 @@ public class CodePanel
 		this.group = frame.group;
 		this.setFocusable(true);
 		this.addMouseListener(this);
+		this.addMouseMotionListener(this);
 		this.addKeyListener(this);
 		this.addFocusListener(this);
 		this.buffer = new EditBuffer(jf.j, code);
@@ -172,12 +177,21 @@ public class CodePanel
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
+		// Won't have focus when the mouse is pressed, so use invokeLater
+		SwingUtilities.invokeLater(() -> {
+			if (this.hasFocus()) {
+				this.putCaret(e.getX(), e.getY());
+			}
+		});
 	}
 
 	/*MouseListener*/
 	@Override
 	public void mouseReleased(MouseEvent e)
 	{
+		if (this.hasFocus()) {
+			this.putCaret(e.getX(), e.getY());
+		}
 	}
 
 	/*MouseListener*/
@@ -190,6 +204,35 @@ public class CodePanel
 	@Override
 	public void mouseExited(MouseEvent e)
 	{
+	}
+
+	/*MouseMotionListener*/
+	@Override
+	public void mouseDragged(MouseEvent e)
+	{
+		if (this.hasFocus()) {
+			this.putCaret(e.getX(), e.getY());
+		}
+	}
+
+	/*MouseMotionListener*/
+	@Override
+	public void mouseMoved(MouseEvent e)
+	{
+	}
+
+	private void putCaret(int x, int y)
+	{
+		x = (x - 1) / this.j.fx; // -1 for panel padding
+		y = (y - 1) / this.j.fy; // -1 for panel padding
+		y = Math.min(y, this.buffer.lines.size() - 1);
+		x = Math.min(x, this.buffer.lines.get(y).length() - 1);
+		if (this.buffer.carety != y || this.buffer.caretx != x) {
+			this.buffer.carety = y;
+			this.buffer.caretx = x;
+			this.buffer.virtualCaretx = x;
+			this.repaint(); // TODO: should only really repaint caret
+		}
 	}
 
 	public void ensureCodeViewSize()
