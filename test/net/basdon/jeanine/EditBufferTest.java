@@ -2296,6 +2296,40 @@ public class EditBufferTest
 				"<caret>d"
 			);
 		}
+
+		@Test
+		public void type_and_bs()
+		{
+			createBuffer(
+				"abc<caret>def"
+			).executeSuccess(
+				"ihey<bs><bs><bs>x<esc>"
+			).assertBuffer(
+				"abc<caret>xdef"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc<caret>def"
+			);
+		}
+
+		@Test
+		public void bs_and_type()
+		{
+			createBuffer(
+				"one",
+				"abc<caret>def"
+			).executeSuccess(
+				"i<bs><bs><bs><bs><bs>xy<bs><bs><bs><esc>"
+			).assertBuffer(
+				"<caret>odef"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"one",
+				"abc<caret>def"
+			);
+		}
 	}
 
 	private static EditBufferTest createBuffer(String...lines)

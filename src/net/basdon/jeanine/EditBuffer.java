@@ -452,11 +452,18 @@ public class EditBuffer
 			if (this.caretx > 0) {
 				this.caretx--;
 				line = this.lines.get(this.carety);
-				this.writingUndo.replacement.insert(0, line.charAt(this.caretx));
-				if (this.carety == this.writingUndo.fromy) {
-					this.writingUndo.fromx--;
-				}
-				if (this.carety == this.writingUndo.toy) {
+				if (this.writingUndo.fromy == this.writingUndo.toy &&
+					this.writingUndo.fromx == this.writingUndo.tox)
+				{
+					char c = line.charAt(this.caretx);
+					this.writingUndo.replacement.insert(0, c);
+					if (this.carety == this.writingUndo.fromy) {
+						this.writingUndo.fromx--;
+					}
+					if (this.carety == this.writingUndo.toy) {
+						this.writingUndo.tox--;
+					}
+				} else {
 					this.writingUndo.tox--;
 				}
 				line.delete(this.caretx, this.caretx + 1);
