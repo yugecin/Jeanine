@@ -2,7 +2,7 @@ package net.basdon.jeanine;
 
 public class Undo
 {
-	public CodePanel codepanel;
+	public EditBuffer buffer;
 	/**Start position x of the content that should be replaced with
 	{@link #replacement} when performing the undo.*/
 	public int fromx;
@@ -20,9 +20,9 @@ public class Undo
 	public int carety;
 	public StringBuilder replacement = new StringBuilder();
 
-	public Undo(CodePanel codepanel, int caretx, int carety)
+	public Undo(EditBuffer buffer, int caretx, int carety)
 	{
-		this.codepanel = codepanel;
+		this.buffer = buffer;
 		this.tox = this.fromx = this.caretx = caretx;
 		this.toy = this.fromy = this.carety = carety;
 	}

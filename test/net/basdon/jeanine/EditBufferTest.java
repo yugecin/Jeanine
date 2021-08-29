@@ -2344,7 +2344,11 @@ public class EditBufferTest
 				carety = i;
 			}
 		}
-		test.buf = new EditBuffer(new Jeanine(), null, String.join("\n", lines));
+		test.buf = new EditBuffer(new Jeanine(), null);
+		test.buf.lines.clear();
+		for (String line : lines) {
+			test.buf.lines.add(new StringBuilder(line));
+		}
 		test.buf.caretx = caretx;
 		test.buf.carety = carety;
 		return test;
@@ -2436,7 +2440,7 @@ public class EditBufferTest
 			actual = sb.toString();
 			sb.setLength(0);
 		} else {
-			actual = String.join("\n", this.buf.lines);
+			actual = String.join("\n", this.buf.lines.lines);
 		}
 		int linediff = this.buf.lines.size() - expectedLines.length;
 		if (linediff > 0) {

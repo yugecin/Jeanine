@@ -1,7 +1,5 @@
 package net.basdon.jeanine;
 
-import java.lang.reflect.Field;
-
 public class Line
 {
 	public static int visualLength(StringBuilder sb)

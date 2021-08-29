@@ -5,6 +5,8 @@ public class KeyInput
 	public char c;
 	public boolean error;
 	public boolean needRepaint;
+	/**Used fe when a line selection, which can span multiple views, is changed.*/
+	public boolean needGlobalRepaint;
 	/**
 	 * ignored when {@link #needRepaint} is already {@code true}
 	 */

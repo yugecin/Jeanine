@@ -31,24 +31,27 @@ public class CodeFrame extends JInternalFrame implements VetoableChangeListener,
 	/**one of {@code t,r,b,l}*/
 	public byte anchor;
 	public boolean suppressNextMovedEvent;
+	public boolean requirePositionSizeValidation;
 
 	private Point lastLocation;
 
-	public CodeFrame(JeanineFrame jf, CodeGroup group, Integer id, String code)
+	public CodeFrame(JeanineFrame jf, CodeGroup group, Integer id, EditBuffer buffer, int linefrom, int lineto)
 	{
-		super("hi", false, false, false, false);
+		super(String.valueOf(id), false, false, false, false);
 		this.j = jf.j;
 		this.id = id;
+		this.buffer = buffer;
 		this.group = group;
 		this.chromesize = new Dimension();
 		this.location = new Point();
 		this.setFrameIcon(null);
-		this.setContentPane(this.codepanel = new CodePanel(this, jf, code));
+		this.setContentPane(this.codepanel = new CodePanel(this, jf));
 		this.setFocusable(false);
-		this.buffer = this.codepanel.buffer;
 		this.addVetoableChangeListener(this);
 		this.addComponentListener(this);
 		this.lastLocation = this.getLocation();
+		this.codepanel.firstline = linefrom;
+		this.codepanel.lastline = lineto;
 	}
 
 	/*VetoableChangeListener*/

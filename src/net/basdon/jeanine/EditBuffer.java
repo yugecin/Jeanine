@@ -1,7 +1,6 @@
 package net.basdon.jeanine;
 
 import java.awt.Point;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class EditBuffer
@@ -21,9 +20,9 @@ public class EditBuffer
 		SELECT_LINE_MODE = 7;
 
 	private final Jeanine j;
-	private final CodePanel codepanel;
+	private final CodeGroup group;
 
-	public final ArrayList<StringBuilder> lines;
+	public final BufferLines lines;
 
 	private boolean creatingCommand;
 	private char creatingCmdBuf[];
@@ -63,24 +62,17 @@ public class EditBuffer
 	 */
 	private Undo writingUndo;
 
-	public EditBuffer(Jeanine j, CodePanel codepanel, String text)
+	/**
+	 * Interact with {@link #lines} to change the contents.
+	 * Always ensure there's at least one line.
+	 */
+	public EditBuffer(Jeanine j, CodeGroup group)
 	{
 		this.j = j;
-		this.codepanel = codepanel;
+		this.group = group;
 		this.creatingCmdBuf = new char[100];
-		this.lines = new ArrayList<>();
-		StringBuilder sb = new StringBuilder();
-		this.lines.add(sb);
-		if (text != null) {
-			for (char c : text.toCharArray()) {
-				if (c == '\n') {
-					sb = new StringBuilder();
-					this.lines.add(sb);
-				} else {
-					sb.append(c);
-				}
-			}
-		}
+		this.lines = new BufferLines(group);
+		this.lines.add(new StringBuilder());
 	}
 
 	private int curVisualX()
@@ -143,8 +135,8 @@ public class EditBuffer
 				e.error = true;
 			} else {
 				Undo u = this.j.undolist.get(this.j.undolistptr - 1);
-				if (u.codepanel != this.codepanel) {
-					this.codepanel.group.doUndo(u);
+				if (u.buffer != this) {
+					this.group.doUndo(u);
 					return;
 				}
 				this.j.undolistptr--;
@@ -392,7 +384,7 @@ public class EditBuffer
 			}
 			return;
 		case 'e':
-			pt = VimOps.forwards(this.lines, this.caretx, this.carety);
+			pt = VimOps.forwards(this.lines.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
 				e.error = true;
 			} else {
@@ -402,7 +394,7 @@ public class EditBuffer
 			}
 			return;
 		case 'w':
-			pt = VimOps.forwardsEx(this.lines, this.caretx, this.carety);
+			pt = VimOps.forwardsEx(this.lines.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
 				e.error = true;
 			} else {
@@ -412,7 +404,7 @@ public class EditBuffer
 			}
 			return;
 		case 'b':
-			pt = VimOps.backwards(this.lines, this.caretx, this.carety);
+			pt = VimOps.backwards(this.lines.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
 				e.error = true;
 			} else {
@@ -555,7 +547,7 @@ public class EditBuffer
 			this.mode = NORMAL_MODE;
 			return;
 		case 'b':
-			pt = VimOps.backwards(this.lines, this.caretx, this.carety);
+			pt = VimOps.backwards(this.lines.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {
 				break;
 			}
@@ -593,12 +585,12 @@ public class EditBuffer
 				clss != VimOps.getCharClass(line.charAt(this.caretx + 1)))
 			{
 				// see tests.. case when caret is on last letter of current word
-				pt = VimOps.forwardsEx(this.lines, this.caretx, this.carety);
+				pt = VimOps.forwardsEx(this.lines.lines, this.caretx, this.carety);
 				if (pt.x != this.caretx) {
 					pt.x--;
 				}
 			} else {
-				pt = VimOps.forwards(this.lines, this.caretx, this.carety);
+				pt = VimOps.forwards(this.lines.lines, this.caretx, this.carety);
 			}
 			if (pt.x == this.caretx && pt.y == this.carety) {
 				break;
@@ -818,6 +810,7 @@ public class EditBuffer
 		case ESC:
 			this.mode = NORMAL_MODE;
 			e.needRepaint = true;
+			e.needGlobalRepaint = true;
 			break;
 		default:
 			e.error = true;
@@ -894,6 +887,6 @@ public class EditBuffer
 
 	private Undo newUndo(int x, int y)
 	{
-		return new Undo(this.codepanel, x, y);
+		return new Undo(this, x, y);
 	}
 }

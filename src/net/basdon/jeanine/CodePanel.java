@@ -33,12 +33,20 @@ implements
 	public final Jeanine j;
 	public final EditBuffer buffer;
 
+	public int firstline;
+	/**
+	 * Exclusive
+	 */
+	public int lastline;
+
 	private int maxLineLength;
 
-	public CodePanel(CodeFrame frame, JeanineFrame jf, String code)
+	public CodePanel(CodeFrame frame, JeanineFrame jf)
 	{
 		this.jf = jf;
 		this.j = jf.j;
+		this.buffer = frame.buffer;
+		this.lastline = this.buffer.lines.size();
 		this.frame = frame;
 		this.group = frame.group;
 		this.setFocusable(true);
@@ -46,7 +54,6 @@ implements
 		this.addMouseMotionListener(this);
 		this.addKeyListener(this);
 		this.addFocusListener(this);
-		this.buffer = new EditBuffer(jf.j, this, code);
 		this.recheckMaxLineLength();
 		this.ensureCodeViewSize();
 		// make that we get the TAB key events
@@ -63,38 +70,52 @@ implements
 		Point contentloc = this.jf.getContentPane().getLocationOnScreen();
 		Dimension contentsize = this.jf.getContentPane().getSize();
 		int heightleft = contentsize.height - (thisloc.y - contentloc.y);
-		int rely = thisloc.y - contentloc.y + this.j.fy;
+		int hiddenHeight = contentloc.y - thisloc.y;
 
-		EditBuffer ec = this.buffer;
 		g.setColor(Color.white);
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
 		g.translate(1, 1);
 		heightleft--;
+
+		// line selection
 		if (this.buffer.mode == EditBuffer.SELECT_LINE_MODE) {
 			g.setColor(selectColor);
-			int fromy = this.buffer.lineselectfrom * this.j.fy;
-			int toy = this.buffer.lineselectto * this.j.fy;
-			g.fillRect(0, fromy, this.maxLineLength * this.j.fx, toy - fromy);
+			int fromy = Math.max(this.buffer.lineselectfrom, this.firstline);
+			int toy = Math.min(this.buffer.lineselectto, this.lastline);
+			fromy -= this.firstline;
+			toy -= this.firstline;
+			if (fromy < toy) {
+				int y = fromy * this.j.fy;
+				int height = this.j.fy * toy - y;
+				g.fillRect(0, y, this.maxLineLength * this.j.fx, height);
+			}
 		}
-		if (this.buffer.mode == EditBuffer.INSERT_MODE) {
-			g.setColor(Color.green);
-		} else {
-			g.setColor(Color.red);
+
+		// caret
+		if ((this.hasFocus() || this.buffer.mode != EditBuffer.NORMAL_MODE) &&
+			this.firstline <= this.buffer.carety && this.buffer.carety < this.lastline)
+		{
+			if (this.buffer.mode == EditBuffer.INSERT_MODE) {
+				g.setColor(Color.green);
+			} else {
+				g.setColor(Color.red);
+			}
+			StringBuilder line = this.buffer.lines.get(this.buffer.carety);
+			int x = Line.logicalToVisualPos(line, this.buffer.caretx) * this.j.fx;
+			int y = (this.buffer.carety - this.firstline) * this.j.fy;
+			g.fillRect(x, y, this.j.fx, this.j.fy);
 		}
-		int caretx = Line.logicalToVisualPos(ec.lines.get(ec.carety), ec.caretx);
-		if (this.hasFocus() || this.buffer.mode != EditBuffer.NORMAL_MODE) {
-			g.fillRect(caretx * this.j.fx, ec.carety * this.j.fy, this.j.fx, this.j.fy);
-		}
+
+		// code
 		g.setFont(this.j.font);
 		g.setColor(Color.black);
-		int i = 0;
-		while (rely < 0) {
-			i++;
-			g.translate(0, this.j.fy);
-			rely += this.j.fy;
-		}
-		for (; i < ec.lines.size() && heightleft > 0; i++) {
-			g.drawString(Line.tabs2spaces(ec.lines.get(i)), 0, this.j.fmaxascend);
+		for (int i = this.firstline; i < this.lastline && heightleft > 0; i++) {
+			if (hiddenHeight < this.j.fy) {
+				StringBuilder line = this.buffer.lines.get(i);
+				g.drawString(Line.tabs2spaces(line), 0, this.j.fmaxascend);
+			} else {
+				hiddenHeight -= this.j.fy;
+			}
 			g.translate(0, this.j.fy);
 			heightleft -= this.j.fy;
 		}
@@ -110,6 +131,11 @@ implements
 
 	public void handleInput(KeyInput event)
 	{
+		this.group.dispatchInputEvent(event, this);
+	}
+
+	public void handleInputInternal(KeyInput event)
+	{
 		if (event.c == KeyEvent.CHAR_UNDEFINED) {
 			return;
 		}
@@ -123,7 +149,12 @@ implements
 		if (event.error) {
 			Toolkit.getDefaultToolkit().beep();
 		}
-		if (event.needRepaint || event.needRepaintCaret /*TODO: only repaint caret*/) {
+		if (event.needGlobalRepaint) {
+			this.group.repaintAll();
+		} else if (event.needRepaint ||
+			/*TODO: only repaint caret*/
+			event.needRepaintCaret)
+		{
 			this.repaint();
 		}
 		if (event.needCheckLineLength) {
@@ -227,7 +258,11 @@ implements
 	{
 		x = (x - 1) / this.j.fx; // -1 for panel padding
 		y = (y - 1) / this.j.fy; // -1 for panel padding
-		y = Math.min(y, this.buffer.lines.size() - 1);
+		y = Math.min(y, this.lastline - this.firstline - 1);
+		y += this.firstline;
+		if (y < this.firstline) {
+			y = this.firstline;
+		}
 		x = Math.min(x, this.buffer.lines.get(y).length() - 1);
 		if (x < 0) {
 			x = 0;
@@ -242,15 +277,15 @@ implements
 
 	public void ensureCodeViewSize()
 	{
-		int rows = this.buffer.lines.size();
+		int rows = this.lastline - this.firstline;
 		this.frame.ensureCodeViewSize(rows, this.maxLineLength + /*caret*/1);
 	}
 
 	public void recheckMaxLineLength()
 	{
 		this.maxLineLength = 0;
-		for (int i = this.buffer.lines.size(); i > 0;) {
-			int visualLen = this.buffer.lines.get(--i).length();
+		for (int i = this.firstline; i < this.lastline; i++) {
+			int visualLen = this.buffer.lines.get(i).length();
 			if (visualLen > this.maxLineLength) {
 				this.maxLineLength = visualLen;
 			}
