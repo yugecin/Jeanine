@@ -2,37 +2,52 @@ package net.basdon.jeanine;
 
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-public class JeanineFrame extends JFrame implements KeyListener, CommandBar.Listener
+import static java.awt.KeyboardFocusManager.*;
+
+public class JeanineFrame
+extends JFrame
+implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 {
 	public final CommandBar commandbar;
 	public final Jeanine j;
 	public final ArrayList<CodeGroup> codegroups;
-	public final BackgroundPanel bg;
 
 	public CodeGroup activeGroup;
+	public Point location;
+
+	private Point dragStart;
 
 	public JeanineFrame(Jeanine j)
 	{
 		this.j = j;
-		this.bg = new BackgroundPanel(j, this);
+		this.dragStart = new Point();
+		this.location = new Point();
 		this.codegroups = new ArrayList<>();
 		this.setIconImage(this.createLogoImg());
 		this.setFocusable(true);
 		this.addKeyListener(this);
+		this.addMouseListener(this);
+		this.addMouseMotionListener(this);
 		this.commandbar = new CommandBar(j);
 		this.commandbar.addListener(this);
-		this.setContentPane(this.bg);
+		this.setContentPane(new BackgroundPanel());
 		this.setLocationByPlatform(true);
 		this.setError(null);
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
@@ -45,6 +60,10 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 		this.pack();
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		this.setVisible(true);
+		// make that we get the TAB key events
+		KeyboardFocusManager fm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+		fm.setDefaultFocusTraversalKeys(FORWARD_TRAVERSAL_KEYS, Collections.emptySet());
+		fm.setDefaultFocusTraversalKeys(BACKWARD_TRAVERSAL_KEYS, Collections.emptySet());
 	}
 
 	private Image createLogoImg()
@@ -84,10 +103,22 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 	@Override
 	public void keyTyped(KeyEvent e)
 	{
-		if (e.getKeyChar() == ':') {
-			this.commandbar.show("", this);
-			e.consume();
+		e.consume();
+		if (e.getKeyChar() == KeyEvent.CHAR_UNDEFINED) {
+			return;
 		}
+		KeyInput event = new KeyInput(e.getKeyChar());
+		if (this.activeGroup != null && this.activeGroup.activePanel != null) {
+			this.activeGroup.dispatchInputEvent(event, this.activeGroup.activePanel);
+			if (!event.error) {
+				return;
+			}
+		}
+		if (event.c == ':') {
+			this.commandbar.show("", this);
+			return;
+		}
+		Toolkit.getDefaultToolkit().beep();
 	}
 
 	/*KeyListener*/
@@ -99,6 +130,60 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 	/*KeyListener*/
 	@Override
 	public void keyReleased(KeyEvent e)
+	{
+	}
+
+	/*MouseMotionListener*/
+	@Override
+	public void mouseDragged(MouseEvent e)
+	{
+		int x = e.getX() - this.dragStart.x;
+		int y = e.getY() - this.dragStart.y;
+		this.location.x += x;
+		this.location.y += y;
+		this.dragStart.x = e.getX();
+		this.dragStart.y = e.getY();
+
+		for (CodeGroup cg : this.codegroups) {
+			cg.mouseDragged(x, y);
+		}
+	}
+
+	/*MouseMotionListener*/
+	@Override
+	public void mouseMoved(MouseEvent e)
+	{
+	}
+
+	@Override
+	/*MouseListener*/
+	public void mouseClicked(MouseEvent e)
+	{
+	}
+
+	/*MouseListener*/
+	@Override
+	public void mousePressed(MouseEvent e)
+	{
+		this.dragStart.x = e.getX();
+		this.dragStart.y = e.getY();
+	}
+
+	/*MouseListener*/
+	@Override
+	public void mouseReleased(MouseEvent e)
+	{
+	}
+
+	/*MouseListener*/
+	@Override
+	public void mouseEntered(MouseEvent e)
+	{
+	}
+
+	/*MouseListener*/
+	@Override
+	public void mouseExited(MouseEvent e)
 	{
 	}
 
@@ -130,16 +215,6 @@ public class JeanineFrame extends JFrame implements KeyListener, CommandBar.List
 			super.setTitle("Jeanine - " + error);
 			Toolkit.getDefaultToolkit().beep();
 		}
-	}
-
-	public CodePanel getActiveCodePanel()
-	{
-		if (this.activeGroup != null) {
-			if (this.activeGroup.activeFrame != null) {
-				return this.activeGroup.activeFrame.codepanel;
-			}
-		}
-		return null;
 	}
 
 	private static final String WELCOMETEXT =

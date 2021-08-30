@@ -12,17 +12,17 @@ public class CodeGroup
 {
 	public final JeanineFrame jf;
 	public final EditBuffer buffer;
-	public final HashMap<Integer, CodeFrame> frames;
+	public final HashMap<Integer, CodePanel> panels;
 	public final Point location;
 
-	public CodeFrame rootFrame;
+	public CodePanel rootFrame;
 
 	public File ownerFile;
-	public CodeFrame activeFrame;
+	public CodePanel activePanel;
 
 	public CodeGroup(JeanineFrame jf)
 	{
-		this.frames = new HashMap<>();
+		this.panels = new HashMap<>();
 		this.buffer = new EditBuffer(jf.j, this);
 		this.jf = jf;
 		this.location = new Point();
@@ -49,10 +49,10 @@ public class CodeGroup
 			}
 		}
 
-		this.frames.clear();
+		this.panels.clear();
 		Integer id = Integer.valueOf(0);
-		this.rootFrame = new CodeFrame(this.jf, this, id, this.buffer, 0, this.buffer.lines.size());
-		this.frames.put(id, this.rootFrame);
+		this.rootFrame = new CodePanel(this.jf, this, id, this.buffer, 0, this.buffer.lines.size());
+		this.panels.put(id, this.rootFrame);
 		this.position(this.rootFrame);
 		this.jf.add(this.rootFrame);
 		this.rootFrame.setVisible(true);
@@ -67,15 +67,15 @@ public class CodeGroup
 		}
 	}
 
-	public void position(CodeFrame frame)
+	public void position(CodePanel panel)
 	{
-		int x = this.location.x;
-		int y = this.location.y;
-		if (frame.parent != null) {
-			CodeFrame parent = this.frames.get(frame.parent.id);
+		int x = this.location.x + this.jf.location.x;
+		int y = this.location.y + this.jf.location.y;
+		if (panel.parent != null) {
+			CodePanel parent = this.panels.get(panel.parent.id);
 			if (parent != null) {
 				Rectangle bounds = parent.getBounds();
-				switch (frame.anchor) {
+				switch (panel.anchor) {
 				case 't':
 					break;
 				case 'r':
@@ -89,17 +89,16 @@ public class CodeGroup
 				}
 			}
 		}
-		x += frame.location.x;
-		y += frame.location.y;
-		frame.suppressNextMovedEvent = true;
-		frame.setLocation(x, y);
-		frame.requirePositionSizeValidation = false;
-		this.framePositionChanged(frame);
+		x += panel.location.x;
+		y += panel.location.y;
+		panel.setLocation(x, y);
+		panel.requirePositionSizeValidation = false;
+		this.framePositionChanged(panel);
 	}
 
-	public void framePositionChanged(CodeFrame frame)
+	public void framePositionChanged(CodePanel frame)
 	{
-		for (CodeFrame child : this.frames.values()) {
+		for (CodePanel child : this.panels.values()) {
 			if (child.parent == frame) {
 				this.position(child);
 			}
@@ -108,7 +107,7 @@ public class CodeGroup
 
 	public void split()
 	{
-		if (this.activeFrame == null) {
+		if (this.activePanel == null) {
 			this.jf.setError("can't split, no code panel focused");
 			return;
 		}
@@ -130,7 +129,7 @@ public class CodeGroup
 			return;
 		}
 
-		CodePanel codepanel = this.activeFrame.codepanel;
+		CodePanel codepanel = this.activePanel;
 		this.buffer.mode = EditBuffer.NORMAL_MODE;
 
 		Integer nextId = Integer.valueOf(this.findMaxId() + 1);
@@ -138,7 +137,7 @@ public class CodeGroup
 			codepanel.lastline = this.buffer.lineselectto;
 			codepanel.recheckMaxLineLength();
 			codepanel.ensureCodeViewSize();
-			this.activeFrame = this.add(nextId, this.activeFrame, 'b', 0, 10,
+			this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 10,
 				this.buffer.lineselectto,
 				this.buffer.lines.size());
 		} else {
@@ -147,46 +146,46 @@ public class CodeGroup
 			codepanel.recheckMaxLineLength();
 			codepanel.ensureCodeViewSize();
 			if (this.buffer.lineselectto == initialLastline) {
-				this.activeFrame = this.add(nextId, this.activeFrame, 'b', 0, 10,
+				this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 10,
 					this.buffer.lineselectfrom,
 					initialLastline);
 			} else {
-				this.activeFrame = this.add(nextId, this.activeFrame, 'b', 0, 10,
+				this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 10,
 					this.buffer.lineselectfrom,
 					this.buffer.lineselectto);
 				nextId = Integer.valueOf(nextId.intValue() + 1);
-				this.add(nextId, this.activeFrame, 'b', 0, 10,
+				this.add(nextId, this.activePanel, 'b', 0, 10,
 					this.buffer.lineselectto,
 					initialLastline);
 			}
 		}
 
-		this.activeFrame = this.frameAtLine(this.buffer.carety);
-		if (this.activeFrame != null) {
+		this.activePanel = this.frameAtLine(this.buffer.carety);
+		if (this.activePanel != null) {
 			SwingUtilities.invokeLater(() -> {
-				this.activeFrame.codepanel.requestFocusInWindow();
-				this.activeFrame.codepanel.repaint();
+				this.activePanel.requestFocusInWindow();
+				this.activePanel.repaint();
 			});
 		}
 	}
 
-	private CodeFrame add(
+	private CodePanel add(
 		Integer id,
-		CodeFrame parent,
+		CodePanel parent,
 		char anchor,
 		int posX,
 		int posY,
 		int linefrom,
 		int lineto)
 	{
-		CodeFrame cf = new CodeFrame(this.jf, this, id, this.buffer, linefrom, lineto);
-		this.frames.put(id, cf);
+		CodePanel cf = new CodePanel(this.jf, this, id, this.buffer, linefrom, lineto);
+		this.panels.put(id, cf);
 		cf.parent = parent;
 		cf.anchor = (byte) anchor;
 		cf.location.x = posX;
 		cf.location.y = posY;
-		cf.codepanel.recheckMaxLineLength();
-		cf.codepanel.ensureCodeViewSize();
+		cf.recheckMaxLineLength();
+		cf.ensureCodeViewSize();
 		this.position(cf);
 		cf.setVisible(true);
 		this.jf.add(cf);
@@ -195,12 +194,12 @@ public class CodeGroup
 
 	public void requestFocusInWindow()
 	{
-		if (this.activeFrame != null) {
-			this.activeFrame.codepanel.requestFocusInWindow();
+		if (this.activePanel != null) {
+			this.activePanel.requestFocusInWindow();
 		} else {
-			Iterator<CodeFrame> iter = this.frames.values().iterator();
+			Iterator<CodePanel> iter = this.panels.values().iterator();
 			if (iter.hasNext()) {
-				(this.activeFrame = iter.next()).codepanel.requestFocusInWindow();
+				(this.activePanel = iter.next()).requestFocusInWindow();
 			}
 		}
 		this.jf.activeGroup = this;
@@ -211,22 +210,31 @@ public class CodeGroup
 	 *
 	 * @return {@code false} if the request is denied
 	 */
-	public boolean focusGained(CodeFrame frame)
+	public boolean focusGained(CodePanel panel)
 	{
-		if (this.activeFrame != null &&
-			this.activeFrame != frame &&
-			this.buffer.mode != EditBuffer.NORMAL_MODE)
-		{
+		if (this.activePanel == panel) {
+			return true;
+		}
+		if (this.buffer.mode != EditBuffer.NORMAL_MODE) {
 			return false;
 		}
-		this.activeFrame = frame;
+		CodePanel lastActivePanel = this.activePanel;
+		this.activePanel = panel;
+		if (lastActivePanel != null) {
+			lastActivePanel.repaint(); // TODO should only be caret
+		}
 		return true;
+	}
+
+	public boolean hasFocus(CodePanel panel)
+	{
+		return panel == this.activePanel;
 	}
 
 	public void mouseDragged(int dX, int dY)
 	{
 		Point loc = null;
-		for (CodeFrame frame : this.frames.values()) {
+		for (CodePanel frame : this.panels.values()) {
 			loc = frame.getLocation(loc);
 			frame.setLocation(loc.x + dX, loc.y + dY);
 		}
@@ -235,7 +243,7 @@ public class CodeGroup
 	public int findMaxId()
 	{
 		int max = 0;
-		for (Integer i : this.frames.keySet()) {
+		for (Integer i : this.panels.keySet()) {
 			if (i.intValue() > max) {
 				max = i.intValue();
 			}
@@ -243,13 +251,11 @@ public class CodeGroup
 		return max;
 	}
 
-	public CodeFrame frameAtLine(int line)
+	public CodePanel frameAtLine(int line)
 	{
-		for (CodeFrame frame : this.frames.values()) {
-			if (frame.codepanel.firstline <= line &&
-				line < frame.codepanel.lastline)
-			{
-				return frame;
+		for (CodePanel panel : this.panels.values()) {
+			if (panel.firstline <= line && line < panel.lastline) {
+				return panel;
 			}
 		}
 		return null;
@@ -257,7 +263,7 @@ public class CodeGroup
 
 	public void repaintAll()
 	{
-		for (CodeFrame frame : this.frames.values()) {
+		for (CodePanel frame : this.panels.values()) {
 			frame.repaint();
 		}
 	}
@@ -266,42 +272,44 @@ public class CodeGroup
 	 * To dispatch repaints after physical input is handled, because repaints might be needed
 	 * if {@link #lineAdded} or {@link #lineRemoved} were invoked.
 	 */
-	public void dispatchInputEvent(KeyInput event, CodePanel source)
+	public void dispatchInputEvent(KeyInput event, CodePanel to)
 	{
-		source.handleInputInternal(event);
-		// TODO: deal with frames that are empty now
-		CodeFrame newActiveFrame = null;
-		for (CodeFrame frame : this.frames.values()) {
-			if (frame.codepanel.firstline <= this.buffer.carety &&
-				this.buffer.carety < frame.codepanel.lastline)
+		to.handleInput(event);
+		// TODO: deal with panels that are empty now
+		CodePanel newActivePanel = null;
+		for (CodePanel panel : this.panels.values()) {
+			if (panel.firstline <= this.buffer.carety &&
+				this.buffer.carety < panel.lastline)
 			{
-				newActiveFrame = frame;
+				newActivePanel = panel;
 				if (event.needCheckLineLength || event.needEnsureViewSize) {
-					frame.codepanel.recheckMaxLineLength();
-					frame.codepanel.ensureCodeViewSize();
+					panel.recheckMaxLineLength();
+					panel.ensureCodeViewSize();
 				}
 			}
-			if (frame.requirePositionSizeValidation) {
-				this.position(frame);
+			if (panel.requirePositionSizeValidation) {
+				panel.recheckMaxLineLength();
+				panel.ensureCodeViewSize();
+				this.position(panel);
 			}
 		}
-		if (newActiveFrame != null && newActiveFrame != this.activeFrame) {
-			this.activeFrame.repaint();
-			this.activeFrame = newActiveFrame;
-			this.activeFrame.codepanel.requestFocusInWindow();
-			this.activeFrame.repaint();
+		if (newActivePanel != null && newActivePanel != this.activePanel) {
+			this.activePanel.repaint();
+			this.activePanel = newActivePanel;
+			this.activePanel.requestFocusInWindow();
+			this.activePanel.repaint();
 		}
 	}
 
 	public void beforeLineAdded(int idx)
 	{
-		for (CodeFrame frame : this.frames.values()) {
-			if (frame.codepanel.firstline >= idx && idx != 0) {
-				frame.codepanel.firstline++;
+		for (CodePanel frame : this.panels.values()) {
+			if (frame.firstline >= idx && idx != 0) {
+				frame.firstline++;
 				frame.requirePositionSizeValidation = true;
 			}
-			if (frame.codepanel.lastline >= idx) {
-				frame.codepanel.lastline++;
+			if (frame.lastline >= idx) {
+				frame.lastline++;
 				frame.requirePositionSizeValidation = true;
 			}
 		}
@@ -309,25 +317,25 @@ public class CodeGroup
 
 	public void beforeLineRemoved(int idx)
 	{
-		for (CodeFrame frame : this.frames.values()) {
-			if (frame.codepanel.lastline >= idx) {
-				frame.codepanel.lastline--;
-				frame.requirePositionSizeValidation = true;
+		for (CodePanel panel : this.panels.values()) {
+			if (panel.lastline >= idx) {
+				panel.lastline--;
+				panel.requirePositionSizeValidation = true;
 			}
-			if (frame.codepanel.firstline > idx) {
-				frame.codepanel.firstline--;
-				frame.requirePositionSizeValidation = true;
+			if (panel.firstline > idx) {
+				panel.firstline--;
+				panel.requirePositionSizeValidation = true;
 			}
 		}
 	}
 
 	public void doUndo(Undo undo)
 	{
-		for (CodeFrame frame : this.frames.values()) {
-			if (frame.buffer == undo.buffer) {
-				this.activeFrame = frame;
-				frame.codepanel.requestFocusInWindow();
-				frame.codepanel.handleInput(new KeyInput('u'));
+		for (CodePanel panel : this.panels.values()) {
+			if (panel.buffer == undo.buffer) {
+				this.activePanel = panel;
+				panel.requestFocusInWindow();
+				panel.handleInput(new KeyInput('u'));
 				return;
 			}
 		}

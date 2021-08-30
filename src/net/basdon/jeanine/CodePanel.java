@@ -4,61 +4,58 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.JPanel;
-import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
-
-import static java.util.Collections.EMPTY_SET;
 
 public class CodePanel
 extends JPanel
-implements
-	MouseListener, MouseMotionListener, FocusListener,
-	KeyListener, CommandBar.Listener
+implements MouseListener, MouseMotionListener, FocusListener
 {
 	private static final Color selectColor = new Color(0x66AAFF);
 
-	public final CodeFrame frame;
 	public final CodeGroup group;
 	public final JeanineFrame jf;
 	public final Jeanine j;
 	public final EditBuffer buffer;
+	public final Integer id;
 
 	public int firstline;
 	/**
 	 * Exclusive
 	 */
 	public int lastline;
+	public boolean requirePositionSizeValidation;
+	public byte anchor;
+
+	public CodePanel parent;
+	public Point location;
 
 	private int maxLineLength;
+	private int rows, cols;
+	private boolean isDragging;
+	private Point dragStart;
 
-	public CodePanel(CodeFrame frame, JeanineFrame jf)
+	public CodePanel(JeanineFrame jf, CodeGroup group, Integer id, EditBuffer buffer, int linefrom, int lineto)
 	{
 		this.jf = jf;
 		this.j = jf.j;
-		this.buffer = frame.buffer;
-		this.lastline = this.buffer.lines.size();
-		this.frame = frame;
-		this.group = frame.group;
-		this.setFocusable(true);
+		this.id = id;
+		this.group = group;
+		this.buffer = buffer;
+		this.firstline = linefrom;
+		this.lastline = lineto;
+		this.location = new Point();
+		this.setFocusable(false);
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
-		this.addKeyListener(this);
 		this.addFocusListener(this);
 		this.recheckMaxLineLength();
 		this.ensureCodeViewSize();
-		// make that we get the TAB key events
-		LookAndFeel.installProperty(this, "focusTraversalKeysForward", EMPTY_SET);
-		LookAndFeel.installProperty(this, "focusTraversalKeysBackward", EMPTY_SET);
 	}
 
 	@Override
@@ -72,9 +69,23 @@ implements
 		int heightleft = contentsize.height - (thisloc.y - contentloc.y);
 		int hiddenHeight = contentloc.y - thisloc.y;
 
-		g.setColor(Color.white);
-		g.fillRect(0, 0, this.getWidth(), this.getHeight());
+		int w = this.getWidth();
+		int h = this.getHeight();
+
+		g.setFont(this.j.font);
+		g.setColor(Color.black);
+		g.drawRect(0, 0, w - 1, h - 1);
 		g.translate(1, 1);
+		g.setColor(Color.white);
+		g.fillRect(0, 0, w - 2, h - 2);
+		if (hiddenHeight < this.j.fy) {
+			g.setColor(new Color(0xdddddd));
+			g.fillRect(0, 0, w - 2, this.j.fy);
+			g.setColor(Color.black);
+			g.drawString(String.valueOf(this.id), 0, this.j.fmaxascend);
+		}
+		hiddenHeight -= this.j.fy;
+		g.translate(1, this.j.fy + 1);
 		heightleft--;
 
 		// line selection
@@ -92,7 +103,7 @@ implements
 		}
 
 		// caret
-		if ((this.hasFocus() || this.buffer.mode != EditBuffer.NORMAL_MODE) &&
+		if ((this.group.hasFocus(this) || this.buffer.mode != EditBuffer.NORMAL_MODE) &&
 			this.firstline <= this.buffer.carety && this.buffer.carety < this.lastline)
 		{
 			if (this.buffer.mode == EditBuffer.INSERT_MODE) {
@@ -107,7 +118,6 @@ implements
 		}
 
 		// code
-		g.setFont(this.j.font);
 		g.setColor(Color.black);
 		for (int i = this.firstline; i < this.lastline && heightleft > 0; i++) {
 			if (hiddenHeight < this.j.fy) {
@@ -121,74 +131,11 @@ implements
 		}
 	}
 
-	/*KeyListener*/
-	@Override
-	public void keyTyped(KeyEvent e)
-	{
-		e.consume();
-		this.handleInput(new KeyInput(e.getKeyChar()));
-	}
-
-	public void handleInput(KeyInput event)
-	{
-		this.group.dispatchInputEvent(event, this);
-	}
-
-	public void handleInputInternal(KeyInput event)
-	{
-		if (event.c == KeyEvent.CHAR_UNDEFINED) {
-			return;
-		}
-		this.buffer.handlePhysicalInput(event);
-		if (event.error) {
-			if (event.c == ':') {
-				this.jf.commandbar.show("", this);
-				return;
-			}
-		}
-		if (event.error) {
-			Toolkit.getDefaultToolkit().beep();
-		}
-		if (event.needGlobalRepaint) {
-			this.group.repaintAll();
-		} else if (event.needRepaint ||
-			/*TODO: only repaint caret*/
-			event.needRepaintCaret)
-		{
-			this.repaint();
-		}
-		if (event.needCheckLineLength) {
-			this.recheckMaxLineLength();
-		}
-		if (event.needEnsureViewSize) {
-			this.ensureCodeViewSize();
-		}
-	}
-
-	/*KeyListener*/
-	@Override
-	public void keyPressed(KeyEvent e)
-	{
-	}
-
-	/*KeyListener*/
-	@Override
-	public void keyReleased(KeyEvent e)
-	{
-	}
-
-	/*CommandBar.Listener*/
-	@Override
-	public boolean acceptCommand(String command)
-	{
-		return false;
-	}
-
 	/*FocusListener*/
 	@Override
 	public void focusGained(FocusEvent e)
 	{
-		if (this.group.focusGained(this.frame)) {
+		if (this.group.focusGained(this)) {
 			this.repaint(); // TODO: should only repaint the cursor really
 		}
 	}
@@ -210,19 +157,22 @@ implements
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
-		// Won't have focus when the mouse is pressed, so use invokeLater
-		SwingUtilities.invokeLater(() -> {
-			if (this.hasFocus()) {
-				this.putCaret(e.getX(), e.getY());
-			}
-		});
+		if (e.getY() < this.j.fy + 2) {
+			this.isDragging = true;
+			this.dragStart = e.getLocationOnScreen();
+		} else if (this.group.focusGained(this)) {
+			this.putCaret(e.getX(), e.getY());
+		}
 	}
 
 	/*MouseListener*/
 	@Override
 	public void mouseReleased(MouseEvent e)
 	{
-		if (this.hasFocus()) {
+		if (this.isDragging) {
+			this.isDragging = false;
+			this.dragStart = null;
+		} else if (this.group.hasFocus(this)) {
 			this.putCaret(e.getX(), e.getY());
 		}
 	}
@@ -243,7 +193,13 @@ implements
 	@Override
 	public void mouseDragged(MouseEvent e)
 	{
-		if (this.hasFocus()) {
+		if (this.isDragging) {
+			Point now = e.getLocationOnScreen();
+			this.location.x += now.x - this.dragStart.x;
+			this.location.y += now.y - this.dragStart.y;
+			this.group.position(this);
+			this.dragStart = now;
+		} else if (this.group.hasFocus(this)) {
 			this.putCaret(e.getX(), e.getY());
 		}
 	}
@@ -254,10 +210,29 @@ implements
 	{
 	}
 
+	public void handleInput(KeyInput event)
+	{
+		this.buffer.handlePhysicalInput(event);
+		if (event.needGlobalRepaint) {
+			this.group.repaintAll();
+		} else if (event.needRepaint ||
+			/*TODO: only repaint caret*/
+			event.needRepaintCaret)
+		{
+			this.repaint();
+		}
+		if (event.needCheckLineLength) {
+			this.recheckMaxLineLength();
+		}
+		if (event.needEnsureViewSize) {
+			this.ensureCodeViewSize();
+		}
+	}
+
 	private void putCaret(int x, int y)
 	{
-		x = (x - 1) / this.j.fx; // -1 for panel padding
-		y = (y - 1) / this.j.fy; // -1 for panel padding
+		x = (x - 2) / this.j.fx; // -2 for panel padding
+		y = (y - 2 - this.j.fy) / this.j.fy; // -2 for panel padding, -fy for title
 		y = Math.min(y, this.lastline - this.firstline - 1);
 		y += this.firstline;
 		if (y < this.firstline) {
@@ -278,7 +253,7 @@ implements
 	public void ensureCodeViewSize()
 	{
 		int rows = this.lastline - this.firstline;
-		this.frame.ensureCodeViewSize(rows, this.maxLineLength + /*caret*/1);
+		this.ensureCodeViewSize(rows, this.maxLineLength + /*caret*/1);
 	}
 
 	public void recheckMaxLineLength()
@@ -290,5 +265,25 @@ implements
 				this.maxLineLength = visualLen;
 			}
 		}
+	}
+
+	public void ensureCodeViewSize(int rows, int cols)
+	{
+		if (cols < 30) {
+			cols = 30;
+		}
+		if (this.rows != rows || this.cols != cols) {
+			this.setCodeViewSize(rows, cols);
+		}
+	}
+
+	public void setCodeViewSize(int rows, int cols)
+	{
+		this.rows = rows;
+		this.cols = cols;
+		Dimension size = new Dimension();
+		size.width = /*padding*/ 4 + cols * this.j.fx;
+		size.height = /*padding*/ 4 + (rows + 1) * this.j.fy;
+		this.setSize(size);
 	}
 }
