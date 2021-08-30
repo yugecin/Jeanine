@@ -23,10 +23,10 @@ public class Jeanine
 		new JeanineFrame(new Jeanine());
 	}
 
-	public final Font font;
-	public final int fx, fy, fmaxascend;
 	public final ArrayList<Undo> undolist;
 
+	public Font font;
+	public int fx, fy, fmaxascend;
 	public int undolistptr;
 	public String pastebuffer = "";
 	public char commandBuf[];
@@ -34,14 +34,19 @@ public class Jeanine
 
 	public Jeanine()
 	{
-		this.font = new Font("Courier New", Font.BOLD, 14);
+		this.setFont(new Font("Courier New", Font.BOLD, 14));
+		this.undolist = new ArrayList<>();
+		this.commandBuf = new char[100];
+		this.commandLength = 100;
+	}
+
+	public void setFont(Font font)
+	{
+		this.font = font;
 		FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
 		this.fx = metrics.charWidth('m');
 		this.fy = metrics.getHeight();
 		this.fmaxascend = metrics.getMaxAscent();
-		this.undolist = new ArrayList<>();
-		this.commandBuf = new char[100];
-		this.commandLength = 100;
 	}
 
 	public void storeCommand(char[] cmd, int len)

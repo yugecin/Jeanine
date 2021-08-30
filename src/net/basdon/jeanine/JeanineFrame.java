@@ -1,6 +1,8 @@
 package net.basdon.jeanine;
 
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -13,10 +15,10 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import static java.awt.KeyboardFocusManager.*;
@@ -27,10 +29,11 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 {
 	public final CommandBar commandbar;
 	public final Jeanine j;
-	public final ArrayList<CodeGroup> codegroups;
 
-	public CodeGroup activeGroup;
-	public Point location;
+	public List<CodeGroup> codegroups, lastCodegroups;
+	public CodeGroup activeGroup, lastActiveGroup;
+	public Point location, lastLocation;
+	public boolean isSelectingFont;
 
 	private Point dragStart;
 
@@ -51,11 +54,10 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 		this.setLocationByPlatform(true);
 		this.setError(null);
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
-		CodeGroup cg = new CodeGroup(this);
-		cg.setLocation(30, 30);
-		cg.setContents(WELCOMETEXT);
-		SwingUtilities.invokeLater(cg::requestFocusInWindow);
-		this.codegroups.add(cg);
+		this.activeGroup = new CodeGroup(this);
+		this.activeGroup.setLocation(30, 30);
+		this.activeGroup.setContents(WELCOMETEXT);
+		this.codegroups.add(this.activeGroup);
 		this.setPreferredSize(new Dimension(800, 800));
 		this.pack();
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -113,6 +115,24 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 			if (!event.error) {
 				return;
 			}
+		}
+		if (this.isSelectingFont) {
+			if (event.c == EditBuffer.ESC) {
+				this.stopSelectingFont();
+			} else if (event.c == '\n' || event.c == '\r') {
+				EditBuffer buffer = this.activeGroup.buffer;
+				String fontname = buffer.lines.get(buffer.carety).toString();
+				Font font = new Font(fontname, Font.BOLD, 14);
+				this.j.setFont(font);
+				this.stopSelectingFont();
+				for (CodeGroup group : this.codegroups) {
+					group.setLocation(group.location.x, group.location.y);
+				}
+				this.repaint();
+			} else {
+				Toolkit.getDefaultToolkit().beep();
+			}
+			return;
 		}
 		if (event.c == ':') {
 			this.commandbar.show("", this);
@@ -191,16 +211,24 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 	@Override
 	public boolean acceptCommand(String command)
 	{
+		if (this.isSelectingFont) {
+			this.stopSelectingFont();
+			return true;
+		}
 		if ("bd".equals(command)) {
 			if (this.activeGroup == null) {
 				this.setError("can't close buffer, no code panel focused");
 				return false;
 			}
+			// TODO: bd
 			this.activeGroup.dispose();
 			this.activeGroup = null;
 			return true;
 		} else if ("spl".equals(command)) {
 			this.activeGroup.split();
+			return true;
+		} else if ("font".equals(command)) {
+			this.startSelectingFont();
 			return true;
 		}
 		this.setError("unknown command: " + command);
@@ -215,6 +243,52 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 			super.setTitle("Jeanine - " + error);
 			Toolkit.getDefaultToolkit().beep();
 		}
+	}
+
+	private void startSelectingFont()
+	{
+		this.isSelectingFont = true;
+		this.lastActiveGroup = this.activeGroup;
+		this.lastCodegroups = this.codegroups;
+		this.lastLocation = new Point(this.location);
+		this.getContentPane().removeAll();
+		StringBuilder sb = new StringBuilder(4096);
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		String[] fonts = ge.getAvailableFontFamilyNames();
+		for (int i = 0;;) {
+			sb.append(fonts[i]);
+			if (++i < fonts.length) {
+				sb.append('\n');
+				continue;
+			}
+			break;
+		}
+		CodeGroup group = new CodeGroup(this);
+		group.buffer.readonly = true;
+		group.setContents(sb.toString());
+		group.activePanel.setTitle("Font selection");
+		group.setLocation(30, 30);
+		this.activeGroup = group;
+		this.codegroups = Collections.singletonList(group);
+		this.repaint();
+	}
+
+	private void stopSelectingFont()
+	{
+		this.isSelectingFont = false;
+		this.getContentPane().removeAll();
+		this.activeGroup = this.lastActiveGroup;
+		this.codegroups = this.lastCodegroups;
+		this.location = this.lastLocation;
+		this.lastActiveGroup = null;
+		this.lastCodegroups = null;
+		this.lastLocation = null;
+		for (CodeGroup group : this.codegroups) {
+			for (CodePanel panel : group.panels.values()) {
+				this.getContentPane().add(panel);
+			}
+		}
+		this.repaint();
 	}
 
 	private static final String WELCOMETEXT =

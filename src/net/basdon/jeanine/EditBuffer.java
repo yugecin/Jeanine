@@ -29,6 +29,8 @@ public class EditBuffer
 	private boolean creatingCommand;
 	private char creatingCmdBuf[];
 	private int creatingCmdLength;
+
+	public boolean readonly;
 	/**
 	 * This is always logical pos (disregarding char/tab width).
 	 */
@@ -119,6 +121,7 @@ public class EditBuffer
 		int prevCarety = this.carety;
 		switch (e.c) { // break when the key starts a new command (for .), return otherwise
 		case 'c':
+			if (this.readonly) { e.error = true; return; }
 			if (this.caretx >= this.lines.get(this.carety).length()) {
 				e.error = true;
 				return;
@@ -126,6 +129,7 @@ public class EditBuffer
 			this.mode = CHANGE_MODE;
 			break;
 		case 'd':
+			if (this.readonly) { e.error = true; return; }
 			if (this.caretx > this.lines.get(this.carety).length) {
 				e.error = true;
 				return;
@@ -133,6 +137,7 @@ public class EditBuffer
 			this.mode = DELETE_MODE;
 			break;
 		case 'u':
+			if (this.readonly) { e.error = true; return; }
 			if (this.j.undolistptr == 0) {
 				e.error = true;
 			} else {
@@ -189,6 +194,7 @@ public class EditBuffer
 			}
 			return;
 		case 'o':
+			if (this.readonly) { e.error = true; return; }
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = this.lines.get(this.carety).length();
 			this.writingUndo.fromy = this.carety;
@@ -202,6 +208,7 @@ public class EditBuffer
 			e.needEnsureViewSize = true;
 			break;
 		case 'O':
+			if (this.readonly) { e.error = true; return; }
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = 0;
 			this.writingUndo.fromy = this.carety;
@@ -223,6 +230,7 @@ public class EditBuffer
 			e.needRepaintCaret = true;
 			break;
 		case 'I':
+			if (this.readonly) { e.error = true; return; }
 			int pos = 0;
 			for (char chr : this.lines.get(this.carety).toString().toCharArray()) {
 				if (chr != ' ' && chr != '\t') {
@@ -237,14 +245,17 @@ public class EditBuffer
 			e.needRepaintCaret = true;
 			break;
 		case 'i':
+			if (this.readonly) { e.error = true; return; }
 			this.mode = INSERT_MODE;
 			e.needRepaintCaret = true;
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			break;
 		case 'A':
+			if (this.readonly) { e.error = true; return; }
 			this.caretx = this.lines.get(this.carety).length();
 			this.mode = INSERT_MODE;
 		case 'a':
+			if (this.readonly) { e.error = true; return; }
 			this.writingUndo = this.newUndo(prevCaretx, prevCarety);
 			if (this.caretx < this.lines.get(this.carety).length()) {
 				this.caretx++;
@@ -267,6 +278,7 @@ public class EditBuffer
 			e.needRepaintCaret = true;
 			return;
 		case 'x':
+			if (this.readonly) { e.error = true; return; }
 			line = this.lines.get(this.carety);
 			len = line.length();
 			if (len == 0) {
@@ -288,6 +300,7 @@ public class EditBuffer
 			e.needRepaint = true;
 			break;
 		case 'p':
+			if (this.readonly) { e.error = true; return; }
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			if (this.j.pastebuffer.endsWith("\n")) {
 				this.writingUndo.fromx = this.lines.get(this.carety).length();
@@ -320,6 +333,7 @@ public class EditBuffer
 			e.needRepaint = true;
 			break;
 		case 'P':
+			if (this.readonly) { e.error = true; return; }
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			if (this.j.pastebuffer.endsWith("\n")) {
 				String lines[] = this.j.pastebuffer.split("\n");
@@ -416,6 +430,7 @@ public class EditBuffer
 			}
 			return;
 		case '.':
+			if (this.readonly) { e.error = true; return; }
 			if (this.j.commandLength == 0) {
 				e.error = true;
 			} else {

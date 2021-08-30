@@ -24,6 +24,7 @@ implements MouseListener, MouseMotionListener, FocusListener
 	public final EditBuffer buffer;
 	public final Integer id;
 
+	public String title;
 	public int firstline;
 	/**
 	 * Exclusive
@@ -82,7 +83,16 @@ implements MouseListener, MouseMotionListener, FocusListener
 			g.setColor(new Color(0xdddddd));
 			g.fillRect(0, 0, w - 2, this.j.fy);
 			g.setColor(Color.black);
-			g.drawString(String.valueOf(this.id), 0, this.j.fmaxascend);
+			SB title = new SB(100);
+			title.append(String.valueOf(this.id));
+			if (this.title != null) {
+				title.append('|');
+				title.append(this.title);
+			}
+			if (this.buffer.readonly) {
+				title.append("|RO");
+			}
+			g.drawString(title.toString(), 0, this.j.fmaxascend);
 		}
 		hiddenHeight -= this.j.fy;
 		g.translate(1, this.j.fy + 1);
@@ -208,6 +218,12 @@ implements MouseListener, MouseMotionListener, FocusListener
 	@Override
 	public void mouseMoved(MouseEvent e)
 	{
+	}
+
+	public void setTitle(String title)
+	{
+		this.title = title;
+		this.repaint();
 	}
 
 	public void handleInput(KeyInput event)

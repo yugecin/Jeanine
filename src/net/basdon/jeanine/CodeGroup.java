@@ -4,7 +4,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import javax.swing.SwingUtilities;
 
@@ -15,8 +14,7 @@ public class CodeGroup
 	public final HashMap<Integer, CodePanel> panels;
 	public final Point location;
 
-	public CodePanel rootFrame;
-
+	public CodePanel root;
 	public File ownerFile;
 	public CodePanel activePanel;
 
@@ -51,19 +49,19 @@ public class CodeGroup
 
 		this.panels.clear();
 		Integer id = Integer.valueOf(0);
-		this.rootFrame = new CodePanel(this.jf, this, id, this.buffer, 0, this.buffer.lines.size());
-		this.panels.put(id, this.rootFrame);
-		this.position(this.rootFrame);
-		this.jf.add(this.rootFrame);
-		this.rootFrame.setVisible(true);
+		this.root = new CodePanel(this.jf, this, id, this.buffer, 0, this.buffer.lines.size());
+		this.panels.put(id, this.root);
+		this.position(this.root);
+		this.jf.getContentPane().add(this.root);
+		this.activePanel = this.root;
 	}
 
 	public void setLocation(int x, int y)
 	{
 		this.location.x = x;
 		this.location.y = y;
-		if (this.rootFrame != null) {
-			this.position(this.rootFrame);
+		if (this.root != null) {
+			this.position(this.root);
 		}
 	}
 
@@ -93,13 +91,13 @@ public class CodeGroup
 		y += panel.location.y;
 		panel.setLocation(x, y);
 		panel.requirePositionSizeValidation = false;
-		this.framePositionChanged(panel);
+		this.positionChanged(panel);
 	}
 
-	public void framePositionChanged(CodePanel frame)
+	public void positionChanged(CodePanel panel)
 	{
 		for (CodePanel child : this.panels.values()) {
-			if (child.parent == frame) {
+			if (child.parent == panel) {
 				this.position(child);
 			}
 		}
@@ -188,21 +186,8 @@ public class CodeGroup
 		cf.ensureCodeViewSize();
 		this.position(cf);
 		cf.setVisible(true);
-		this.jf.add(cf);
+		this.jf.getContentPane().add(cf);
 		return cf;
-	}
-
-	public void requestFocusInWindow()
-	{
-		if (this.activePanel != null) {
-			this.activePanel.requestFocusInWindow();
-		} else {
-			Iterator<CodePanel> iter = this.panels.values().iterator();
-			if (iter.hasNext()) {
-				(this.activePanel = iter.next()).requestFocusInWindow();
-			}
-		}
-		this.jf.activeGroup = this;
 	}
 
 	/**
