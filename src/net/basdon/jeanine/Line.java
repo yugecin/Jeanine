@@ -51,7 +51,7 @@ public class Line
 
 	private static final char[] spaces = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
 
-	public static String tabs2spaces(SB sb)
+	public static SB tabs2spaces(SB sb)
 	{
 		SB sb2 = new SB(sb.value.length + 32);
 		int visualPos = 0;
@@ -66,6 +66,6 @@ public class Line
 				visualPos++;
 			}
 		}
-		return sb2.toString();
+		return sb2;
 	}
 }

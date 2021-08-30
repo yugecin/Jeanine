@@ -111,8 +111,8 @@ implements
 		g.setColor(Color.black);
 		for (int i = this.firstline; i < this.lastline && heightleft > 0; i++) {
 			if (hiddenHeight < this.j.fy) {
-				SB line = this.buffer.lines.get(i);
-				g.drawString(Line.tabs2spaces(line), 0, this.j.fmaxascend);
+				SB line = Line.tabs2spaces(this.buffer.lines.get(i));
+				g.drawString(line.toString(), 0, this.j.fmaxascend);
 			} else {
 				hiddenHeight -= this.j.fy;
 			}
@@ -285,7 +285,7 @@ implements
 	{
 		this.maxLineLength = 0;
 		for (int i = this.firstline; i < this.lastline; i++) {
-			int visualLen = this.buffer.lines.get(i).length();
+			int visualLen = Line.tabs2spaces(this.buffer.lines.get(i)).length;
 			if (visualLen > this.maxLineLength) {
 				this.maxLineLength = visualLen;
 			}
