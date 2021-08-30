@@ -296,7 +296,7 @@ public class CodeGroup
 	public void beforeLineAdded(int idx)
 	{
 		for (CodeFrame frame : this.frames.values()) {
-			if (frame.codepanel.firstline >= idx) {
+			if (frame.codepanel.firstline >= idx && idx != 0) {
 				frame.codepanel.firstline++;
 				frame.requirePositionSizeValidation = true;
 			}
