@@ -35,13 +35,13 @@ public class CodeGroup
 
 	public void setContents(String text)
 	{
-		StringBuilder sb = new StringBuilder();
+		SB sb = new SB();
 		this.buffer.lines.clear();
 		this.buffer.lines.add(sb);
 		if (text != null) {
 			for (char c : text.toCharArray()) {
 				if (c == '\n') {
-					sb = new StringBuilder();
+					sb = new SB();
 					this.buffer.lines.add(sb);
 				} else {
 					sb.append(c);

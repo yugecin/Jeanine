@@ -3,6 +3,8 @@ package net.basdon.jeanine;
 import java.awt.Point;
 import java.util.Arrays;
 
+import static java.lang.System.arraycopy;
+
 public class EditBuffer
 {
 	public static final char
@@ -72,7 +74,7 @@ public class EditBuffer
 		this.group = group;
 		this.creatingCmdBuf = new char[100];
 		this.lines = new BufferLines(group);
-		this.lines.add(new StringBuilder());
+		this.lines.add(new SB());
 	}
 
 	private int curVisualX()
@@ -86,7 +88,7 @@ public class EditBuffer
 
 	private void putCaretX(int visual)
 	{
-		StringBuilder line = this.lines.get(this.carety);
+		SB line = this.lines.get(this.carety);
 		if (visual > line.length()) {
 			if (visual > this.virtualCaretx) {
 				this.virtualCaretx = visual;
@@ -110,7 +112,7 @@ public class EditBuffer
 
 	private void handleInputNormal(KeyInput e)
 	{
-		StringBuilder line;
+		SB line;
 		int len, visual;
 		Point pt;
 		int prevCaretx = this.caretx;
@@ -124,7 +126,7 @@ public class EditBuffer
 			this.mode = CHANGE_MODE;
 			break;
 		case 'd':
-			if (this.caretx > this.lines.get(this.carety).length()) {
+			if (this.caretx > this.lines.get(this.carety).length) {
 				e.error = true;
 				return;
 			}
@@ -144,36 +146,38 @@ public class EditBuffer
 				char[] toappend;
 				if (u.toy > u.fromy) {
 					line.setLength(u.fromx);
-					StringBuilder lastline = this.lines.get(u.toy);
+					SB lastline = this.lines.get(u.toy);
 					int pos = u.tox;
 					for (int y = u.toy; y > u.fromy; y--) {
 						this.lines.remove(y);
 					}
-					toappend = new char[lastline.length() - pos];
-					lastline.getChars(pos, lastline.length(), toappend, 0);
+					toappend = new char[lastline.length - pos];
+					len = lastline.length - pos;
+					arraycopy(lastline.value, pos, toappend, 0, len);
 				} else {
-					if (line.length() == 0) {
+					if (line.length == 0) {
 						toappend = new char[0];
 					} else {
-						toappend = new char[line.length() - u.tox];
-						line.getChars(u.tox, line.length(), toappend, 0);
+						toappend = new char[line.length - u.tox];
+						len = line.length - u.tox;
+						arraycopy(line.value, u.tox, toappend, 0, len);
 					}
 					line.setLength(u.fromx);
 				}
 				// put in replacement
-				int idx = u.replacement.indexOf("\n");
+				int idx = u.replacement.indexOf('\n', 0);
 				int from = 0, nextfrom = 0;
 				int linenr = u.fromy + 1;
 				while (idx != -1) {
 					from = idx + 1;
-					line.append(u.replacement, nextfrom, idx);
+					line.append(u.replacement.value, nextfrom, idx);
 					nextfrom = idx + 1;
-					idx = u.replacement.indexOf("\n", idx + 1);
-					line = new StringBuilder();
+					idx = u.replacement.indexOf('\n', idx + 1);
+					line = new SB();
 					this.lines.add(linenr, line);
 					linenr++;
 				}
-				line.append(u.replacement, from, u.replacement.length());
+				line.append(u.replacement.value, from, u.replacement.length);
 				// trailing existing part
 				line.append(toappend, 0, toappend.length);
 				this.caretx = u.caretx;
@@ -191,7 +195,7 @@ public class EditBuffer
 			this.writingUndo.tox = 0;
 			this.writingUndo.toy = this.carety + 1;
 			this.carety++;
-			this.lines.add(this.carety, new StringBuilder());
+			this.lines.add(this.carety, new SB());
 			this.caretx = 0;
 			this.mode = INSERT_MODE;
 			e.needRepaint = true;
@@ -203,7 +207,7 @@ public class EditBuffer
 			this.writingUndo.fromy = this.carety;
 			this.writingUndo.tox = 0;
 			this.writingUndo.toy = this.carety + 1;
-			this.lines.add(this.carety, new StringBuilder());
+			this.lines.add(this.carety, new SB());
 			this.caretx = 0;
 			this.mode = INSERT_MODE;
 			e.needRepaint = true;
@@ -269,13 +273,11 @@ public class EditBuffer
 				e.error = true;
 				return;
 			}
-			char[] dst = new char[1];
-			line.getChars(this.caretx, this.caretx + 1, dst, 0);
+			char c = line.value[this.caretx];
 			line.delete(this.caretx, this.caretx + 1);
-			this.j.pastebuffer = new String(dst);
+			this.j.pastebuffer = String.valueOf(c);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
-			this.writingUndo.replacement = new StringBuilder();
-			this.writingUndo.replacement.append(dst[0]);
+			this.writingUndo.replacement = new SB().append(c);
 			this.addCurrentWritingUndo();
 			if (this.caretx >= len - 1 && this.caretx > 0) {
 				this.caretx--;
@@ -291,7 +293,7 @@ public class EditBuffer
 				this.writingUndo.fromx = this.lines.get(this.carety).length();
 				String lines[] = this.j.pastebuffer.split("\n");
 				for (int i = lines.length - 1; i >= 0; i--) {
-					this.lines.add(this.carety + 1, new StringBuilder(lines[i]));
+					this.lines.add(this.carety + 1, new SB(lines[i]));
 				}
 				this.writingUndo.tox = lines[lines.length - 1].length();
 				this.writingUndo.toy = this.carety + lines.length;
@@ -322,7 +324,7 @@ public class EditBuffer
 			if (this.j.pastebuffer.endsWith("\n")) {
 				String lines[] = this.j.pastebuffer.split("\n");
 				for (int i = lines.length - 1; i >= 0; i--) {
-					this.lines.add(this.carety, new StringBuilder(lines[i]));
+					this.lines.add(this.carety, new SB(lines[i]));
 				}
 				this.virtualCaretx = this.caretx = 0;
 				this.writingUndo.fromx = 0;
@@ -436,7 +438,7 @@ public class EditBuffer
 
 	private void handleInputInsert(KeyInput e)
 	{
-		StringBuilder line;
+		SB line;
 		switch (e.c) {
 		case BS:
 			e.needCheckLineLength = true;
@@ -461,9 +463,9 @@ public class EditBuffer
 				line.delete(this.caretx, this.caretx + 1);
 			} else if (this.carety > 0) {
 				this.writingUndo.replacement.insert(0, '\n');
-				String linecontent = this.lines.get(this.carety).toString();
+				SB linecontent = this.lines.get(this.carety);
 				this.lines.remove(this.carety);
-				StringBuilder prev = this.lines.get(this.carety - 1);
+				SB prev = this.lines.get(this.carety - 1);
 				this.caretx = prev.length();
 				if (this.writingUndo.fromy == this.carety) {
 					this.writingUndo.fromy--;
@@ -499,7 +501,7 @@ public class EditBuffer
 				this.writingUndo.replacement.append(line.charAt(this.caretx));
 				line.delete(this.caretx, this.caretx + 1);
 			} else if (this.carety + 1 < this.lines.size()) {
-				this.writingUndo.replacement.append("\n");
+				this.writingUndo.replacement.append('\n');
 				line.append(this.lines.remove(this.carety + 1));
 			} else {
 				e.error = true;
@@ -516,9 +518,9 @@ public class EditBuffer
 			}
 			line = this.lines.get(this.carety);
 			char[] dst = new char[line.length() - this.caretx];
-			line.getChars(this.caretx, line.length(), dst, 0);
+			arraycopy(line.value, this.caretx, dst, 0, line.length - this.caretx);
 			line.delete(this.caretx, line.length());
-			this.lines.add(++this.carety, new StringBuilder().append(dst));
+			this.lines.add(++this.carety, new SB(dst));
 			this.caretx = this.virtualCaretx = 0;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
@@ -538,7 +540,7 @@ public class EditBuffer
 
 	private void handleInputChangeDelete(KeyInput e, int next_mode, int next_in_mode)
 	{
-		StringBuilder line;
+		SB line;
 		char[] dst;
 		Point pt;
 		int from, to;
@@ -558,7 +560,7 @@ public class EditBuffer
 				to = this.caretx;
 			}
 			dst = new char[to - pt.x];
-			line.getChars(pt.x, to, dst, 0);
+			arraycopy(line.value, pt.x, dst, 0, to - pt.x);
 			line.delete(pt.x, to);
 			this.j.pastebuffer = new String(dst);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
@@ -602,7 +604,7 @@ public class EditBuffer
 				from = this.caretx;
 			}
 			dst = new char[pt.x + 1 - from];
-			line.getChars(from, pt.x + 1, dst, 0);
+			arraycopy(line.value, from, dst, 0, pt.x + 1 - from);
 			line.delete(from, pt.x + 1);
 			this.j.pastebuffer = new String(dst);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
@@ -635,12 +637,12 @@ public class EditBuffer
 	private void handleInputChangeDeleteIn(KeyInput e, int next_mode)
 	{
 		if (e.c == 'w') {
-			StringBuilder line = this.lines.get(this.carety);
+			SB line = this.lines.get(this.carety);
 			if (this.caretx >= line.length()) {
 				this.mode = next_mode;
 				return;
 			}
-			char[] chars = Util.getValue(line);
+			char[] chars = line.value;
 			char clazz = VimOps.getCharClass(chars[this.caretx]);
 			int from = this.caretx;
 			int to = this.caretx + 1;
@@ -651,7 +653,7 @@ public class EditBuffer
 				to++;
 			}
 			char[] dst = new char[to - from];
-			line.getChars(from, to, dst, 0);
+			arraycopy(line.value, from, dst, 0, to - from);
 			line.delete(from, to);
 			this.j.pastebuffer = new String(dst);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
@@ -694,9 +696,9 @@ public class EditBuffer
 
 	private void handleInputD(KeyInput e)
 	{
-		String line;
+		SB line;
 		if (e.c == 'd') {
-			line = this.lines.get(this.carety).toString();
+			line = new SB(this.lines.get(this.carety));
 			this.lines.remove(this.carety);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 		} else if (e.c == 'j') {
@@ -704,9 +706,9 @@ public class EditBuffer
 				e.error = true;
 				return;
 			}
-			line = this.lines.get(this.carety).toString();
+			line = new SB(this.lines.get(this.carety));
 			this.lines.remove(this.carety);
-			line += '\n' + this.lines.get(this.carety).toString();
+			line.append('\n').append(this.lines.get(this.carety));
 			this.lines.remove(this.carety);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 		} else if (e.c == 'k') {
@@ -716,9 +718,9 @@ public class EditBuffer
 			}
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.carety--;
-			line = this.lines.get(this.carety).toString();
+			line = new SB(this.lines.get(this.carety));
 			this.lines.remove(this.carety);
-			line += '\n' + this.lines.get(this.carety).toString();
+			line.append('\n').append(this.lines.get(this.carety));
 			this.lines.remove(this.carety);
 			this.writingUndo.fromy = this.writingUndo.toy = this.carety;
 		} else {
@@ -728,21 +730,21 @@ public class EditBuffer
 		this.writingUndo.fromx = 0;
 		this.writingUndo.tox = 0;
 		if (this.lines.isEmpty()) {
-			this.lines.add(new StringBuilder());
+			this.lines.add(new SB());
 			this.writingUndo.replacement.append(line);
 		} else if (this.carety >= this.lines.size()) {
 			this.carety--;
 			int len = this.lines.get(this.carety).length();
 			this.writingUndo.fromy = this.writingUndo.toy = this.carety;
 			this.writingUndo.fromx = this.writingUndo.tox = len;
-			this.writingUndo.replacement.append('\n' + line);
+			this.writingUndo.replacement.append('\n').append(line);
 		} else {
-			this.writingUndo.replacement.append(line + '\n');
+			this.writingUndo.replacement.append(line).append('\n');
 		}
 		this.addCurrentWritingUndo();
 		this.caretx = 0;
 		this.mode = NORMAL_MODE;
-		this.j.pastebuffer = line + '\n';
+		this.j.pastebuffer = line.toString() + '\n';
 		e.needRepaintCaret = true;
 		e.needCheckLineLength = true;
 		e.needEnsureViewSize = true;
@@ -781,16 +783,16 @@ public class EditBuffer
 			this.writingUndo = this.newUndo(0, this.lineselectinitial);
 			int from = this.lineselectfrom;
 			for (int i = this.lineselectfrom; i < this.lineselectto; i++) {
-				StringBuilder line = this.lines.remove(from);
+				SB line = this.lines.remove(from);
 				this.writingUndo.replacement.append(line).append('\n');
 			}
 			this.j.pastebuffer = this.writingUndo.replacement.toString();
 			if (this.lines.isEmpty()) {
-				this.lines.add(new StringBuilder());
+				this.lines.add(new SB());
 			}
 			this.caretx = 0;
 			if (from >= this.lines.size()) {
-				StringBuilder replacement = this.writingUndo.replacement;
+				SB replacement = this.writingUndo.replacement;
 				replacement.setLength(replacement.length() - 1);
 				replacement.insert(0, '\n');
 				this.carety = from - 1;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class BufferLines
 {
-	public final ArrayList<StringBuilder> lines;
+	public final ArrayList<SB> lines;
 	public final CodeGroup group;
 
 	public BufferLines(CodeGroup group)
@@ -13,7 +13,7 @@ public class BufferLines
 		this.group = group;
 	}
 
-	public StringBuilder get(int idx)
+	public SB get(int idx)
 	{
 		return this.lines.get(idx);
 	}
@@ -26,7 +26,7 @@ public class BufferLines
 		this.lines.clear();
 	}
 
-	public void add(StringBuilder line)
+	public void add(SB line)
 	{
 		this.lines.add(line);
 		if (this.group != null) {
@@ -34,7 +34,7 @@ public class BufferLines
 		}
 	}
 
-	public void add(int idx, StringBuilder line)
+	public void add(int idx, SB line)
 	{
 		this.lines.add(idx, line);
 		if (this.group != null) {
@@ -42,7 +42,7 @@ public class BufferLines
 		}
 	}
 
-	public StringBuilder remove(int idx)
+	public SB remove(int idx)
 	{
 		if (this.group != null) {
 			this.group.beforeLineRemoved(idx);

@@ -2,13 +2,11 @@ package net.basdon.jeanine;
 
 public class Line
 {
-	public static int visualLength(StringBuilder sb)
+	public static int visualLength(SB sb)
 	{
-		int length = sb.length();
-		char[] value = Util.getValue(sb);
 		int visualLen = 0;
-		for (int i = 0; i < length; i++) {
-			if (value[i] == '\t') {
+		for (int i = 0; i < sb.length; i++) {
+			if (sb.value[i] == '\t') {
 				visualLen += (8 - visualLen % 8);
 			} else {
 				visualLen++;
@@ -17,16 +15,14 @@ public class Line
 		return visualLen;
 	}
 
-	public static int logicalToVisualPos(StringBuilder sb, int logicalPos)
+	public static int logicalToVisualPos(SB sb, int logicalPos)
 	{
 		if (logicalPos == 0) {
 			return 0;
 		}
-		int length = sb.length();
-		char[] value = Util.getValue(sb);
 		int visualPos = 0;
-		for (int i = 0; i < length; i++) {
-			if (value[i] == '\t') {
+		for (int i = 0; i < sb.length; i++) {
+			if (sb.value[i] == '\t') {
 				visualPos += (8 - visualPos % 8);
 			} else {
 				visualPos++;
@@ -38,15 +34,13 @@ public class Line
 		return visualPos;
 	}
 
-	public static int visualToLogicalPos(StringBuilder sb, int visualPos)
+	public static int visualToLogicalPos(SB sb, int visualPos)
 	{
-		int length = sb.length();
-		char[] value = Util.getValue(sb);
-		for (int i = 0; i < length; i++) {
+		for (int i = 0; i < sb.length; i++) {
 			if (visualPos <= 0) {
 				return i;
 			}
-			if (value[i] == '\t') {
+			if (sb.value[i] == '\t') {
 				visualPos -= (8 - visualPos % 8);
 			} else {
 				visualPos--;
@@ -57,14 +51,12 @@ public class Line
 
 	private static final char[] spaces = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
 
-	public static String tabs2spaces(StringBuilder sb)
+	public static String tabs2spaces(SB sb)
 	{
-		StringBuilder sb2 = new StringBuilder(sb.capacity());
-		int length = sb.length();
-		char[] value = Util.getValue(sb);
+		SB sb2 = new SB(sb.value.length + 32);
 		int visualPos = 0;
-		for (int i = 0; i < length; i++) {
-			char c = value[i];
+		for (int i = 0; i < sb.length; i++) {
+			char c = sb.value[i];
 			if (c == '\t') {
 				int n = (8 - visualPos % 8);
 				visualPos += n;

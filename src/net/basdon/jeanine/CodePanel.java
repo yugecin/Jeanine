@@ -100,7 +100,7 @@ implements
 			} else {
 				g.setColor(Color.red);
 			}
-			StringBuilder line = this.buffer.lines.get(this.buffer.carety);
+			SB line = this.buffer.lines.get(this.buffer.carety);
 			int x = Line.logicalToVisualPos(line, this.buffer.caretx) * this.j.fx;
 			int y = (this.buffer.carety - this.firstline) * this.j.fy;
 			g.fillRect(x, y, this.j.fx, this.j.fy);
@@ -111,7 +111,7 @@ implements
 		g.setColor(Color.black);
 		for (int i = this.firstline; i < this.lastline && heightleft > 0; i++) {
 			if (hiddenHeight < this.j.fy) {
-				StringBuilder line = this.buffer.lines.get(i);
+				SB line = this.buffer.lines.get(i);
 				g.drawString(Line.tabs2spaces(line), 0, this.j.fmaxascend);
 			} else {
 				hiddenHeight -= this.j.fy;

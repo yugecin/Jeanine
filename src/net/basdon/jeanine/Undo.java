@@ -18,7 +18,7 @@ public class Undo
 	/**Caret position before this operation
 	(can be different from {@link #fromy} eg when the O command was used).*/
 	public int carety;
-	public StringBuilder replacement = new StringBuilder();
+	public SB replacement = new SB();
 
 	public Undo(EditBuffer buffer, int caretx, int carety)
 	{

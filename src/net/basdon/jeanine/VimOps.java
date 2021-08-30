@@ -24,15 +24,14 @@ public class VimOps
 	 *
 	 * @return if no next, point with same coordinates as input
 	 */
-	public static Point forwardsEx(ArrayList<StringBuilder> lines, int caretx, int carety)
+	public static Point forwardsEx(ArrayList<SB> lines, int caretx, int carety)
 	{
 		Point p = new Point(caretx, carety);
-		StringBuilder sb = lines.get(carety);
-		int length = sb.length();
-		char[] line = Util.getValue(sb);
+		SB sb = lines.get(carety);
+		int length = sb.length;
 		char currentClass = 3;
 		if (caretx < length && length > 0) {
-			currentClass = getCharClass(line[caretx]);
+			currentClass = getCharClass(sb.value[caretx]);
 		}
 
 		for (;;) {
@@ -48,14 +47,13 @@ public class VimOps
 					return p;
 				}
 				sb = lines.get(carety);
-				length = sb.length();
-				line = Util.getValue(sb);
+				length = sb.length;
 				p.x = 0;
 				p.y = carety;
 				caretx = -1;
 				continue;
 			}
-			char clazz = getCharClass(line[caretx]);
+			char clazz = getCharClass(sb.value[caretx]);
 			if (clazz != 2 && clazz != currentClass) {
 				p.x = caretx;
 				return p;
@@ -69,12 +67,12 @@ public class VimOps
 	 *
 	 * @return if no next, point with same coordinates as input
 	 */
-	public static Point forwards(ArrayList<StringBuilder> lines, int caretx, int carety)
+	public static Point forwards(ArrayList<SB> lines, int caretx, int carety)
 	{
 		Point p = new Point(caretx, carety);
-		StringBuilder sb = lines.get(carety);
-		int length = sb.length();
-		char[] line = Util.getValue(sb);
+		SB sb = lines.get(carety);
+		int length = sb.length;
+		char[] line = sb.value;
 		char currentClass = 3;
 		if (caretx < length && length > 0) {
 			currentClass = getCharClass(line[caretx]);
@@ -103,8 +101,8 @@ public class VimOps
 					return p;
 				}
 				sb = lines.get(carety);
-				length = sb.length();
-				line = Util.getValue(sb);
+				length = sb.length;
+				line = sb.value;
 				p.x = 0;
 				p.y = carety;
 				caretx = -1;
@@ -127,12 +125,12 @@ public class VimOps
 	 *
 	 * @return if no next, point with same coordinates as input
 	 */
-	public static Point backwards(ArrayList<StringBuilder> lines, int caretx, int carety)
+	public static Point backwards(ArrayList<SB> lines, int caretx, int carety)
 	{
 		Point p = new Point(caretx, carety);
-		StringBuilder sb = lines.get(carety);
-		int length = sb.length();
-		char[] line = Util.getValue(sb);
+		SB sb = lines.get(carety);
+		int length = sb.length;
+		char[] line = sb.value;
 		char currentClass = 3;
 		if (caretx < length && length > 0) {
 			currentClass = getCharClass(line[caretx]);
@@ -159,7 +157,7 @@ public class VimOps
 				}
 				sb = lines.get(carety);
 				length = sb.length();
-				line = Util.getValue(sb);
+				line = sb.value;
 				p.x = length - 1;
 				if (p.x < 0) {
 					p.x = 0;

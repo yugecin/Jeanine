@@ -2347,7 +2347,7 @@ public class EditBufferTest
 		test.buf = new EditBuffer(new Jeanine(), null);
 		test.buf.lines.clear();
 		for (String line : lines) {
-			test.buf.lines.add(new StringBuilder(line));
+			test.buf.lines.add(new SB(line));
 		}
 		test.buf.caretx = caretx;
 		test.buf.carety = carety;
@@ -2409,7 +2409,7 @@ public class EditBufferTest
 
 	private EditBufferTest assertBuffer(String...expectedLines)
 	{
-		StringBuilder sb = new StringBuilder();
+		SB sb = new SB();
 		String exp = String.join("\n", expectedLines);
 		boolean needcaret = false;
 		for (String line : expectedLines) {
@@ -2422,17 +2422,17 @@ public class EditBufferTest
 		if (needcaret) {
 			for (int i = 0; i < this.buf.lines.size(); i++) {
 				if (i != 0) {
-					sb.append("\n");
+					sb.append('\n');
 				}
-				StringBuilder line = this.buf.lines.get(i);
+				SB line = this.buf.lines.get(i);
 				if (this.buf.carety == i) {
 					int caretx = this.buf.caretx;
 					if (caretx < 0) {
 						caretx = 0;
 					}
-					sb.append(line, 0, caretx);
+					sb.append(line.value, 0, caretx);
 					sb.append("<caret>");
-					sb.append(line, caretx, line.length());
+					sb.append(line.value, caretx, line.length);
 				} else {
 					sb.append(line);
 				}
@@ -2451,11 +2451,9 @@ public class EditBufferTest
 			failComparison(sb.toString(), exp, actual);
 		}
 		for (int i = 0; i < expectedLines.length; i++) {
-			StringBuilder line = this.buf.lines.get(i);
-			int len = line.length();
-			char[] chars = Util.getValue(line);
-			for (int j = 0; j < len; j++) {
-				if (chars[j] == '\n') {
+			SB line = this.buf.lines.get(i);
+			for (int j = 0; j < line.length; j++) {
+				if (line.value[j] == '\n') {
 					sb.append("Line ").append(i);
 					sb.append(" has LF, lines shouldn't have LFs:");
 					sb.append("\n>>>\n").append(this.buf.lines.get(i));
