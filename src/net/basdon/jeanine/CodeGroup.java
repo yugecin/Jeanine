@@ -65,6 +65,19 @@ public class CodeGroup
 		}
 	}
 
+	public void fontChanged()
+	{
+		for (CodePanel panel : this.panels.values()) {
+			panel.validateSize();
+		}
+		this.setLocation(this.location.x, this.location.y);
+	}
+
+	public void updateLocation()
+	{
+		this.setLocation(this.location.x, this.location.y);
+	}
+
 	public void position(CodePanel panel)
 	{
 		int x = this.location.x + this.jf.location.x;
@@ -114,8 +127,8 @@ public class CodeGroup
 			this.jf.setError("can't split, need to be in 'select line' mode (ctrl+v)");
 			return;
 		}
-		if (this.frameAtLine(this.buffer.lineselectfrom) !=
-			this.frameAtLine(this.buffer.lineselectto - 1))
+		if (this.panelAtLine(this.buffer.lineselectfrom) !=
+			this.panelAtLine(this.buffer.lineselectto - 1))
 		{
 			this.jf.setError("can't split, selection spans multiple views");
 			return;
@@ -158,7 +171,7 @@ public class CodeGroup
 			}
 		}
 
-		this.activePanel = this.frameAtLine(this.buffer.carety);
+		this.activePanel = this.panelAtLine(this.buffer.carety);
 		if (this.activePanel != null) {
 			SwingUtilities.invokeLater(() -> {
 				this.activePanel.requestFocusInWindow();
@@ -236,7 +249,7 @@ public class CodeGroup
 		return max;
 	}
 
-	public CodePanel frameAtLine(int line)
+	public CodePanel panelAtLine(int line)
 	{
 		for (CodePanel panel : this.panels.values()) {
 			if (panel.firstline <= line && line < panel.lastline) {

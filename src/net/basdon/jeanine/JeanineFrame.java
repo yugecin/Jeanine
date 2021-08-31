@@ -33,6 +33,7 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 	public List<CodeGroup> codegroups, lastCodegroups;
 	public CodeGroup activeGroup, lastActiveGroup;
 	public Point location, lastLocation;
+	public Point cursorPosBeforeChangingFont;
 	public boolean isSelectingFont;
 
 	private Point dragStart;
@@ -117,21 +118,33 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 			}
 		}
 		if (this.isSelectingFont) {
+			Point oldcursorpos = this.findCursorPosition();
 			if (event.c == EditBuffer.ESC) {
 				this.stopSelectingFont();
+				oldcursorpos = cursorPosBeforeChangingFont;
 			} else if (event.c == '\n' || event.c == '\r') {
 				EditBuffer buffer = this.activeGroup.buffer;
 				String fontname = buffer.lines.get(buffer.carety).toString();
 				Font font = new Font(fontname, Font.BOLD, 14);
 				this.j.setFont(font);
-				this.stopSelectingFont();
-				for (CodeGroup group : this.codegroups) {
-					group.setLocation(group.location.x, group.location.y);
-				}
-				this.repaint();
 			} else {
 				Toolkit.getDefaultToolkit().beep();
+				return;
 			}
+			for (CodeGroup group : this.codegroups) {
+				group.fontChanged();
+			}
+			Point newcursorpos = this.findCursorPosition();
+			if (newcursorpos != null) {
+				if (oldcursorpos != null) {
+					this.location.x -= newcursorpos.x - oldcursorpos.x;
+					this.location.y -= newcursorpos.y - oldcursorpos.y;
+				}
+			}
+			for (CodeGroup group : this.codegroups) {
+				group.updateLocation();
+			}
+			this.repaint();
 			return;
 		}
 		if (event.c == ':') {
@@ -212,7 +225,6 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 	public boolean acceptCommand(String command)
 	{
 		if (this.isSelectingFont) {
-			this.stopSelectingFont();
 			return true;
 		}
 		if ("bd".equals(command)) {
@@ -247,6 +259,7 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 
 	private void startSelectingFont()
 	{
+		this.cursorPosBeforeChangingFont = this.findCursorPosition();
 		this.isSelectingFont = true;
 		this.lastActiveGroup = this.activeGroup;
 		this.lastCodegroups = this.codegroups;
@@ -289,6 +302,21 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 			}
 		}
 		this.repaint();
+	}
+
+	private Point findCursorPosition()
+	{
+		if (this.activeGroup != null) {
+			EditBuffer buf = this.activeGroup.buffer;
+			CodePanel panel = this.activeGroup.panelAtLine(buf.carety);
+			if (panel != null) {
+				Point p = panel.getLocation();
+				p.x += 3 + this.j.fx * buf.caretx;
+				p.y += 3 + this.j.fy * (1 + buf.carety - panel.firstline);
+				return p;
+			}
+		}
+		return null;
 	}
 
 	private static final String WELCOMETEXT =

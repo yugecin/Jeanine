@@ -293,6 +293,11 @@ implements MouseListener, MouseMotionListener, FocusListener
 		}
 	}
 
+	public void validateSize()
+	{
+		this.setCodeViewSize(this.rows, this.cols);
+	}
+
 	public void setCodeViewSize(int rows, int cols)
 	{
 		this.rows = rows;
@@ -300,6 +305,8 @@ implements MouseListener, MouseMotionListener, FocusListener
 		Dimension size = new Dimension();
 		size.width = /*padding*/ 4 + cols * this.j.fx;
 		size.height = /*padding*/ 4 + (rows + 1) * this.j.fy;
-		this.setSize(size);
+		if (this.getWidth() != size.width || this.getHeight() != size.height) {
+			this.setSize(size);
+		}
 	}
 }
