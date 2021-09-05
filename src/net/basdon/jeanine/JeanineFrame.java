@@ -316,8 +316,16 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 			CodePanel panel = this.activeGroup.panelAtLine(buf.carety);
 			if (panel != null) {
 				Point p = panel.getLocation();
-				p.x += 3 + this.j.fx * buf.caretx;
-				p.y += 3 + this.j.fy * (1 + buf.carety - panel.firstline);
+				p.x +=
+					/*border*/ 1 +
+					/*padding*/ 1 +
+					this.j.fx * buf.caretx;
+				p.y +=
+					/*border*/ 1 +
+					/*padding title up/down*/ 1 +
+					/*title*/ this.j.fy +
+					/*padding content*/ 1 +
+					this.j.fy * (buf.carety - panel.firstline);
 				return p;
 			}
 		}

@@ -69,18 +69,18 @@ implements MouseListener, MouseMotionListener, FocusListener
 		int heightleft = contentsize.height - (thisloc.y - contentloc.y);
 		int hiddenHeight = contentloc.y - thisloc.y;
 
-		int w = this.getWidth();
-		int h = this.getHeight();
+		int w = this.getWidth() - 1;
+		int h = this.getHeight() - 1;
 
 		g.setFont(this.j.font);
 		g.setColor(Color.black);
-		g.drawRect(0, 0, w - 1, h - 1);
+		g.drawRect(0, 0, w, h); // border
 		g.translate(1, 1);
-		g.setColor(Color.white);
-		g.fillRect(0, 0, w - 2, h - 2);
-		if (hiddenHeight < this.j.fy) {
+		w--;
+		h--;
+		if (hiddenHeight < this.j.fy) { // title
 			g.setColor(new Color(0xdddddd));
-			g.fillRect(0, 0, w - 2, this.j.fy);
+			g.fillRect(0, 0, w, this.j.fy + 2);
 			g.setColor(Color.black);
 			SB title = new SB(100);
 			title.append(String.valueOf(this.id));
@@ -91,11 +91,18 @@ implements MouseListener, MouseMotionListener, FocusListener
 			if (this.buffer.readonly) {
 				title.append("|RO");
 			}
-			g.drawString(title.toString(), 0, this.j.fmaxascend);
+			g.drawString(title.toString(), 1, 1 + this.j.fmaxascend);
 		}
-		hiddenHeight -= this.j.fy;
-		g.translate(1, this.j.fy + 1);
+		hiddenHeight -= this.j.fy + 1 + 2;
+		h -= this.j.fy + 1 + 2;
+		g.translate(0, this.j.fy + 2);
 		heightleft--;
+
+		g.setColor(Color.white); // bg
+		g.fillRect(0, 0, w, h);
+
+		g.translate(1, 1);
+		w -= 2;
 
 		// line selection
 		if (this.buffer.mode == EditBuffer.SELECT_LINE_MODE) {
@@ -107,7 +114,7 @@ implements MouseListener, MouseMotionListener, FocusListener
 			if (fromy < toy) {
 				int y = fromy * this.j.fy;
 				int height = this.j.fy * toy - y;
-				g.fillRect(0, y, this.maxLineLength * this.j.fx, height);
+				g.fillRect(0, y, w, height);
 			}
 		}
 
@@ -240,8 +247,16 @@ implements MouseListener, MouseMotionListener, FocusListener
 
 	private void putCaret(int x, int y)
 	{
-		x = (x - 2) / this.j.fx; // -2 for panel padding
-		y = (y - 2 - this.j.fy) / this.j.fy; // -2 for panel padding, -fy for title
+		x -=
+			/*border left*/ 1 +
+			/*content padding left*/ 1;
+		x /= this.j.fx;
+		y -=
+			/*border top*/ 1 +
+			/*title padding up/down*/ 2 +
+			/*title*/ this.j.fy +
+			/*content padding up*/ 1;
+		y /= this.j.fy;
 		y = Math.min(y, this.lastline - this.firstline - 1);
 		y += this.firstline;
 		if (y < this.firstline) {
@@ -296,8 +311,16 @@ implements MouseListener, MouseMotionListener, FocusListener
 		this.rows = rows;
 		this.cols = cols;
 		Dimension size = new Dimension();
-		size.width = /*padding*/ 4 + cols * this.j.fx;
-		size.height = /*padding*/ 4 + (rows + 1) * this.j.fy;
+		size.width =
+			/*border left/right*/ 2 +
+			/*padding left/right*/ 2 +
+			/*content*/ cols * this.j.fx;
+		size.height =
+			/*border up/down*/ 2 +
+			/*padding title up/down*/ 2 +
+			/*title*/ this.j.fy +
+			/*padding content up/down*/ 2 +
+			/*content*/ rows * this.j.fy;
 		if (this.getWidth() != size.width || this.getHeight() != size.height) {
 			this.setSize(size);
 		}
