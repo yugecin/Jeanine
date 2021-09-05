@@ -60,7 +60,7 @@ public class SB implements CharSequence
 	public void ensureCapacity(int cap)
 	{
 		if (this.value.length < cap) {
-			int newlen = this.value.length << 1;
+			int newlen = Math.max(cap, this.value.length << 1);
 			char[] newvalue = new char[newlen];
 			System.arraycopy(this.value, 0, newvalue, 0, this.length);
 			this.value = newvalue;
