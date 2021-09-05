@@ -233,8 +233,13 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 				return false;
 			}
 			// TODO: bd
+			this.codegroups.remove(this.activeGroup);
+			for (CodePanel panel : this.activeGroup.panels.values()) {
+				this.getContentPane().remove(panel);
+			}
 			this.activeGroup.dispose();
 			this.activeGroup = null;
+			this.repaint();
 			return true;
 		} else if ("spl".equals(command)) {
 			this.activeGroup.split();
