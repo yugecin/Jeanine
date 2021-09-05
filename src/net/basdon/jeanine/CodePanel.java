@@ -24,13 +24,12 @@ implements MouseListener, MouseMotionListener, FocusListener
 	public final EditBuffer buffer;
 	public final Integer id;
 
-	public String title;
 	public int firstline;
 	/**
 	 * Exclusive
 	 */
 	public int lastline;
-	public boolean requirePositionSizeValidation;
+	public boolean requireValidation;
 	public byte anchor;
 
 	public CodePanel parent;
@@ -85,10 +84,10 @@ implements MouseListener, MouseMotionListener, FocusListener
 			g.setColor(Color.black);
 			SB title = new SB(100);
 			title.append(String.valueOf(this.id));
-			if (this.title != null) {
-				title.append('|');
-				title.append(this.title);
+			if (this.group.title != null) {
+				title.append('|').append(this.group.title);
 			}
+			title.append('|').append(this.firstline).append('-').append(this.lastline);
 			if (this.buffer.readonly) {
 				title.append("|RO");
 			}
@@ -218,12 +217,6 @@ implements MouseListener, MouseMotionListener, FocusListener
 	@Override
 	public void mouseMoved(MouseEvent e)
 	{
-	}
-
-	public void setTitle(String title)
-	{
-		this.title = title;
-		this.repaint();
 	}
 
 	public void handleInput(KeyInput event)

@@ -17,6 +17,7 @@ public class CodeGroup
 	public CodePanel root;
 	public File ownerFile;
 	public CodePanel activePanel;
+	public String title;
 
 	public CodeGroup(JeanineFrame jf)
 	{
@@ -103,7 +104,7 @@ public class CodeGroup
 		x += panel.location.x;
 		y += panel.location.y;
 		panel.setLocation(x, y);
-		panel.requirePositionSizeValidation = false;
+		panel.requireValidation = false;
 		this.positionChanged(panel);
 	}
 
@@ -285,7 +286,7 @@ public class CodeGroup
 					panel.ensureCodeViewSize();
 				}
 			}
-			if (panel.requirePositionSizeValidation) {
+			if (panel.requireValidation) {
 				panel.recheckMaxLineLength();
 				panel.ensureCodeViewSize();
 				this.position(panel);
@@ -304,11 +305,11 @@ public class CodeGroup
 		for (CodePanel frame : this.panels.values()) {
 			if (frame.firstline >= idx && idx != 0) {
 				frame.firstline++;
-				frame.requirePositionSizeValidation = true;
+				frame.requireValidation = true;
 			}
 			if (frame.lastline >= idx) {
 				frame.lastline++;
-				frame.requirePositionSizeValidation = true;
+				frame.requireValidation = true;
 			}
 		}
 	}
@@ -319,10 +320,10 @@ public class CodeGroup
 			if (panel.firstline > idx) {
 				panel.firstline--;
 				panel.lastline--;
-				panel.requirePositionSizeValidation = true;
+				panel.requireValidation = true;
 			} else if (panel.lastline > idx && panel.firstline <= idx) {
 				panel.lastline--;
-				panel.requirePositionSizeValidation = true;
+				panel.requireValidation = true;
 			}
 		}
 	}

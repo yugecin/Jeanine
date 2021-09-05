@@ -282,9 +282,9 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 			break;
 		}
 		CodeGroup group = new CodeGroup(this);
+		group.title = "Font selection";
 		group.buffer.readonly = true;
 		group.setContents(sb.toString());
-		group.activePanel.setTitle("Font selection");
 		group.setLocation(30, 30);
 		this.activeGroup = group;
 		this.codegroups = Collections.singletonList(group);
