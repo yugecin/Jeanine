@@ -261,8 +261,8 @@ public class CodeGroup
 
 	public void repaintAll()
 	{
-		for (CodePanel frame : this.panels.values()) {
-			frame.repaint();
+		for (CodePanel panel : this.panels.values()) {
+			panel.repaint();
 		}
 	}
 
@@ -316,12 +316,12 @@ public class CodeGroup
 	public void beforeLineRemoved(int idx)
 	{
 		for (CodePanel panel : this.panels.values()) {
-			if (panel.lastline >= idx) {
-				panel.lastline--;
-				panel.requirePositionSizeValidation = true;
-			}
 			if (panel.firstline > idx) {
 				panel.firstline--;
+				panel.lastline--;
+				panel.requirePositionSizeValidation = true;
+			} else if (panel.lastline > idx && panel.firstline <= idx) {
+				panel.lastline--;
 				panel.requirePositionSizeValidation = true;
 			}
 		}
