@@ -178,7 +178,7 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 		this.dragStart.y = e.getY();
 
 		for (CodeGroup cg : this.codegroups) {
-			cg.mouseDragged(x, y);
+			cg.updateLocation();
 		}
 	}
 

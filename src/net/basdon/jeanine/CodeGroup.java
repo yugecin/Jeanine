@@ -230,15 +230,6 @@ public class CodeGroup
 		return panel == this.activePanel;
 	}
 
-	public void mouseDragged(int dX, int dY)
-	{
-		Point loc = null;
-		for (CodePanel frame : this.panels.values()) {
-			loc = frame.getLocation(loc);
-			frame.setLocation(loc.x + dX, loc.y + dY);
-		}
-	}
-
 	public int findMaxId()
 	{
 		int max = 0;
