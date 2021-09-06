@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -14,7 +12,7 @@ import javax.swing.JPanel;
 
 public class CodePanel
 extends JPanel
-implements MouseListener, MouseMotionListener, FocusListener
+implements MouseListener, MouseMotionListener
 {
 	private static final Color selectColor = new Color(0x66AAFF);
 
@@ -53,7 +51,6 @@ implements MouseListener, MouseMotionListener, FocusListener
 		this.setFocusable(false);
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
-		this.addFocusListener(this);
 		this.recheckMaxLineLength();
 		this.ensureCodeViewSize();
 	}
@@ -145,22 +142,6 @@ implements MouseListener, MouseMotionListener, FocusListener
 			g.translate(0, this.j.fy);
 			heightleft -= this.j.fy;
 		}
-	}
-
-	/*FocusListener*/
-	@Override
-	public void focusGained(FocusEvent e)
-	{
-		if (this.group.focusGained(this)) {
-			this.repaint(); // TODO: should only repaint the cursor really
-		}
-	}
-
-	/*FocusListener*/
-	@Override
-	public void focusLost(FocusEvent e)
-	{
-		this.repaint(); // TODO: should only repaint the cursor really
 	}
 
 	/*MouseListener*/
