@@ -28,6 +28,7 @@ extends JFrame
 implements KeyListener, MouseListener, MouseMotionListener
 {
 	public final CommandBar commandbar;
+	public final OverlayPanel overlay;
 	public final Jeanine j;
 
 	public List<CodeGroup> codegroups, lastCodegroups;
@@ -51,6 +52,8 @@ implements KeyListener, MouseListener, MouseMotionListener
 		this.addMouseMotionListener(this);
 		this.commandbar = new CommandBar(j);
 		this.setContentPane(new BackgroundPanel());
+		this.setGlassPane(this.overlay = new OverlayPanel(this));
+		this.overlay.setVisible(true);
 		this.setLocationByPlatform(true);
 		this.setError(null);
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);

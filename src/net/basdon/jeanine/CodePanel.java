@@ -201,6 +201,7 @@ implements MouseListener, MouseMotionListener
 				this.location.y += now.y - this.dragStart.y;
 				this.group.position(this);
 				this.dragStart = now;
+				this.jf.overlay.repaint();
 			} else if (this.group.hasFocus(this)) {
 				this.putCaret(e.getX(), e.getY());
 			}
@@ -308,7 +309,10 @@ implements MouseListener, MouseMotionListener
 			/*title*/ this.j.fy +
 			/*padding content up/down*/ 2 +
 			/*content*/ rows * this.j.fy;
-		if (this.getWidth() != size.width || this.getHeight() != size.height) {
+		if (this.getWidth() != size.width) {
+			this.setSize(size);
+			this.jf.overlay.repaint();
+		} else if (this.getHeight() != size.height) {
 			this.setSize(size);
 		}
 	}

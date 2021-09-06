@@ -149,7 +149,7 @@ public class CodeGroup
 			codepanel.lastline = this.buffer.lineselectto;
 			codepanel.recheckMaxLineLength();
 			codepanel.ensureCodeViewSize();
-			this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 10,
+			this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 30,
 				this.buffer.lineselectto,
 				this.buffer.lines.size());
 		} else {
@@ -158,15 +158,15 @@ public class CodeGroup
 			codepanel.recheckMaxLineLength();
 			codepanel.ensureCodeViewSize();
 			if (this.buffer.lineselectto == initialLastline) {
-				this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 10,
+				this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 30,
 					this.buffer.lineselectfrom,
 					initialLastline);
 			} else {
-				this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 10,
+				this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 30,
 					this.buffer.lineselectfrom,
 					this.buffer.lineselectto);
 				nextId = Integer.valueOf(nextId.intValue() + 1);
-				this.add(nextId, this.activePanel, 'b', 0, 10,
+				this.add(nextId, this.activePanel, 'b', 0, 30,
 					this.buffer.lineselectto,
 					initialLastline);
 			}
