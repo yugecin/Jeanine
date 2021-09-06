@@ -93,7 +93,7 @@ public class CodeGroup
 				case 'r':
 					break;
 				case 'b':
-					x = bounds.x;
+					x = bounds.x + (bounds.width - panel.getWidth()) / 2;
 					y = bounds.y + bounds.height;
 					break;
 				case 'l':
@@ -105,10 +105,10 @@ public class CodeGroup
 		y += panel.location.y;
 		panel.setLocation(x, y);
 		panel.requireValidation = false;
-		this.positionChanged(panel);
+		this.positionChildrenOf(panel);
 	}
 
-	public void positionChanged(CodePanel panel)
+	public void positionChildrenOf(CodePanel panel)
 	{
 		for (CodePanel child : this.panels.values()) {
 			if (child.parent == panel) {

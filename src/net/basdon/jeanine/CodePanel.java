@@ -311,6 +311,7 @@ implements MouseListener, MouseMotionListener
 		if (this.getWidth() != size.width) {
 			this.setSize(size);
 			this.jf.overlay.repaint();
+			this.group.positionChildrenOf(this);
 		} else if (this.getHeight() != size.height) {
 			this.setSize(size);
 		}
