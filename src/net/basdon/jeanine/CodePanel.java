@@ -58,8 +58,6 @@ implements MouseListener, MouseMotionListener
 	@Override
 	protected void paintComponent(Graphics g)
 	{
-		super.paintComponent(g);
-
 		Point thisloc = this.getLocationOnScreen();
 		Point contentloc = this.jf.getContentPane().getLocationOnScreen();
 		Dimension contentsize = this.jf.getContentPane().getSize();
@@ -75,6 +73,7 @@ implements MouseListener, MouseMotionListener
 		g.translate(1, 1);
 		w--;
 		h--;
+		hiddenHeight--;
 		if (hiddenHeight < this.j.fy) { // title
 			g.setColor(new Color(0xdddddd));
 			g.fillRect(0, 0, w, this.j.fy + 2);
@@ -90,8 +89,8 @@ implements MouseListener, MouseMotionListener
 			}
 			g.drawString(title.toString(), 1, 1 + this.j.fmaxascend);
 		}
-		hiddenHeight -= this.j.fy + 1 + 2;
-		h -= this.j.fy + 1 + 2;
+		hiddenHeight -= this.j.fy + 2;
+		h -= this.j.fy + 2;
 		g.translate(0, this.j.fy + 2);
 		heightleft--;
 
