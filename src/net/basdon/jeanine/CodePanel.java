@@ -173,11 +173,13 @@ implements MouseListener, MouseMotionListener, FocusListener
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
-		if (e.getY() < this.j.fy + 2) {
-			this.isDragging = true;
-			this.dragStart = e.getLocationOnScreen();
-		} else if (this.group.focusGained(this)) {
-			this.putCaret(e.getX(), e.getY());
+		if (!this.jf.shouldBlockInput()) {
+			if (e.getY() < this.j.fy + 2) {
+				this.isDragging = true;
+				this.dragStart = e.getLocationOnScreen();
+			} else if (this.group.focusGained(this)) {
+				this.putCaret(e.getX(), e.getY());
+			}
 		}
 	}
 
@@ -185,11 +187,13 @@ implements MouseListener, MouseMotionListener, FocusListener
 	@Override
 	public void mouseReleased(MouseEvent e)
 	{
-		if (this.isDragging) {
-			this.isDragging = false;
-			this.dragStart = null;
-		} else if (this.group.hasFocus(this)) {
-			this.putCaret(e.getX(), e.getY());
+		if (!this.jf.shouldBlockInput()) {
+			if (this.isDragging) {
+				this.isDragging = false;
+				this.dragStart = null;
+			} else if (this.group.hasFocus(this)) {
+				this.putCaret(e.getX(), e.getY());
+			}
 		}
 	}
 
@@ -209,14 +213,16 @@ implements MouseListener, MouseMotionListener, FocusListener
 	@Override
 	public void mouseDragged(MouseEvent e)
 	{
-		if (this.isDragging) {
-			Point now = e.getLocationOnScreen();
-			this.location.x += now.x - this.dragStart.x;
-			this.location.y += now.y - this.dragStart.y;
-			this.group.position(this);
-			this.dragStart = now;
-		} else if (this.group.hasFocus(this)) {
-			this.putCaret(e.getX(), e.getY());
+		if (!this.jf.shouldBlockInput()) {
+			if (this.isDragging) {
+				Point now = e.getLocationOnScreen();
+				this.location.x += now.x - this.dragStart.x;
+				this.location.y += now.y - this.dragStart.y;
+				this.group.position(this);
+				this.dragStart = now;
+			} else if (this.group.hasFocus(this)) {
+				this.putCaret(e.getX(), e.getY());
+			}
 		}
 	}
 

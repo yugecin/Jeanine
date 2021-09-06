@@ -25,7 +25,7 @@ import static java.awt.KeyboardFocusManager.*;
 
 public class JeanineFrame
 extends JFrame
-implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
+implements KeyListener, MouseListener, MouseMotionListener
 {
 	public final CommandBar commandbar;
 	public final Jeanine j;
@@ -50,7 +50,6 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.commandbar = new CommandBar(j);
-		this.commandbar.addListener(this);
 		this.setContentPane(new BackgroundPanel());
 		this.setLocationByPlatform(true);
 		this.setError(null);
@@ -111,6 +110,16 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 			return;
 		}
 		KeyInput event = new KeyInput(e.getKeyChar());
+		if (this.commandbar.active) {
+			this.commandbar.handleKey(event.c);
+			if (!this.commandbar.active) {
+				if (this.commandbar.cmd.length() != 0) {
+					this.acceptCommand(this.commandbar.cmd.toString());
+				}
+				this.repaintActivePanel();
+			}
+			return;
+		}
 		if (this.activeGroup != null && this.activeGroup.activePanel != null) {
 			this.activeGroup.dispatchInputEvent(event, this.activeGroup.activePanel);
 			if (!event.error) {
@@ -148,7 +157,8 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 			return;
 		}
 		if (event.c == ':') {
-			this.commandbar.show("", this);
+			this.commandbar.show("");
+			this.repaintActivePanel();
 			return;
 		}
 		Toolkit.getDefaultToolkit().beep();
@@ -170,6 +180,9 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 	@Override
 	public void mouseDragged(MouseEvent e)
 	{
+		if (this.shouldBlockInput()) {
+			return;
+		}
 		int x = e.getX() - this.dragStart.x;
 		int y = e.getY() - this.dragStart.y;
 		this.location.x += x;
@@ -220,17 +233,20 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 	{
 	}
 
-	/*CommandBar.Listener*/
-	@Override
-	public boolean acceptCommand(String command)
+	public boolean shouldBlockInput()
+	{
+		return this.commandbar.active;
+	}
+
+	public void acceptCommand(String command)
 	{
 		if (this.isSelectingFont) {
-			return true;
+			return;
 		}
 		if ("bd".equals(command)) {
 			if (this.activeGroup == null) {
 				this.setError("can't close buffer, no code panel focused");
-				return false;
+				return;
 			}
 			// TODO: bd
 			this.codegroups.remove(this.activeGroup);
@@ -240,16 +256,13 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 			this.activeGroup.dispose();
 			this.activeGroup = null;
 			this.repaint();
-			return true;
 		} else if ("spl".equals(command)) {
 			this.activeGroup.split();
-			return true;
 		} else if ("font".equals(command)) {
 			this.startSelectingFont();
-			return true;
+		} else {
+			this.setError("unknown command: " + command);
 		}
-		this.setError("unknown command: " + command);
-		return false;
 	}
 
 	public void setError(String error)
@@ -330,6 +343,13 @@ implements KeyListener, MouseListener, MouseMotionListener, CommandBar.Listener
 			}
 		}
 		return null;
+	}
+
+	private void repaintActivePanel()
+	{
+		if (this.activeGroup != null && this.activeGroup.activePanel != null) {
+			this.activeGroup.activePanel.repaint();
+		}
 	}
 
 	private static final String WELCOMETEXT =

@@ -1,78 +1,45 @@
 package net.basdon.jeanine;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
-import java.awt.Toolkit;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.ArrayList;
 
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
-public class CommandBar extends JPanel implements FocusListener, KeyListener
+public class CommandBar extends JPanel
 {
 	private final Jeanine j;
 
-	private ArrayList<Listener> listeners;
-	private Component componentToFocusAfter;
-	private StringBuilder sb;
+	public final StringBuilder cmd;
+
 	private int caretPos;
+
+	public boolean active;
 
 	public CommandBar(Jeanine j)
 	{
 		this.j = j;
+		this.cmd = new StringBuilder();
 		this.setFont(j.font);
 		this.setBackground(Color.white);
 		this.setOpaque(true);
 		this.setBorder(new LineBorder(Color.black, 1));
 		this.setVisible(false);
-		this.addFocusListener(this);
-		this.addKeyListener(this);
-		this.listeners = new ArrayList<>();
+		this.setFocusable(false);
 	}
 
-	public void addListener(Listener listener)
+	public void show(String text)
 	{
-		this.listeners.add(listener);
-	}
-
-	public void show(String text, Component componentToFocusAfter)
-	{
-		this.componentToFocusAfter = componentToFocusAfter;
-		this.sb = new StringBuilder(text);
-		this.caretPos = this.sb.length();
+		this.cmd.setLength(0);
+		this.cmd.append(text);
+		this.caretPos = this.cmd.length();
 		Container parent = this.getParent();
 		this.setSize(parent.getWidth() - 4, this.j.fy + 4);
 		this.setLocation(2, parent.getHeight() - this.getHeight() - 2);
 		this.setVisible(true);
-		this.requestFocusInWindow();
-	}
-
-	private void doHide()
-	{
-		this.setVisible(false);
-		if (this.componentToFocusAfter != null) {
-			this.componentToFocusAfter.requestFocusInWindow();
-			this.componentToFocusAfter = null;
-		}
-	}
-
-	/*FocusListener*/
-	@Override
-	public void focusGained(FocusEvent e)
-	{
-	}
-
-	/*FocusListener*/
-	@Override
-	public void focusLost(FocusEvent e)
-	{
-		this.doHide();
+		this.active = true;
 	}
 
 	@Override
@@ -84,79 +51,48 @@ public class CommandBar extends JPanel implements FocusListener, KeyListener
 		g.fillRect(this.j.fx * (1 + this.caretPos), 0, this.j.fx, this.j.fy);
 		g.setColor(Color.black);
 		g.setFont(this.j.font);
-		g.drawString(':' + this.sb.toString(), 0, this.j.fmaxascend);
+		g.drawString(':' + this.cmd.toString(), 0, this.j.fmaxascend);
 	}
 
-	/*KeyListener*/
-	@Override
-	public void keyTyped(KeyEvent e)
+	public void handleKey(char c)
 	{
-		char c = e.getKeyChar();
-		if (c != KeyEvent.CHAR_UNDEFINED && c != /*bs*/ 8 && c != /*del*/ 127) {
-			this.sb.insert(this.caretPos++, c);
-			this.repaint();
-		}
-	}
-
-	/*KeyListener*/
-	@Override
-	public void keyPressed(KeyEvent e)
-	{
-		int c = e.getKeyCode();
 		switch (c) {
 		case KeyEvent.VK_LEFT:
 			if (this.caretPos > 0) {
 				this.caretPos--;
+				break;
 			}
-			break;
+			return;
 		case KeyEvent.VK_RIGHT:
-			if (this.caretPos < this.sb.length()) {
+			if (this.caretPos < this.cmd.length()) {
 				this.caretPos++;
+				break;
 			}
-			break;
-		case KeyEvent.VK_BACK_SPACE:
+			return;
+		case EditBuffer.BS:
 			if (this.caretPos == 0) {
-				this.doHide();
-				e.consume();
+				this.cmd.setLength(0);
+				this.active = false;
+				this.setVisible(false);
 				return;
 			}
 			this.caretPos--;
-			this.sb.delete(this.caretPos, this.caretPos + 1);
+			this.cmd.delete(this.caretPos, this.caretPos + 1);
 			break;
-		case KeyEvent.VK_DELETE:
-			if (this.caretPos < this.sb.length()) {
-				this.sb.delete(this.caretPos, this.caretPos + 1);
+		case EditBuffer.DEL:
+			if (this.caretPos < this.cmd.length()) {
+				this.cmd.delete(this.caretPos, this.caretPos + 1);
 			}
 			break;
-		case KeyEvent.VK_ENTER:
-			String cmd = this.sb.toString();
-			for (int i = this.listeners.size();; ) {
-				if (this.listeners.get(--i).acceptCommand(cmd)) {
-					break;
-				}
-				if (i == 0) {
-					Toolkit.getDefaultToolkit().beep();
-					break;
-				}
-			}
-		case KeyEvent.VK_ESCAPE:
-			this.doHide();
-			e.consume();
-		default:
+		case EditBuffer.ESC:
+			this.cmd.setLength(0);
+		case '\n':
+			this.setVisible(false);
+			this.active = false;
 			return;
+		default:
+			this.cmd.insert(this.caretPos++, c);
 		}
-		e.consume();
 		this.repaint();
-	}
-
-	/*KeyListener*/
-	@Override
-	public void keyReleased(KeyEvent e)
-	{
-	}
-
-	public interface Listener
-	{
-		boolean acceptCommand(String command);
 	}
 }

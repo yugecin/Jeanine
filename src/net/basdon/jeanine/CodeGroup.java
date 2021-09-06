@@ -211,6 +211,9 @@ public class CodeGroup
 	 */
 	public boolean focusGained(CodePanel panel)
 	{
+		if (this.jf.shouldBlockInput()) {
+			return false;
+		}
 		if (this.activePanel == panel) {
 			return true;
 		}
@@ -227,7 +230,7 @@ public class CodeGroup
 
 	public boolean hasFocus(CodePanel panel)
 	{
-		return panel == this.activePanel;
+		return panel == this.activePanel && !this.jf.shouldBlockInput();
 	}
 
 	public int findMaxId()
