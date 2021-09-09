@@ -172,6 +172,9 @@ public class CodeGroup
 			}
 		}
 
+		// Position the parent, since its max line length and thus size might have changed.
+		this.position(codepanel);
+
 		this.activePanel = this.panelAtLine(this.buffer.carety);
 		if (this.activePanel != null) {
 			SwingUtilities.invokeLater(() -> {
@@ -197,9 +200,6 @@ public class CodeGroup
 		cf.location.x = posX;
 		cf.location.y = posY;
 		cf.recheckMaxLineLength();
-		cf.ensureCodeViewSize();
-		this.position(cf);
-		cf.setVisible(true);
 		this.jf.getContentPane().add(cf);
 		return cf;
 	}
