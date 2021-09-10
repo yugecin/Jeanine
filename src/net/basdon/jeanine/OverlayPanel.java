@@ -51,7 +51,10 @@ public class OverlayPanel extends JComponent
 						// right line (child)
 						x1 = a.x;
 						x2 = a.x - 10;
-						y1 = a.y + this.j.fy / 2;
+						y1 = a.y +
+							/*border top*/ 1 +
+							/*title padding top*/ 2 +
+							this.j.fy / 2;
 						y2 = y1;
 						g.drawLine(x1, y1, x2, y2);
 						// connecting line
