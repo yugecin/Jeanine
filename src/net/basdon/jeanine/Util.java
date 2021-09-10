@@ -25,4 +25,13 @@ public class Util
 			throw new RuntimeException(e);
 		}
 	}
+
+	public static Integer parseInt(String s)
+	{
+		try {
+			return Integer.valueOf(Integer.parseInt(s));
+		} catch (Throwable t) {
+			return null;
+		}
+	}
 }

@@ -80,6 +80,9 @@ implements MouseListener, MouseMotionListener
 			g.setColor(Color.black);
 			SB title = new SB(100);
 			title.append(String.valueOf(this.id));
+			if (this.parent != null) {
+				title.append('^').append(String.valueOf(this.parent.id));
+			}
 			if (this.group.title != null) {
 				title.append('|').append(this.group.title);
 			}
@@ -315,5 +318,16 @@ implements MouseListener, MouseMotionListener
 		} else if (this.getHeight() != size.height) {
 			this.setSize(size);
 		}
+	}
+
+	public boolean isEventualParentOf(CodePanel other)
+	{
+		while (other != null) {
+			if (other.parent == this) {
+				return true;
+			}
+			other = other.parent;
+		}
+		return false;
 	}
 }

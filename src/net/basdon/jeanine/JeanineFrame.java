@@ -246,9 +246,10 @@ implements KeyListener, MouseListener, MouseMotionListener
 		if (this.isSelectingFont) {
 			return;
 		}
-		if ("bd".equals(command)) {
+		String[] parts = command.split(" ");
+		if ("bd".equals(parts[0])) {
 			if (this.activeGroup == null) {
-				this.setError("can't close buffer, no code panel focused");
+				this.setError("can't close buffer, no active panel");
 				return;
 			}
 			// TODO: bd
@@ -259,12 +260,25 @@ implements KeyListener, MouseListener, MouseMotionListener
 			this.activeGroup.dispose();
 			this.activeGroup = null;
 			this.repaint();
-		} else if ("spl".equals(command)) {
+		} else if ("spl".equals(parts[0])) {
 			this.activeGroup.split();
-		} else if ("font".equals(command)) {
+		} else if ("font".equals(parts[0])) {
 			this.startSelectingFont();
+		} else if ("link".equals(parts[0])) {
+			Integer childId;
+			String position;
+			if (parts.length != 3 ||
+				(!"bot".equals(position = parts[1]) &&
+				!"right".equals(position) &&
+				!"top".equals(position)) ||
+				(childId = Util.parseInt(parts[2])) == null)
+			{
+				this.setError("syntax: :link <bot|right|top> <id>");
+			} else {
+				this.reChild(childId, position);
+			}
 		} else {
-			this.setError("unknown command: " + command);
+			this.setError("unknown command: " + parts[0]);
 		}
 	}
 
@@ -276,6 +290,40 @@ implements KeyListener, MouseListener, MouseMotionListener
 			super.setTitle("Jeanine - " + error);
 			Toolkit.getDefaultToolkit().beep();
 		}
+	}
+
+	private void reChild(Integer childId, String position)
+	{
+		if (this.activeGroup == null || this.activeGroup.activePanel == null) {
+			this.setError("can't rechild - no active group or panel");
+			return;
+		}
+		CodePanel child = this.activeGroup.panels.get(childId);
+		if (child == null) {
+			this.setError("can't rechild - unknown child");
+			return;
+		}
+		if (child == this.activeGroup.activePanel ||
+			child.isEventualParentOf(this.activeGroup.activePanel))
+		{
+			this.setError("can't rechild - cyclic dependency");
+			return;
+		}
+		child.parent = this.activeGroup.activePanel;
+		switch (position) {
+		case "bottom":
+			child.anchor = 'b';
+			child.location.x = 0;
+			child.location.y = 30;
+			break;
+		case "right":
+		case "top":
+			child.anchor = 't';
+			child.location.x = 30;
+			child.location.y = 0;
+			break;
+		}
+		this.activeGroup.position(child);
 	}
 
 	private void startSelectingFont()
@@ -366,5 +414,6 @@ implements KeyListener, MouseListener, MouseMotionListener
 		"Selecting: ctrl-v\n" +
 		"\n" +
 		"Commands:\n" +
-		":spl - split current view based on the visual line selection (ctrl-v)";
+		":spl - split current view based on the visual line selection (ctrl-v)\n" +
+		":link <bot|right|top> <id> - link a child";
 }

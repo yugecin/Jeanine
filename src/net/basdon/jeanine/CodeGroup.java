@@ -89,14 +89,14 @@ public class CodeGroup
 				Rectangle bounds = parent.getBounds();
 				switch (panel.anchor) {
 				case 't':
+					x = bounds.x + bounds.width;
+					y = bounds.y;
 					break;
 				case 'r':
 					break;
 				case 'b':
 					x = bounds.x + (bounds.width - panel.getWidth()) / 2;
 					y = bounds.y + bounds.height;
-					break;
-				case 'l':
 					break;
 				}
 			}
