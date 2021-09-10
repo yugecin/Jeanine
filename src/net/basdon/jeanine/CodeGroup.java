@@ -183,10 +183,7 @@ public class CodeGroup
 
 		this.activePanel = this.panelAtLine(this.buffer.carety);
 		if (this.activePanel != null) {
-			SwingUtilities.invokeLater(() -> {
-				this.activePanel.requestFocusInWindow();
-				this.activePanel.repaint();
-			});
+			SwingUtilities.invokeLater(this.activePanel::repaint);
 		}
 	}
 
@@ -308,7 +305,6 @@ public class CodeGroup
 		if (newActivePanel != null && newActivePanel != this.activePanel) {
 			this.activePanel.repaint();
 			this.activePanel = newActivePanel;
-			this.activePanel.requestFocusInWindow();
 			this.activePanel.repaint();
 		}
 		if (needRepaintConnections) {
@@ -384,7 +380,6 @@ public class CodeGroup
 		for (CodePanel panel : this.panels.values()) {
 			if (panel.buffer == undo.buffer) {
 				this.activePanel = panel;
-				panel.requestFocusInWindow();
 				panel.handleInput(new KeyInput('u'));
 				return;
 			}
