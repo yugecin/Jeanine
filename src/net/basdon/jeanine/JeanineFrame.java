@@ -7,6 +7,8 @@ import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -19,14 +21,17 @@ import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
+import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
 import static java.awt.KeyboardFocusManager.*;
 
 public class JeanineFrame
 extends JFrame
-implements KeyListener, MouseListener, MouseMotionListener
+implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 {
+	private final Timer timer;
+
 	public final CommandBar commandbar;
 	public final OverlayPanel overlay;
 	public final Jeanine j;
@@ -37,6 +42,8 @@ implements KeyListener, MouseListener, MouseMotionListener
 	public Point cursorPosBeforeChangingFont;
 	public boolean isSelectingFont;
 
+	private Point locationMoveFrom, locationMoveTo;
+	private long locationMoveStartTime;
 	private Point dragStart;
 
 	public JeanineFrame(Jeanine j)
@@ -65,6 +72,9 @@ implements KeyListener, MouseListener, MouseMotionListener
 		this.pack();
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		this.setVisible(true);
+		this.ensureCaretInView();
+		this.timer = new Timer(25, this);
+		this.timer.start();
 		// make that we get the TAB key events
 		KeyboardFocusManager fm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		fm.setDefaultFocusTraversalKeys(FORWARD_TRAVERSAL_KEYS, Collections.emptySet());
@@ -125,6 +135,7 @@ implements KeyListener, MouseListener, MouseMotionListener
 		}
 		if (this.activeGroup != null && this.activeGroup.activePanel != null) {
 			this.activeGroup.dispatchInputEvent(event, this.activeGroup.activePanel);
+			this.ensureCaretInView();
 			if (!event.error) {
 				return;
 			}
@@ -156,7 +167,7 @@ implements KeyListener, MouseListener, MouseMotionListener
 			for (CodeGroup group : this.codegroups) {
 				group.updateLocation();
 			}
-			this.repaint();
+			this.getGlassPane().repaint();
 			return;
 		}
 		if (event.c == ':') {
@@ -234,6 +245,31 @@ implements KeyListener, MouseListener, MouseMotionListener
 	@Override
 	public void mouseExited(MouseEvent e)
 	{
+	}
+
+	/*ActionListener*/
+	@Override
+	public void actionPerformed(ActionEvent e)
+	{
+		if (this.timer == e.getSource()) {
+			if (locationMoveFrom != null) {
+				long time = System.currentTimeMillis() - locationMoveStartTime;
+				if (time >= 300) {
+					this.location = this.locationMoveTo;
+					this.locationMoveFrom = null;
+					this.locationMoveTo = null;
+				} else {
+					double t = -Math.pow(2, -10 * (time / 300.0f)) + 1;
+					int dx = this.locationMoveTo.x - this.locationMoveFrom.x;
+					int dy = this.locationMoveTo.y - this.locationMoveFrom.y;
+					this.location.x = this.locationMoveFrom.x + (int) (dx * t);
+					this.location.y = this.locationMoveFrom.y + (int) (dy * t);
+				}
+				for (CodeGroup group : this.codegroups) {
+					group.updateLocation();
+				}
+			}
+		}
 	}
 
 	public boolean shouldBlockInput()
@@ -398,6 +434,33 @@ implements KeyListener, MouseListener, MouseMotionListener
 			}
 		}
 		return null;
+	}
+
+	private void ensureCaretInView()
+	{
+		Point pt = this.findCursorPosition();
+		Dimension size = this.getContentPane().getSize();
+		int padx = (int) (size.width / 3f);
+		int pady = size.height / 8;
+		int dx = padx - pt.x;
+		if (dx < 0) {
+			dx = (size.width - padx) - pt.x;
+			if (dx > 0) {
+				dx = 0;
+			}
+		}
+		int dy = pady - pt.y;
+		if (dy < 0) {
+			dy = (size.height - pady) - pt.y;
+			if (dy > 0) {
+				dy = 0;
+			}
+		}
+		if (dx != 0 || dy != 0) {
+			this.locationMoveFrom = new Point(this.location);
+			this.locationMoveTo = new Point(this.location.x + dx, this.location.y + dy);
+			this.locationMoveStartTime = System.currentTimeMillis();
+		}
 	}
 
 	private void repaintActivePanel()
