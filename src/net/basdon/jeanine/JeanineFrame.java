@@ -174,10 +174,58 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 			this.getGlassPane().repaint();
 			return;
 		}
-		if (event.c == ':') {
-			this.commandbar.show("");
-			this.repaintActivePanel();
-			return;
+		if (this.activeGroup != null) {
+			EditBuffer buffer;
+			switch (event.c) {
+			case ':':
+				this.commandbar.show("");
+				this.repaintActivePanel();
+				return;
+			case 'l':
+				buffer = this.activeGroup.buffer;
+				if (buffer.mode != EditBuffer.NORMAL_MODE) {
+					break;
+				}
+				for (CodePanel panel : this.activeGroup.panels.values()) {
+					if (panel.parent == this.activeGroup.activePanel &&
+						PanelLink.getAnchor(panel.link) == 'r' &&
+						PanelLink.getLine(panel.link) == buffer.carety)
+					{
+						buffer.carety = panel.firstline;
+						buffer.caretx = 0;
+						buffer.virtualCaretx = 0;
+						this.activeGroup.activePanel = panel;
+						this.ensureCaretInView();
+						panel.repaint();
+						panel.parent.repaint();
+						return;
+					}
+				}
+				break;
+			case 'h':
+				buffer = this.activeGroup.buffer;
+				if (buffer.mode != EditBuffer.NORMAL_MODE) {
+					break;
+				}
+				CodePanel panel = this.activeGroup.activePanel;
+				if (panel != null && panel.parent != null &&
+					PanelLink.getAnchor(panel.link) == 'r' &&
+					panel.firstline == buffer.carety)
+				{
+					buffer.carety = PanelLink.getLine(panel.link);
+					buffer.caretx = buffer.lines.get(buffer.carety).length - 1;
+					if (buffer.caretx < 0) {
+						buffer.caretx = 0;
+					}
+					buffer.virtualCaretx = buffer.caretx;
+					this.activeGroup.activePanel = panel.parent;
+					this.ensureCaretInView();
+					panel.repaint();
+					panel.parent.repaint();
+					return;
+				}
+				break;
+			}
 		}
 		Toolkit.getDefaultToolkit().beep();
 	}
