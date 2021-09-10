@@ -28,9 +28,8 @@ implements MouseListener, MouseMotionListener
 	 */
 	public int lastline;
 	public boolean requireValidation;
-	public byte anchor;
-
 	public CodePanel parent;
+	public int link;
 	public Point location;
 
 	private int maxLineLength;

@@ -312,13 +312,17 @@ implements KeyListener, MouseListener, MouseMotionListener
 		child.parent = this.activeGroup.activePanel;
 		switch (position) {
 		case "bottom":
-			child.anchor = 'b';
+			child.link = PanelLink.BOTTOM;
 			child.location.x = 0;
 			child.location.y = 30;
 			break;
 		case "right":
+			child.link = PanelLink.createRightLink(this.activeGroup.buffer.carety);
+			child.location.x = 30;
+			child.location.y = 0;
+			break;
 		case "top":
-			child.anchor = 't';
+			child.link = PanelLink.TOP;
 			child.location.x = 30;
 			child.location.y = 0;
 			break;

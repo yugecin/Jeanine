@@ -10,6 +10,7 @@ import javax.swing.SwingUtilities;
 
 public class CodeGroup
 {
+	public final Jeanine j;
 	public final JeanineFrame jf;
 	public final EditBuffer buffer;
 	public final HashMap<Integer, CodePanel> panels;
@@ -22,9 +23,10 @@ public class CodeGroup
 
 	public CodeGroup(JeanineFrame jf)
 	{
+		this.j = jf.j;
+		this.jf = jf;
 		this.panels = new HashMap<>();
 		this.buffer = new EditBuffer(jf.j, this);
-		this.jf = jf;
 		this.location = new Point();
 	}
 
@@ -88,12 +90,15 @@ public class CodeGroup
 			CodePanel parent = this.panels.get(panel.parent.id);
 			if (parent != null) {
 				Rectangle bounds = parent.getBounds();
-				switch (panel.anchor) {
+				switch (PanelLink.getAnchor(panel.link)) {
 				case 't':
 					x = bounds.x + bounds.width;
 					y = bounds.y;
 					break;
 				case 'r':
+					int line = PanelLink.getLine(panel.link);
+					x = bounds.x + bounds.width;
+					y = bounds.y + this.j.fy * (line - panel.parent.firstline);
 					break;
 				case 'b':
 					x = bounds.x + (bounds.width - panel.getWidth()) / 2;
@@ -150,7 +155,7 @@ public class CodeGroup
 			codepanel.lastline = this.buffer.lineselectto;
 			codepanel.recheckMaxLineLength();
 			codepanel.ensureCodeViewSize();
-			this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 30,
+			this.activePanel = this.add(nextId, this.activePanel, 1, 0, 30,
 				this.buffer.lineselectto,
 				this.buffer.lines.size());
 		} else {
@@ -159,15 +164,15 @@ public class CodeGroup
 			codepanel.recheckMaxLineLength();
 			codepanel.ensureCodeViewSize();
 			if (this.buffer.lineselectto == initialLastline) {
-				this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 30,
+				this.activePanel = this.add(nextId, this.activePanel, 1, 0, 30,
 					this.buffer.lineselectfrom,
 					initialLastline);
 			} else {
-				this.activePanel = this.add(nextId, this.activePanel, 'b', 0, 30,
+				this.activePanel = this.add(nextId, this.activePanel, 1, 0, 30,
 					this.buffer.lineselectfrom,
 					this.buffer.lineselectto);
 				nextId = Integer.valueOf(nextId.intValue() + 1);
-				this.add(nextId, this.activePanel, 'b', 0, 30,
+				this.add(nextId, this.activePanel, 1, 0, 30,
 					this.buffer.lineselectto,
 					initialLastline);
 			}
@@ -188,7 +193,7 @@ public class CodeGroup
 	private CodePanel add(
 		Integer id,
 		CodePanel parent,
-		char anchor,
+		int link,
 		int posX,
 		int posY,
 		int linefrom,
@@ -197,7 +202,7 @@ public class CodeGroup
 		CodePanel cf = new CodePanel(this.jf, this, id, this.buffer, linefrom, lineto);
 		this.panels.put(id, cf);
 		cf.parent = parent;
-		cf.anchor = (byte) anchor;
+		cf.link = link;
 		cf.location.x = posX;
 		cf.location.y = posY;
 		cf.recheckMaxLineLength();
@@ -334,6 +339,13 @@ public class CodeGroup
 				panel.lastline++;
 				panel.requireValidation = true;
 			}
+			if (panel.parent != null && PanelLink.getAnchor(panel.link) == 'r') {
+				int line = PanelLink.getLine(panel.link);
+				if (line >= idx && line < panel.parent.lastline) {
+					panel.link = PanelLink.createRightLink(line + 1);
+					panel.requireValidation = true;
+				}
+			}
 		}
 	}
 
@@ -347,6 +359,15 @@ public class CodeGroup
 			} else if (panel.lastline > idx && panel.firstline <= idx) {
 				panel.lastline--;
 				panel.requireValidation = true;
+			}
+			if (panel.parent != null && PanelLink.getAnchor(panel.link) == 'r') {
+				int line = PanelLink.getLine(panel.link);
+				if (line == idx) {
+					panel.link = PanelLink.TOP;
+				} else if (line > idx && line < panel.parent.lastline) {
+					panel.link = PanelLink.createRightLink(line - 1);
+					panel.requireValidation = true;
+				}
 			}
 		}
 	}
@@ -362,7 +383,7 @@ public class CodeGroup
 			}
 		}
 		// TODO what now
-		this.jf.j.undolistptr--;
+		this.j.undolistptr--;
 	}
 
 	public void dispose()
