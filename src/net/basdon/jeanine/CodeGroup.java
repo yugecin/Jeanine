@@ -320,14 +320,19 @@ public class CodeGroup
 
 	public void beforeLineAdded(int idx)
 	{
-		for (CodePanel frame : this.panels.values()) {
-			if (frame.firstline >= idx && idx != 0) {
-				frame.firstline++;
-				frame.requireValidation = true;
+		for (CodePanel panel : this.panels.values()) {
+			if (panel.firstline == panel.lastline) {
+				// empty panels should be deleted,
+				// but the root panel can't be deleted
+				continue;
 			}
-			if (frame.lastline >= idx) {
-				frame.lastline++;
-				frame.requireValidation = true;
+			if (panel.firstline >= idx && idx != 0) {
+				panel.firstline++;
+				panel.requireValidation = true;
+			}
+			if (panel.lastline >= idx) {
+				panel.lastline++;
+				panel.requireValidation = true;
 			}
 		}
 	}
