@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.swing.SwingUtilities;
 
@@ -270,7 +271,10 @@ public class CodeGroup
 		to.handleInput(event);
 		// TODO: deal with panels that are empty now
 		CodePanel newActivePanel = null;
-		for (CodePanel panel : this.panels.values()) {
+		boolean needRepaintConnections = false;
+		Iterator<CodePanel> iter = this.panels.values().iterator();
+		while (iter.hasNext()) {
+			CodePanel panel = iter.next();
 			if (panel.firstline <= this.buffer.carety &&
 				this.buffer.carety < panel.lastline)
 			{
@@ -279,6 +283,13 @@ public class CodeGroup
 					panel.recheckMaxLineLength();
 					panel.ensureCodeViewSize();
 				}
+			}
+			if (panel.firstline == panel.lastline && panel != this.root) {
+				this.jf.getContentPane().remove(panel);
+				this.reparentChildren(panel, panel.parent);
+				iter.remove();
+				needRepaintConnections = true;
+				continue;
 			}
 			if (panel.requireValidation) {
 				panel.recheckMaxLineLength();
@@ -292,6 +303,19 @@ public class CodeGroup
 			this.activePanel.requestFocusInWindow();
 			this.activePanel.repaint();
 		}
+		if (needRepaintConnections) {
+			this.jf.getGlassPane().repaint();
+		}
+	}
+
+	private void reparentChildren(CodePanel parent, CodePanel newParent)
+	{
+		for (CodePanel child : this.panels.values()) {
+			if (child.parent == parent) {
+				child.parent = newParent;
+			}
+		}
+		this.position(newParent);
 	}
 
 	public void beforeLineAdded(int idx)
