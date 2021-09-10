@@ -301,6 +301,9 @@ public class CodeGroup
 				panel.ensureCodeViewSize();
 				this.position(panel);
 			}
+			if (panel.needRepaint) {
+				panel.repaint();
+			}
 		}
 		if (newActivePanel != null && newActivePanel != this.activePanel) {
 			this.activePanel.repaint();
@@ -334,10 +337,12 @@ public class CodeGroup
 			if (panel.firstline >= idx && idx != 0) {
 				panel.firstline++;
 				panel.requireValidation = true;
+				panel.needRepaint = true;
 			}
 			if (panel.lastline >= idx) {
 				panel.lastline++;
 				panel.requireValidation = true;
+				panel.needRepaint = true;
 			}
 			if (panel.parent != null && PanelLink.getAnchor(panel.link) == 'r') {
 				int line = PanelLink.getLine(panel.link);
@@ -356,9 +361,11 @@ public class CodeGroup
 				panel.firstline--;
 				panel.lastline--;
 				panel.requireValidation = true;
+				panel.needRepaint = true;
 			} else if (panel.lastline > idx && panel.firstline <= idx) {
 				panel.lastline--;
 				panel.requireValidation = true;
+				panel.needRepaint = true;
 			}
 			if (panel.parent != null && PanelLink.getAnchor(panel.link) == 'r') {
 				int line = PanelLink.getLine(panel.link);

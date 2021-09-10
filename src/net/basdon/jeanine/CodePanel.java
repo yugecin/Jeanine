@@ -28,6 +28,7 @@ implements MouseListener, MouseMotionListener
 	 */
 	public int lastline;
 	public boolean requireValidation;
+	public boolean needRepaint;
 	public CodePanel parent;
 	public int link;
 	public Point location;
@@ -143,6 +144,8 @@ implements MouseListener, MouseMotionListener
 			g.translate(0, this.j.fy);
 			heightleft -= this.j.fy;
 		}
+
+		this.needRepaint = false;
 	}
 
 	/*MouseListener*/
