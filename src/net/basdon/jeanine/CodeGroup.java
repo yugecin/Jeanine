@@ -140,14 +140,15 @@ public class CodeGroup
 			this.jf.setError("can't split, selection spans multiple views");
 			return;
 		}
-		if (this.buffer.lineselectfrom == 0 &&
-			this.buffer.lineselectto == this.buffer.lines.size())
+
+		CodePanel codepanel = this.activePanel;
+		if (this.buffer.lineselectfrom == codepanel.firstline &&
+			this.buffer.lineselectto == codepanel.lastline)
 		{
 			this.jf.setError("can't split, no lines left");
 			return;
 		}
 
-		CodePanel codepanel = this.activePanel;
 		this.buffer.mode = EditBuffer.NORMAL_MODE;
 
 		Integer nextId = Integer.valueOf(this.findMaxId() + 1);
