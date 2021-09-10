@@ -140,6 +140,10 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 				return;
 			}
 		}
+		if (event.c == 'z') {
+			this.centerCaret();
+			return;
+		}
 		if (this.isSelectingFont) {
 			Point oldcursorpos = this.findCursorPosition();
 			if (event.c == EditBuffer.ESC) {
@@ -463,6 +467,17 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 		}
 	}
 
+	private void centerCaret()
+	{
+		Point pt = this.findCursorPosition();
+		Dimension size = this.getContentPane().getSize();
+		int dx = size.width / 2 - pt.x;
+		int dy = size.height / 2 - pt.y;
+		this.locationMoveFrom = new Point(this.location);
+		this.locationMoveTo = new Point(this.location.x + dx, this.location.y + dy);
+		this.locationMoveStartTime = System.currentTimeMillis();
+	}
+
 	private void repaintActivePanel()
 	{
 		if (this.activeGroup != null && this.activeGroup.activePanel != null) {
@@ -479,6 +494,7 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 		"Changing: cw cb ciw\n" +
 		"Other: . u\n" +
 		"Selecting: ctrl-v\n" +
+		"View: z\n" +
 		"\n" +
 		"Commands:\n" +
 		":spl - split current view based on the visual line selection (ctrl-v)\n" +
