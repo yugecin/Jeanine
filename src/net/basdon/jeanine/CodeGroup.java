@@ -376,6 +376,42 @@ public class CodeGroup
 		}
 	}
 
+	public void reChild(Integer childId, String position)
+	{
+		if (this.activePanel == null) {
+			this.jf.setError("can't rechild, no active panel");
+			return;
+		}
+		CodePanel child = this.panels.get(childId);
+		if (child == null) {
+			this.jf.setError("can't rechild, unknown child");
+			return;
+		}
+		if (child == this.activePanel || child.isEventualParentOf(this.activePanel)) {
+			this.jf.setError("can't rechild, cyclic dependency");
+			return;
+		}
+		child.parent = this.activePanel;
+		switch (position) {
+		case "bottom":
+			child.link = PanelLink.BOTTOM;
+			child.location.x = 0;
+			child.location.y = 30;
+			break;
+		case "right":
+			child.link = PanelLink.createRightLink(this.buffer.carety);
+			child.location.x = 30;
+			child.location.y = 0;
+			break;
+		case "top":
+			child.link = PanelLink.TOP;
+			child.location.x = 30;
+			child.location.y = 0;
+			break;
+		}
+		this.position(child);
+	}
+
 	public void doUndo(Undo undo)
 	{
 		for (CodePanel panel : this.panels.values()) {

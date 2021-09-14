@@ -362,8 +362,10 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 				(childId = Util.parseInt(parts[2])) == null)
 			{
 				this.setError("syntax: :link <bot|right|top> <id>");
+			} else if (this.activeGroup == null) {
+				this.setError("can't rechild, no active group or panel");
 			} else {
-				this.reChild(childId, position);
+				this.activeGroup.reChild(childId, position);
 			}
 		} else {
 			this.setError("unknown command: " + parts[0]);
@@ -378,44 +380,6 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 			super.setTitle("Jeanine - " + error);
 			Toolkit.getDefaultToolkit().beep();
 		}
-	}
-
-	private void reChild(Integer childId, String position)
-	{
-		if (this.activeGroup == null || this.activeGroup.activePanel == null) {
-			this.setError("can't rechild - no active group or panel");
-			return;
-		}
-		CodePanel child = this.activeGroup.panels.get(childId);
-		if (child == null) {
-			this.setError("can't rechild - unknown child");
-			return;
-		}
-		if (child == this.activeGroup.activePanel ||
-			child.isEventualParentOf(this.activeGroup.activePanel))
-		{
-			this.setError("can't rechild - cyclic dependency");
-			return;
-		}
-		child.parent = this.activeGroup.activePanel;
-		switch (position) {
-		case "bottom":
-			child.link = PanelLink.BOTTOM;
-			child.location.x = 0;
-			child.location.y = 30;
-			break;
-		case "right":
-			child.link = PanelLink.createRightLink(this.activeGroup.buffer.carety);
-			child.location.x = 30;
-			child.location.y = 0;
-			break;
-		case "top":
-			child.link = PanelLink.TOP;
-			child.location.x = 30;
-			child.location.y = 0;
-			break;
-		}
-		this.activeGroup.position(child);
 	}
 
 	private void startSelectingFont()
