@@ -169,13 +169,14 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 			this.moveToGetCursorAtPosition(oldcursorpos);
 			return;
 		}
+		if (event.c == ':') {
+			this.commandbar.show("");
+			this.repaintActivePanel();
+			return;
+		}
 		if (this.activeGroup != null) {
 			EditBuffer buffer;
 			switch (event.c) {
-			case ':':
-				this.commandbar.show("");
-				this.repaintActivePanel();
-				return;
 			case 'l':
 				buffer = this.activeGroup.buffer;
 				if (buffer.mode != EditBuffer.NORMAL_MODE) {
@@ -344,7 +345,11 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 			this.activeGroup = null;
 			this.repaint();
 		} else if ("spl".equals(parts[0])) {
-			this.activeGroup.split();
+			if (this.activeGroup == null) {
+				this.setError("no active panel");
+			} else {
+				this.activeGroup.split();
+			}
 		} else if ("font".equals(parts[0])) {
 			this.startSelectingFont();
 		} else if ("link".equals(parts[0])) {
