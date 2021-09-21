@@ -1,6 +1,7 @@
 package net.basdon.jeanine;
 
 import java.awt.Dimension;
+import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
@@ -15,6 +16,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -32,6 +35,7 @@ extends JFrame
 implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 {
 	private final Timer timer;
+	private final CodeGroup welcomeCodeGroup;
 
 	public final CommandBar commandbar;
 	public final OverlayPanel overlay;
@@ -65,7 +69,7 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 		this.setLocationByPlatform(true);
 		this.setError(null);
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
-		this.activeGroup = new CodeGroup(this);
+		this.activeGroup = this.welcomeCodeGroup = new CodeGroup(this);
 		this.activeGroup.setLocation(30, 30);
 		this.activeGroup.setContents(new Util.LineIterator(WELCOMETEXT), true);
 		this.codegroups.add(this.activeGroup);
@@ -364,6 +368,34 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 			} else {
 				this.activeGroup.toggleRaw();
 			}
+		} else if ("e".equals(parts[0])) {
+			FileDialog dlg = new FileDialog(this, "Open file");
+			dlg.setVisible(true);
+			File[] files = dlg.getFiles();
+			if (files.length == 0) {
+				return;
+			}
+			if (this.activeGroup == this.welcomeCodeGroup) {
+				this.codegroups.remove(this.activeGroup);
+				this.activeGroup.dispose();
+			}
+			CodeGroup lastActiveGroup = this.activeGroup;
+			this.activeGroup = null;
+			if (lastActiveGroup != null) {
+				if (lastActiveGroup.activePanel != null) {
+					lastActiveGroup.activePanel.repaint(); // for cursor
+				}
+			}
+			for (File file : files) {
+				this.activeGroup = new CodeGroup(this);
+				try {
+					this.activeGroup.readFile(file);
+				} catch (IOException e) {
+					// TODO
+					e.printStackTrace();
+				}
+				this.codegroups.add(this.activeGroup);
+			}
 		} else {
 			this.setError("unknown command: " + parts[0]);
 		}
@@ -517,6 +549,27 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 		if (this.activeGroup != null && this.activeGroup.activePanel != null) {
 			this.activeGroup.activePanel.repaint();
 		}
+	}
+
+	/**
+	 * Call from codegroup when focus is gained.
+	 *
+	 * @return {@code false} if the request is denied
+	 */
+	public boolean focusGained(CodeGroup codegroup)
+	{
+		if (this.shouldBlockInput()) {
+			return false;
+		}
+		if (this.activeGroup == codegroup) {
+			return true;
+		}
+		CodeGroup lastActive = this.activeGroup;
+		this.activeGroup = codegroup;
+		if (lastActive.activePanel != null) {
+			lastActive.activePanel.repaint(); // for cursor
+		}
+		return true;
 	}
 
 	private static final String WELCOMETEXT =

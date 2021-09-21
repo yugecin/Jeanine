@@ -3,6 +3,8 @@ package net.basdon.jeanine;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,9 +36,29 @@ public class CodeGroup
 		this.location = new Point();
 	}
 
-	public void readFile(File file)
+	public void readFile(File file) throws IOException
 	{
+		this.title = file.getName();
 		this.ownerFile = file;
+		Iterator<String> iter = Files.readAllLines(file.toPath()).iterator();
+		this.setContents(new Iterator<SB>()
+		{
+			private SB sb = new SB(4096);
+
+			@Override
+			public boolean hasNext()
+			{
+				return iter.hasNext();
+			}
+
+			@Override
+			public SB next()
+			{
+				sb.length = 0;
+				sb.append(iter.next());
+				return sb;
+			}
+		}, true);
 	}
 
 	public void setContents(Iterator<SB> lines, boolean interpret)
@@ -373,7 +395,7 @@ public class CodeGroup
 	 */
 	public boolean focusGained(CodePanel panel)
 	{
-		if (this.jf.shouldBlockInput()) {
+		if (!this.jf.focusGained(this)) {
 			return false;
 		}
 		if (this.activePanel == panel) {
@@ -392,7 +414,9 @@ public class CodeGroup
 
 	public boolean hasFocus(CodePanel panel)
 	{
-		return panel == this.activePanel && !this.jf.shouldBlockInput();
+		return this.jf.activeGroup == this &&
+			panel == this.activePanel &&
+			!this.jf.shouldBlockInput();
 	}
 
 	public int findMaxId()
@@ -622,5 +646,8 @@ public class CodeGroup
 
 	public void dispose()
 	{
+		for (CodePanel panel : this.panels.values()) {
+			this.jf.getContentPane().remove(panel);
+		}
 	}
 }
