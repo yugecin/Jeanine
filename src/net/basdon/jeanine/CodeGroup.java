@@ -3,7 +3,10 @@ package net.basdon.jeanine;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +62,28 @@ public class CodeGroup
 				return sb;
 			}
 		}, true);
+	}
+
+	public void saveFile() throws IOException
+	{
+		if (this.ownerFile == null) {
+			this.jf.setError("can't save - no file linked");
+			return;
+		}
+		// TODO: check file modify time, to warn if we're overriding unknown changes
+		GroupToRawConverter converter;
+		converter = new GroupToRawConverter(this.buffer.lines.lines, this.panels, 0);
+		// TODO: write to tmp file first to not lose data in case of error?
+		try (FileOutputStream fos = new FileOutputStream(this.ownerFile, false)) {
+			OutputStreamWriter writer;
+			writer = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+			while (converter.hasNext()) {
+				SB sb = converter.next();
+				writer.write(sb.value, 0, sb.length);
+				writer.write('\n');
+			}
+			writer.flush();
+		}
 	}
 
 	public void setContents(Iterator<SB> lines, boolean interpret)

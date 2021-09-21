@@ -396,6 +396,18 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 				}
 				this.codegroups.add(this.activeGroup);
 			}
+			this.ensureCaretInView();
+		} else if ("w".equals(parts[0])) {
+			if (this.activeGroup == null) {
+				this.setError("no active panel");
+			} else {
+				try {
+					this.activeGroup.saveFile();
+				} catch (IOException e) {
+					// TODO
+					e.printStackTrace();
+				}
+			}
 		} else {
 			this.setError("unknown command: " + parts[0]);
 		}
