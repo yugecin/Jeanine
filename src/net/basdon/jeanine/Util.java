@@ -74,4 +74,30 @@ public class Util
 			return this.sb;
 		}
 	}
+
+	public static class String2SBIter implements Iterator<SB>
+	{
+		private Iterator<String> iter;
+		private SB sb;
+
+		public String2SBIter(Iterator<String> iter)
+		{
+			this.sb = new SB(4096);
+			this.iter = iter;
+		}
+
+		@Override
+		public boolean hasNext()
+		{
+			return this.iter.hasNext();
+		}
+
+		@Override
+		public SB next()
+		{
+			this.sb.length = 0;
+			this.sb.append(this.iter.next());
+			return this.sb;
+		}
+	}
 }

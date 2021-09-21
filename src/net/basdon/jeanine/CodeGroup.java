@@ -606,14 +606,7 @@ public class CodeGroup
 		this.buffer.carety = carety;
 		this.buffer.caretx = caretx;
 		this.buffer.virtualCaretx = caretx;
-		for (CodePanel panel : this.panels.values()) {
-			if (panel.firstline <= this.buffer.carety &&
-				this.buffer.carety < panel.lastline)
-			{
-				this.activePanel = panel;
-				break;
-			}
-		}
+		this.activePanel = this.panelAtLine(this.buffer.carety);
 		this.jf.moveToGetCursorAtPosition(cursorPos);
 		this.raw = !this.raw;
 		this.root.location = rootLocation;

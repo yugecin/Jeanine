@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -156,9 +155,14 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 				oldcursorpos = cursorPosBeforeChangingFont;
 			} else if (event.c == '\n' || event.c == '\r') {
 				EditBuffer buffer = this.activeGroup.buffer;
-				String fontname = buffer.lines.get(buffer.carety).toString();
-				Font font = new Font(fontname, Font.BOLD, 14);
-				this.j.setFont(font);
+				String maybeFontName = buffer.lines.get(buffer.carety).toString();
+				if (maybeFontName.length() > 3 && maybeFontName.charAt(0) == 'f') {
+					String fontName = maybeFontName.substring(2);
+					Font font = new Font(fontName, Font.BOLD, 14);
+					this.j.setFont(font);
+				} else {
+					return;
+				}
 			} else {
 				Toolkit.getDefaultToolkit().beep();
 				return;
@@ -436,32 +440,25 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 		this.lastCodegroups = this.codegroups;
 		this.lastLocation = new Point(this.location);
 		this.getContentPane().removeAll();
+		ArrayList<String> lines = new ArrayList<>();
+		lines.add("c Welcome to font selection.");
+		lines.add("c Put the caret on a font name and press enter.");
+		lines.add("c Exit by pressing ESC.");
+		lines.add("/*jeanine:p:i:1;p:0;x:20;y:0;a:t*/");
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String[] fonts = ge.getAvailableFontFamilyNames();
+		for (String font : fonts) {
+			lines.add("f " + font);
+		}
 		CodeGroup group = new CodeGroup(this);
 		group.title = "Font selection";
 		group.buffer.readonly = true;
-		group.setContents(new Iterator<SB>()
-		{
-			private int i;
-			private SB sb = new SB();
-
-			@Override
-			public boolean hasNext()
-			{
-				return i < fonts.length;
-			}
-
-			@Override
-			public SB next()
-			{
-				this.sb.length = 0;
-				this.sb.append(fonts[this.i++]);
-				return this.sb;
-			}
-		}, true);
-		group.setLocation(30, 30);
+		group.setContents(new Util.String2SBIter(lines.iterator()), true);
+		group.buffer.carety = 3;
+		group.activePanel = group.panelAtLine(group.buffer.carety);
+		group.setLocation(0, 30);
 		this.activeGroup = group;
+		this.ensureCaretInView();
 		this.codegroups = Collections.singletonList(group);
 		this.repaint();
 	}
