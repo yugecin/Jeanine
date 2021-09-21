@@ -162,17 +162,7 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 			for (CodeGroup group : this.codegroups) {
 				group.fontChanged();
 			}
-			Point newcursorpos = this.findCursorPosition();
-			if (newcursorpos != null) {
-				if (oldcursorpos != null) {
-					this.location.x -= newcursorpos.x - oldcursorpos.x;
-					this.location.y -= newcursorpos.y - oldcursorpos.y;
-				}
-			}
-			for (CodeGroup group : this.codegroups) {
-				group.updateLocation();
-			}
-			this.getGlassPane().repaint();
+			this.moveToGetCursorAtPosition(oldcursorpos);
 			return;
 		}
 		if (this.activeGroup != null) {
@@ -445,7 +435,7 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 		this.repaint();
 	}
 
-	private Point findCursorPosition()
+	public Point findCursorPosition()
 	{
 		if (this.activeGroup != null) {
 			EditBuffer buf = this.activeGroup.buffer;
@@ -466,6 +456,19 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 			}
 		}
 		return null;
+	}
+
+	public void moveToGetCursorAtPosition(Point pos)
+	{
+		Point newcursorpos = this.findCursorPosition();
+		if (newcursorpos != null && pos != null) {
+			this.location.x -= newcursorpos.x - pos.x;
+			this.location.y -= newcursorpos.y - pos.y;
+			for (CodeGroup group : this.codegroups) {
+				group.updateLocation();
+			}
+			this.getGlassPane().repaint();
+		}
 	}
 
 	private void ensureCaretInView()

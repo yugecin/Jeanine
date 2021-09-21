@@ -539,11 +539,33 @@ public class CodeGroup
 		Point rootLocation = this.root.location;
 		ArrayList<SB> lines = new ArrayList<>(this.buffer.lines.lines);
 		HashMap<Integer, CodePanel> panels = new HashMap<>(this.panels);
+		int caretx = this.buffer.caretx;
+		int carety = this.buffer.carety;
+		Point cursorPos = this.jf.findCursorPosition();
 		if (this.raw) {
 			this.setContents(lines.iterator(), true);
+			for (CodePanel panel : this.panels.values()) {
+				if (panel.parent != null && panel.firstline < carety) {
+					carety--;
+				}
+			}
 		} else {
-			this.setContents(new GroupToRawConverter(lines, panels), false);
+			GroupToRawConverter conv = new GroupToRawConverter(lines, panels, carety);
+			this.setContents(conv, false);
+			carety = conv.newCarety;
 		}
+		this.buffer.carety = carety;
+		this.buffer.caretx = caretx;
+		this.buffer.virtualCaretx = caretx;
+		for (CodePanel panel : this.panels.values()) {
+			if (panel.firstline <= this.buffer.carety &&
+				this.buffer.carety < panel.lastline)
+			{
+				this.activePanel = panel;
+				break;
+			}
+		}
+		this.jf.moveToGetCursorAtPosition(cursorPos);
 		this.raw = !this.raw;
 		this.root.location = rootLocation;
 		this.position(this.root);

@@ -12,12 +12,20 @@ public class GroupToRawConverter implements Iterator<SB>
 	private CodePanel currentPanel;
 	private int nextLine;
 	private SB next;
+	private int carety;
 
-	public GroupToRawConverter(ArrayList<SB> lines, HashMap<Integer, CodePanel> panels)
+	public int newCarety;
+
+	public GroupToRawConverter(
+		ArrayList<SB> lines,
+		HashMap<Integer, CodePanel> panels,
+		int carety)
 	{
 		this.lines = lines;
 		this.panels = panels;
 		this.currentPanel = panels.get(Integer.valueOf(0));
+		this.carety = carety;
+		this.newCarety = carety;
 	}
 
 	@Override
@@ -45,11 +53,15 @@ public class GroupToRawConverter implements Iterator<SB>
 						this.next.append(panel.location.y);
 						this.next.append(';');
 						this.next.append("*/");
+						if (this.carety >= 0) {
+							this.newCarety++;
+						}
 						return true;
 					}
 				}
 				// fallback if no codepanel owns next line
 			}
+			this.carety--;
 			this.next = lines.get(this.nextLine);
 			boolean hasLink = false;
 			for (CodePanel panel : panels.values()) {
