@@ -67,6 +67,11 @@ public class SB implements CharSequence
 		}
 	}
 
+	public SB lf()
+	{
+		return this.append('\n');
+	}
+
 	public SB append(String value)
 	{
 		int len = value.length();
@@ -148,6 +153,57 @@ public class SB implements CharSequence
 			if (this.value[from] == c) {
 				return from;
 			}
+		}
+		return -1;
+	}
+
+	public boolean startsWith(String prefix)
+	{
+		if (prefix.length() > this.length) {
+			return false;
+		}
+		char[] chars = prefix.toCharArray();
+		for (int i = 0; i < chars.length; i++) {
+			if (this.value[i] != chars[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean endsWith(String suffix)
+	{
+		int len = suffix.length();
+		if (len > this.length) {
+			return false;
+		}
+		char[] chars = suffix.toCharArray();
+		for (int i = len; i > 0; ) {
+			i--;
+			if (this.value[this.length - len + i] != chars[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public int lastIndexOf(String needle)
+	{
+		int len = needle.length();
+		int maxOffset = this.length - len;
+		if (maxOffset < 0) {
+			return -1;
+		}
+		char[] chars = needle.toCharArray();
+o:
+		for (int offset = 0; offset <= maxOffset; offset++) {
+			for (int i = len; i > 0; ) {
+				i--;
+				if (this.value[this.length - len - offset + i] != chars[i]) {
+					continue o;
+				}
+			}
+			return this.length - len - offset;
 		}
 		return -1;
 	}

@@ -7,6 +7,7 @@ public class PanelLink
 {
 	public static final int BOTTOM = 1;
 	public static final int TOP = 2;
+	public static final int INVALID_RIGHT = 0xFFFFFFFF & ~3;
 	public static final char[] links = { 'r', 'b', 't' };
 
 	public static char getAnchor(int link)

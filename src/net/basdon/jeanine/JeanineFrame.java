@@ -17,6 +17,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -66,7 +67,7 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
 		this.activeGroup = new CodeGroup(this);
 		this.activeGroup.setLocation(30, 30);
-		this.activeGroup.setContents(WELCOMETEXT);
+		this.activeGroup.setContents(new Util.LineIterator(WELCOMETEXT), true);
 		this.codegroups.add(this.activeGroup);
 		this.setPreferredSize(new Dimension(800, 800));
 		this.pack();
@@ -367,6 +368,12 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 			} else {
 				this.activeGroup.reChild(childId, position);
 			}
+		} else if ("raw".equals(parts[0])) {
+			if (this.activeGroup == null) {
+				this.setError("no active panel");
+			} else {
+				this.activeGroup.toggleRaw();
+			}
 		} else {
 			this.setError("unknown command: " + parts[0]);
 		}
@@ -390,21 +397,30 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 		this.lastCodegroups = this.codegroups;
 		this.lastLocation = new Point(this.location);
 		this.getContentPane().removeAll();
-		StringBuilder sb = new StringBuilder(4096);
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String[] fonts = ge.getAvailableFontFamilyNames();
-		for (int i = 0;;) {
-			sb.append(fonts[i]);
-			if (++i < fonts.length) {
-				sb.append('\n');
-				continue;
-			}
-			break;
-		}
 		CodeGroup group = new CodeGroup(this);
 		group.title = "Font selection";
 		group.buffer.readonly = true;
-		group.setContents(sb.toString());
+		group.setContents(new Iterator<SB>()
+		{
+			private int i;
+			private SB sb = new SB();
+
+			@Override
+			public boolean hasNext()
+			{
+				return i < fonts.length;
+			}
+
+			@Override
+			public SB next()
+			{
+				this.sb.length = 0;
+				this.sb.append(fonts[this.i++]);
+				return this.sb;
+			}
+		}, true);
 		group.setLocation(30, 30);
 		this.activeGroup = group;
 		this.codegroups = Collections.singletonList(group);
@@ -455,6 +471,9 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 	private void ensureCaretInView()
 	{
 		Point pt = this.findCursorPosition();
+		if (pt == null) {
+			return;
+		}
 		Dimension size = this.getContentPane().getSize();
 		int padx = (int) (size.width / 3f);
 		int pady = size.height / 8;

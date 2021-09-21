@@ -38,13 +38,13 @@ implements MouseListener, MouseMotionListener
 	private boolean isDragging;
 	private Point dragStart;
 
-	public CodePanel(JeanineFrame jf, CodeGroup group, Integer id, EditBuffer buffer, int linefrom, int lineto)
+	public CodePanel(CodeGroup group, Integer id, int linefrom, int lineto)
 	{
-		this.jf = jf;
-		this.j = jf.j;
+		this.jf = group.jf;
+		this.j = this.jf.j;
 		this.id = id;
 		this.group = group;
-		this.buffer = buffer;
+		this.buffer = group.buffer;
 		this.firstline = linefrom;
 		this.lastline = lineto;
 		this.location = new Point();
@@ -89,6 +89,9 @@ implements MouseListener, MouseMotionListener
 			title.append('|').append(this.firstline).append('-').append(this.lastline);
 			if (this.buffer.readonly) {
 				title.append("|RO");
+			}
+			if (this.group.raw) {
+				title.append("|RAW");
 			}
 			g.drawString(title.toString(), 1, 1 + this.j.fmaxascend);
 		}

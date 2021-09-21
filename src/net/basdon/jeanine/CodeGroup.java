@@ -3,8 +3,11 @@ package net.basdon.jeanine;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
@@ -20,6 +23,7 @@ public class CodeGroup
 	public File ownerFile;
 	public CodePanel activePanel;
 	public String title;
+	public boolean raw;
 
 	public CodeGroup(JeanineFrame jf)
 	{
@@ -35,29 +39,178 @@ public class CodeGroup
 		this.ownerFile = file;
 	}
 
-	public void setContents(String text)
+	public void setContents(Iterator<SB> lines, boolean interpret)
 	{
-		SB sb = new SB();
+		this.buffer.carety = 0;
+		this.buffer.caretx = 0;
+		this.buffer.virtualCaretx = 0;
 		this.buffer.lines.clear();
-		this.buffer.lines.add(sb);
-		if (text != null) {
-			for (char c : text.toCharArray()) {
-				if (c == '\n') {
-					sb = new SB();
-					this.buffer.lines.add(sb);
-				} else {
-					sb.append(c);
-				}
+		for (CodePanel panel : this.panels.values()) {
+			this.jf.getContentPane().remove(panel);
+		}
+		this.panels.clear();
+
+		if (interpret) {
+			this.interpretSource(lines);
+		} else {
+			Integer id = Integer.valueOf(0);
+			this.root = new CodePanel(this, id, 0, 0);
+			this.panels.put(id, this.root);
+			while (lines.hasNext()) {
+				this.buffer.lines.lines.add(new SB(lines.next()));
+				this.root.lastline++;
 			}
 		}
 
-		this.panels.clear();
-		Integer id = Integer.valueOf(0);
-		this.root = new CodePanel(this.jf, this, id, this.buffer, 0, this.buffer.lines.size());
-		this.panels.put(id, this.root);
-		this.position(this.root);
-		this.jf.getContentPane().add(this.root);
 		this.activePanel = this.root;
+		for (CodePanel pnl : this.panels.values()) {
+			pnl.recheckMaxLineLength();
+			pnl.ensureCodeViewSize(); // TODO: this should not repaint stuff etc
+		}
+		this.position(this.root);
+		for (CodePanel pnl : this.panels.values()) {
+			this.jf.getContentPane().add(pnl);
+		}
+	}
+
+	private SB interpretSource(Iterator<SB> lines)
+	{
+		SB errors = new SB();
+		Integer id = Integer.valueOf(0);
+		Integer nextInvalidId = Integer.valueOf(9000);
+		int physicalLine = 0;
+		int parsedLine = 0;
+		HashMap<CodePanel, Integer> parents = new HashMap<>();
+		HashMap<Integer, Integer> rightLinks = new HashMap<>();
+		CodePanel panel = this.root = new CodePanel(this, id, 0, 0);
+		this.panels.put(id, this.root);
+		while (lines.hasNext()) {
+			physicalLine++;
+			SB sb = lines.next();
+			if (sb.startsWith("/*jeanine:p:")) {
+				JeanineProperties props = JeanineProperties.parse(sb, 12);
+				id = nextInvalidId;
+				if (props.isValidInt['i']) {
+					id = Integer.valueOf(props.intValue['i']);
+					if (this.panels.containsKey(id)) {
+						errors.append(physicalLine + ": duplicate id").lf();
+						id = nextInvalidId;
+					}
+				} else {
+					errors.append(physicalLine + ": missing id in props").lf();
+				}
+				panel = new CodePanel(this, id, panel.lastline, panel.lastline);
+				this.panels.put(id, panel);
+				nextInvalidId = Integer.valueOf(nextInvalidId.intValue() + 1);
+				if (props.isValidInt['p']) {
+					parents.put(panel, Integer.valueOf(props.intValue['p']));
+				} else {
+					parents.put(panel, Integer.valueOf(0));
+					errors.append(physicalLine + ": no parent in props").lf();
+				}
+				if (props.isValidInt['x']) {
+					panel.location.x = props.intValue['x'];
+				}
+				if (props.isValidInt['y']) {
+					panel.location.y = props.intValue['y'];
+				}
+				if (props.isPresent['a'] && props.strValue['a'].length() == 1) {
+					switch (props.strValue['a'].charAt(0)) {
+					default: errors.append(physicalLine + ": bad anchor").lf();
+					case 't': panel.link = PanelLink.TOP; break;
+					case 'b': panel.link = PanelLink.BOTTOM; break;
+					case 'r': panel.link = PanelLink.INVALID_RIGHT; break;
+					}
+				} else {
+					panel.link = PanelLink.TOP;
+				}
+			} else {
+				int lineLength = sb.length;
+				if (sb.endsWith("*/")) {
+					int idx = sb.lastIndexOf("/*jeanine:l:");
+					if (idx != -1) {
+						Integer line = Integer.valueOf(parsedLine);
+						int from = idx + 12, len = sb.length - 2 - from;
+						String links = new String(sb.value, from, len);
+						for (String link : links.split(",")) {
+							int child;
+							try {
+								child = Integer.parseInt(link);
+							} catch (Exception e) {
+								errors.append(physicalLine + ":");
+								errors.append(" bad link id").lf();
+								continue;
+							}
+							Integer Child = Integer.valueOf(child);
+							rightLinks.put(Child, line);
+						}
+						lineLength = idx;
+					}
+				}
+				sb = new SB(sb.value, 0, lineLength);
+				this.buffer.lines.lines.add(sb);
+				panel.lastline++;
+				parsedLine++;
+			}
+		}
+		// apply right links that were found
+		for (Map.Entry<Integer, Integer> entry : rightLinks.entrySet()) {
+			Integer child = entry.getKey();
+			Integer line = entry.getValue();
+			panel = this.panels.get(child);
+			if (panel == null) {
+				errors.append("bad link to nonexisting panel " + child).lf();
+			} else {
+				if (PanelLink.getAnchor(panel.link) != 'r') {
+					errors.append("overriding non-right link for panel ");
+					errors.append(child.toString()).lf();
+				} else if (panel.link != PanelLink.INVALID_RIGHT) {
+					errors.append("overriding existing right link for panel ");
+					errors.append(child.toString()).lf();
+				}
+				panel.link = PanelLink.createRightLink(line.intValue());
+			}
+		}
+		int invalids = 0;
+		// reset invalid right links
+		for (CodePanel pnl : this.panels.values()) {
+			if (pnl.link == PanelLink.INVALID_RIGHT) {
+				errors.append(pnl.id + " has right anchor but no link");
+				errors.lf();
+				pnl.link = PanelLink.TOP;
+				pnl.location.x = ++invalids * 20;
+				pnl.location.y = -100;
+			}
+		}
+		// apply parent links
+		for (Map.Entry<CodePanel, Integer> parentLink : parents.entrySet()) {
+			CodePanel child = parentLink.getKey();
+			Integer parentId = parentLink.getValue();
+			child.parent = this.panels.get(parentId);
+			if (child.parent == null) {
+				errors.append("parent " + parentId + " not found for " + child.id);
+				errors.lf();
+				child.parent = this.root;
+				child.link = PanelLink.TOP;
+				child.location.x = ++invalids * 20;
+				child.location.y = -100;
+			}
+		}
+		// ensure no cyclic dependencies
+		for (CodePanel pnl : this.panels.values()) {
+			HashSet<CodePanel> seen = new HashSet<>();
+			seen.add(pnl);
+			while (pnl != null) {
+				pnl = pnl.parent;
+				if (!seen.add(pnl)) {
+					errors.append("cyclic dependency for " + pnl.id);
+					errors.lf();
+					pnl.parent = this.root;
+					break;
+				}
+			}
+		}
+		return errors;
 	}
 
 	public void setLocation(int x, int y)
@@ -125,6 +278,11 @@ public class CodeGroup
 
 	public void split()
 	{
+		if (this.raw) {
+			this.jf.setError("can't split while in raw mode");
+			return;
+		}
+
 		if (this.activePanel == null) {
 			this.jf.setError("can't split, no code panel focused");
 			return;
@@ -197,7 +355,7 @@ public class CodeGroup
 		int linefrom,
 		int lineto)
 	{
-		CodePanel cf = new CodePanel(this.jf, this, id, this.buffer, linefrom, lineto);
+		CodePanel cf = new CodePanel(this, id, linefrom, lineto);
 		this.panels.put(id, cf);
 		cf.parent = parent;
 		cf.link = link;
@@ -374,6 +532,21 @@ public class CodeGroup
 				}
 			}
 		}
+	}
+
+	public void toggleRaw()
+	{
+		Point rootLocation = this.root.location;
+		ArrayList<SB> lines = new ArrayList<>(this.buffer.lines.lines);
+		HashMap<Integer, CodePanel> panels = new HashMap<>(this.panels);
+		if (this.raw) {
+			this.setContents(lines.iterator(), true);
+		} else {
+			this.setContents(new GroupToRawConverter(lines, panels), false);
+		}
+		this.raw = !this.raw;
+		this.root.location = rootLocation;
+		this.position(this.root);
 	}
 
 	public void reChild(Integer childId, String position)
