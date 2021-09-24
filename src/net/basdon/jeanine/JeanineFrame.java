@@ -524,11 +524,12 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 			return;
 		}
 		Dimension size = this.getContentPane().getSize();
-		int padx = (int) (size.width / 3f);
+		int padxright = (int) (size.width / 3f);
+		int padxleft = (int) (size.width / 18f);
 		int pady = size.height / 8;
-		int dx = padx - pt.x;
+		int dx = padxleft - pt.x;
 		if (dx < 0) {
-			dx = (size.width - padx) - pt.x;
+			dx = (size.width - padxright) - pt.x;
 			if (dx > 0) {
 				dx = 0;
 			}
