@@ -10,11 +10,14 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +34,7 @@ import static java.awt.KeyboardFocusManager.*;
 
 public class JeanineFrame
 extends JFrame
-implements KeyListener, MouseListener, MouseMotionListener, ActionListener
+implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, ActionListener
 {
 	private final Timer timer;
 	private final CodeGroup welcomeCodeGroup;
@@ -61,6 +64,7 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 		this.addKeyListener(this);
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
+		this.addMouseWheelListener(this);
 		this.commandbar = new CommandBar(j);
 		this.setContentPane(new BackgroundPanel());
 		this.setGlassPane(this.overlay = new OverlayPanel(this));
@@ -297,6 +301,23 @@ implements KeyListener, MouseListener, MouseMotionListener, ActionListener
 	@Override
 	public void mouseExited(MouseEvent e)
 	{
+	}
+
+	/*MouseWheelListener*/
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e)
+	{
+		if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+			int units = e.getUnitsToScroll() * 2;
+			if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
+				this.location.x -= units;
+			} else {
+				this.location.y -= units * 2;
+			}
+			for (CodeGroup cg : this.codegroups) {
+				cg.updateLocation();
+			}
+		}
 	}
 
 	/*ActionListener*/
