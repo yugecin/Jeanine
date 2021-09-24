@@ -159,11 +159,18 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				oldcursorpos = cursorPosBeforeChangingFont;
 			} else if (event.c == '\n' || event.c == '\r') {
 				EditBuffer buffer = this.activeGroup.buffer;
-				String maybeFontName = buffer.lines.get(buffer.carety).toString();
-				if (maybeFontName.length() > 3 && maybeFontName.charAt(0) == 'f') {
-					String fontName = maybeFontName.substring(2);
+				String directive = buffer.lines.get(buffer.carety).toString();
+				if (directive.length() > 3 && directive.charAt(0) == 'f') {
+					String fontName = directive.substring(2);
 					Font font = new Font(fontName, Font.BOLD, 14);
 					this.j.setFont(font);
+				} else if (directive.length() > 2 && directive.charAt(0) == 's') {
+					int size = Integer.parseInt(directive.substring(2));
+					this.j.setFont(this.j.font.deriveFont((float) size));
+				} else if (directive.length() > 0 && directive.charAt(0) == 'b') {
+					this.j.setFont(this.j.font.deriveFont(Font.BOLD));
+				} else if (directive.length() > 0 && directive.charAt(0) == 'p') {
+					this.j.setFont(this.j.font.deriveFont(Font.PLAIN));
 				} else {
 					return;
 				}
@@ -463,8 +470,29 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.getContentPane().removeAll();
 		ArrayList<String> lines = new ArrayList<>();
 		lines.add("c Welcome to font selection.");
-		lines.add("c Put the caret on a font name and press enter.");
+		lines.add("c Put the caret on a setting and press enter.");
 		lines.add("c Exit by pressing ESC.");
+		lines.add("/*jeanine:p:i:2;p:0;x:0;y:20;a:b*/");
+		lines.add("c Font size:");
+		lines.add("s 6");
+		lines.add("s 7");
+		lines.add("s 8");
+		lines.add("s 9");
+		lines.add("s 10");
+		lines.add("s 11");
+		lines.add("s 12");
+		lines.add("s 13");
+		lines.add("s 14");
+		lines.add("s 15");
+		lines.add("s 16");
+		lines.add("s 17");
+		lines.add("s 18");
+		lines.add("s 19");
+		lines.add("s 20");
+		lines.add("/*jeanine:p:i:3;p:2;x:0;y:20;a:b*/");
+		lines.add("c Font style:");
+		lines.add("b bold");
+		lines.add("p plain");
 		lines.add("/*jeanine:p:i:1;p:0;x:20;y:0;a:t*/");
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String[] fonts = ge.getAvailableFontFamilyNames();
@@ -475,7 +503,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		group.title = "Font selection";
 		group.buffer.readonly = true;
 		group.setContents(new Util.String2SBIter(lines.iterator()), true);
-		group.buffer.carety = 3;
+		group.buffer.carety = 22;
 		group.activePanel = group.panelAtLine(group.buffer.carety);
 		group.setLocation(0, 30);
 		this.activeGroup = group;
