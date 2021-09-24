@@ -445,6 +445,29 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 					e.printStackTrace();
 				}
 			}
+		} else if (parts[0].length() > 0 &&
+			'0' <= parts[0].charAt(0) &&
+			parts[0].charAt(0) < '9')
+		{
+			try {
+				if (this.activeGroup == null) {
+					this.setError("can't jump to line - no active group");
+				}
+				int linenr = Integer.parseInt(parts[0]) - 1;
+				if (linenr < 0) {
+					linenr = 0;
+				} else if (linenr >= this.activeGroup.buffer.lines.size()) {
+					linenr = this.activeGroup.buffer.lines.size() - 1;
+				}
+				this.activeGroup.buffer.carety = linenr;
+				this.activeGroup.buffer.caretx = 0;
+				this.activeGroup.buffer.virtualCaretx = 0;
+				this.ensureCaretInView();
+				this.activeGroup.activePanel = this.activeGroup.panelAtLine(linenr);
+				this.activeGroup.repaintAll();
+			} catch (Throwable t) {
+				this.setError("expected linenumber but got unparsable int");
+			}
 		} else {
 			this.setError("unknown command: " + parts[0]);
 		}
@@ -649,5 +672,6 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"\n" +
 		"Commands:\n" +
 		":spl - split current view based on the visual line selection (ctrl-v)\n" +
+		":<number> - jump to a line number\n" +
 		":link <bot|right|top> <id> - link a child";
 }
