@@ -423,7 +423,14 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 					lastActiveGroup.activePanel.repaint(); // for cursor
 				}
 			}
+o:
 			for (File file : files) {
+				for (CodeGroup group : this.codegroups) {
+					if (file.equals(group.ownerFile)) {
+						this.activeGroup = group;
+						continue o;
+					}
+				}
 				this.activeGroup = new CodeGroup(this);
 				try {
 					this.activeGroup.readFile(file);
