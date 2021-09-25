@@ -48,7 +48,10 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public Point location, lastLocation;
 	public Point cursorPosBeforeChangingFont;
 	public boolean isSelectingFont;
+	public char[] liveSearchText;
 
+	private Point caretPosBeforeSearch;
+	private CodeGroup activeGroupBeforeSearch;
 	private Point locationMoveFrom, locationMoveTo;
 	private long locationMoveStartTime;
 	private Point dragStart;
@@ -133,12 +136,34 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		KeyInput event = new KeyInput(e.getKeyChar());
 		if (this.commandbar.active) {
 			this.commandbar.handleKey(event.c);
-			if (!this.commandbar.active) {
-				if (this.commandbar.cmd.length() != 0) {
-					this.acceptCommand(this.commandbar.cmd.toString());
+			if (this.commandbar.active) {
+				if (this.commandbar.isSearch()) {
+					this.doLiveSearch(this.commandbar.val.toString());
 				}
-				this.repaintActivePanel();
+				return;
 			}
+			if (this.commandbar.isCommand()) {
+				if (this.commandbar.val.length() != 0) {
+					this.acceptCommand(this.commandbar.val.toString());
+				}
+			} else if (this.commandbar.isSearch()) {
+				this.liveSearchText = null;
+				if (this.commandbar.val.length() != 0) {
+					StringBuilder sb = this.commandbar.val;
+				} else {
+					this.activeGroup = this.activeGroupBeforeSearch;
+					if (this.activeGroup != null) {
+						EditBuffer buf = this.activeGroup.buffer;
+						buf.caretx = this.caretPosBeforeSearch.x;
+						buf.virtualCaretx = this.caretPosBeforeSearch.x;
+						buf.carety = this.caretPosBeforeSearch.y;
+						this.ensureCaretInView();
+					}
+				}
+				this.activeGroupBeforeSearch = null;
+				this.caretPosBeforeSearch = null;
+			}
+			this.repaintActivePanel();
 			return;
 		}
 		if (this.activeGroup != null && this.activeGroup.activePanel != null) {
@@ -185,8 +210,19 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			return;
 		}
 		if (event.c == ':') {
-			this.commandbar.show("");
-			this.repaintActivePanel();
+			this.commandbar.showForCommand();
+			this.repaintActivePanel(); // to update caret because it lost focus
+			return;
+		}
+		if (event.c == '/') {
+			this.activeGroupBeforeSearch = this.activeGroup;
+			if (this.activeGroup != null) {
+				this.caretPosBeforeSearch = new Point();
+				this.caretPosBeforeSearch.x = this.activeGroup.buffer.caretx;
+				this.caretPosBeforeSearch.y = this.activeGroup.buffer.carety;
+			}
+			this.commandbar.showForSearch();
+			this.repaintActivePanel(); // to update caret because it lost focus
 			return;
 		}
 		if (this.activeGroup != null) {
@@ -352,9 +388,40 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 	}
 
+	private void doLiveSearch(String searchText)
+	{
+		this.liveSearchText = searchText.toCharArray();
+		if (this.activeGroup == null) {
+			return;
+		}
+		EditBuffer buf = this.activeGroup.buffer;
+		Point p = buf.find(this.liveSearchText, buf.carety, buf.caretx);
+		if (p == null) {
+			// search from start again
+			p = buf.find(this.liveSearchText, 0, 0);
+			// but disregard finds that are already at cursor pos again
+			if (p != null && p.y == buf.carety && p.x == buf.caretx) {
+				p = null;
+			}
+		}
+		if (p != null) {
+			buf.caretx = p.x;
+			buf.virtualCaretx = p.x;
+			buf.carety = p.y;
+			this.activeGroup.activePanel = this.activeGroup.panelAtLine(p.y);
+		}
+		this.activeGroup.repaintAll();
+		this.ensureCaretInView();
+	}
+
 	public boolean shouldBlockInput()
 	{
 		return this.commandbar.active;
+	}
+
+	public boolean shouldDrawCaret()
+	{
+		return !this.commandbar.active || this.commandbar.isSearch();
 	}
 
 	public void acceptCommand(String command)
@@ -670,12 +737,13 @@ o:
 		"Welcome to Jeanine, a 2d editor with some Vim-like keybindings\n" +
 		"\n" +
 		"Movement: h j k l ^ $ w b e gg G\n" +
-		"Insertion: i I a A o O p P\n" +
-		"Deleting: x dw db diw dd dj dk\n" +
-		"Changing: cw cb ciw\n" +
+		"Insert: i I a A o O p P\n" +
+		"Delete: x dw db diw dd dj dk\n" +
+		"Change: cw cb ciw\n" +
 		"Other: . u\n" +
-		"Selecting: ctrl-v\n" +
+		"Select: ctrl-v\n" +
 		"View: z\n" +
+		"Search: /\n" +
 		"\n" +
 		"Commands:\n" +
 		":spl - split current view based on the visual line selection (ctrl-v)\n" +

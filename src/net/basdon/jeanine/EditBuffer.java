@@ -906,4 +906,21 @@ public class EditBuffer
 	{
 		return new Undo(this, x, y);
 	}
+
+	public Point find(char[] text, int fromy, int fromx)
+	{
+		if (text.length == 0) {
+			return null;
+		}
+		int minx = fromx;
+		for (int j = fromy; j < this.lines.lines.size(); j++) {
+			SB line = this.lines.lines.get(j);
+			int idx = line.indexOf(text, minx);
+			if (idx != -1) {
+				return new Point(idx, j);
+			}
+			minx = 0;
+		}
+		return null;
+	}
 }

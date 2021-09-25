@@ -12,16 +12,17 @@ public class CommandBar extends JPanel
 {
 	private final Jeanine j;
 
-	public final StringBuilder cmd;
+	public final StringBuilder val;
 
 	private int caretPos;
+	private char cmdChar;
 
 	public boolean active;
 
 	public CommandBar(Jeanine j)
 	{
 		this.j = j;
-		this.cmd = new StringBuilder();
+		this.val = new StringBuilder();
 		this.setFont(j.font);
 		this.setBackground(Color.white);
 		this.setOpaque(true);
@@ -30,16 +31,37 @@ public class CommandBar extends JPanel
 		this.setFocusable(false);
 	}
 
-	public void show(String text)
+	private void showBar()
 	{
-		this.cmd.setLength(0);
-		this.cmd.append(text);
-		this.caretPos = this.cmd.length();
+		this.val.setLength(0);
+		this.caretPos = this.val.length();
 		Container parent = this.getParent();
 		this.setSize(parent.getWidth() - 4, this.j.fy + 4);
 		this.setLocation(2, parent.getHeight() - this.getHeight() - 2);
 		this.setVisible(true);
 		this.active = true;
+	}
+
+	public void showForCommand()
+	{
+		this.cmdChar = ':';
+		this.showBar();
+	}
+
+	public void showForSearch()
+	{
+		this.cmdChar = '/';
+		this.showBar();
+	}
+
+	public boolean isCommand()
+	{
+		return this.cmdChar == ':';
+	}
+
+	public boolean isSearch()
+	{
+		return this.cmdChar == '/';
 	}
 
 	@Override
@@ -51,7 +73,7 @@ public class CommandBar extends JPanel
 		g.fillRect(this.j.fx * (1 + this.caretPos), 0, this.j.fx, this.j.fy);
 		g.setColor(Color.black);
 		g.setFont(this.j.font);
-		g.drawString(':' + this.cmd.toString(), 0, this.j.fmaxascend);
+		g.drawString(this.cmdChar + this.val.toString(), 0, this.j.fmaxascend);
 	}
 
 	public void handleKey(char c)
@@ -64,34 +86,34 @@ public class CommandBar extends JPanel
 			}
 			return;
 		case KeyEvent.VK_RIGHT:
-			if (this.caretPos < this.cmd.length()) {
+			if (this.caretPos < this.val.length()) {
 				this.caretPos++;
 				break;
 			}
 			return;
 		case EditBuffer.BS:
 			if (this.caretPos == 0) {
-				this.cmd.setLength(0);
+				this.val.setLength(0);
 				this.active = false;
 				this.setVisible(false);
 				return;
 			}
 			this.caretPos--;
-			this.cmd.delete(this.caretPos, this.caretPos + 1);
+			this.val.delete(this.caretPos, this.caretPos + 1);
 			break;
 		case EditBuffer.DEL:
-			if (this.caretPos < this.cmd.length()) {
-				this.cmd.delete(this.caretPos, this.caretPos + 1);
+			if (this.caretPos < this.val.length()) {
+				this.val.delete(this.caretPos, this.caretPos + 1);
 			}
 			break;
 		case EditBuffer.ESC:
-			this.cmd.setLength(0);
+			this.val.setLength(0);
 		case '\n':
 			this.setVisible(false);
 			this.active = false;
 			return;
 		default:
-			this.cmd.insert(this.caretPos++, c);
+			this.val.insert(this.caretPos++, c);
 		}
 		this.repaint();
 	}

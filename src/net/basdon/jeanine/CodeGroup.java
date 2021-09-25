@@ -444,6 +444,14 @@ public class CodeGroup
 			!this.jf.shouldBlockInput();
 	}
 
+	public boolean shouldDrawCaret(CodePanel panel)
+	{
+		return (this.buffer.mode != EditBuffer.NORMAL_MODE) ||
+			this.jf.activeGroup == this &&
+			panel == this.activePanel &&
+			this.jf.shouldDrawCaret();
+	}
+
 	public int findMaxId()
 	{
 		int max = 0;

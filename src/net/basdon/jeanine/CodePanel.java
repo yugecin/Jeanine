@@ -120,26 +120,40 @@ implements MouseListener, MouseMotionListener
 			}
 		}
 
-		// caret
-		if ((this.group.hasFocus(this) || this.buffer.mode != EditBuffer.NORMAL_MODE) &&
-			this.firstline <= this.buffer.carety && this.buffer.carety < this.lastline)
-		{
-			if (this.buffer.mode == EditBuffer.INSERT_MODE) {
-				g.setColor(Color.green);
-			} else {
-				g.setColor(Color.red);
-			}
-			SB line = this.buffer.lines.get(this.buffer.carety);
-			int x = Line.logicalToVisualPos(line, this.buffer.caretx) * this.j.fx;
-			int y = (this.buffer.carety - this.firstline) * this.j.fy;
-			g.fillRect(x, y, this.j.fx, this.j.fy);
-		}
+		boolean needCaret = this.group.shouldDrawCaret(this);
 
-		// code
+		// code & caret
 		g.setColor(Color.black);
 		for (int i = this.firstline; i < this.lastline && heightleft > 0; i++) {
 			if (hiddenHeight < this.j.fy) {
 				SB line = Line.tabs2spaces(this.buffer.lines.get(i));
+				if (this.jf.liveSearchText != null) {
+					int idx = 0;
+					for (;;) {
+						idx = line.indexOf(this.jf.liveSearchText, idx);
+						if (idx != -1) {
+							int f = Line.logicalToVisualPos(line, idx);
+							int t = idx + this.jf.liveSearchText.length;
+							t = Line.logicalToVisualPos(line, t) - f;
+							g.setColor(Color.cyan);
+							g.fillRect(f * this.j.fx, 0, t * this.j.fx, this.j.fy);
+							g.setColor(Color.black);
+							idx++;
+						} else {
+							break;
+						}
+					}
+				}
+				if (needCaret && this.buffer.carety == i) {
+					if (this.buffer.mode == EditBuffer.INSERT_MODE) {
+						g.setColor(Color.green);
+					} else {
+						g.setColor(Color.red);
+					}
+					int x = Line.logicalToVisualPos(line, this.buffer.caretx);
+					g.fillRect(x * this.j.fx, 0, this.j.fx, this.j.fy);
+					g.setColor(Color.black);
+				}
 				g.drawString(line.toString(), 0, this.j.fmaxascend);
 			} else {
 				hiddenHeight -= this.j.fy;
