@@ -49,6 +49,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public Point cursorPosBeforeChangingFont;
 	public boolean isSelectingFont;
 	public char[] liveSearchText;
+	public long searchHighlightTimeout;
 
 	private Point caretPosBeforeSearch;
 	private CodeGroup activeGroupBeforeSearch;
@@ -232,6 +233,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.caretPosBeforeSearch.x = this.activeGroup.buffer.caretx;
 				this.caretPosBeforeSearch.y = this.activeGroup.buffer.carety;
 			}
+			this.searchHighlightTimeout = Long.MAX_VALUE;
 			this.commandbar.showForSearch();
 			this.repaintActivePanel(); // to update caret because it lost focus
 			return;
@@ -379,8 +381,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public void actionPerformed(ActionEvent e)
 	{
 		if (this.timer == e.getSource()) {
-			if (locationMoveFrom != null) {
-				long time = System.currentTimeMillis() - locationMoveStartTime;
+			if (this.locationMoveFrom != null) {
+				long time = System.currentTimeMillis() - this.locationMoveStartTime;
 				if (time >= 300) {
 					this.location = this.locationMoveTo;
 					this.locationMoveFrom = null;
@@ -394,6 +396,19 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				}
 				for (CodeGroup group : this.codegroups) {
 					group.updateLocation();
+				}
+			}
+			if (this.liveSearchText != null &&
+				this.searchHighlightTimeout < System.currentTimeMillis())
+			{
+				this.liveSearchText = null;
+				this.searchHighlightTimeout = Long.MAX_VALUE;
+				if (this.activeGroup != null) {
+					// TODO: this might need to repaint all groups,
+					// if active group changed during this time (otherwise
+					// search highlighting won't be cleared for earlier active
+					// group)
+					this.activeGroup.repaintAll();
 				}
 			}
 		}
@@ -461,6 +476,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		buf.caretx = p.x;
 		buf.virtualCaretx = p.x;
 		buf.carety = p.y;
+		this.liveSearchText = this.activeSearch;
+		this.searchHighlightTimeout = System.currentTimeMillis() + 175;
 		this.activeGroup.activePanel = this.activeGroup.panelAtLine(p.y);
 		this.activeGroup.repaintAll();
 		this.ensureCaretInView();
