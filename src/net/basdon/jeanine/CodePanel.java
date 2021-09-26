@@ -126,7 +126,8 @@ implements MouseListener, MouseMotionListener
 		g.setColor(Color.black);
 		for (int i = this.firstline; i < this.lastline && heightleft > 0; i++) {
 			if (hiddenHeight < this.j.fy) {
-				SB line = Line.tabs2spaces(this.buffer.lines.get(i));
+				SB l = this.buffer.lines.get(i);
+				SB line = Line.tabs2spaces(l);
 				if (this.jf.liveSearchText != null) {
 					int idx = 0;
 					for (;;) {
@@ -150,7 +151,7 @@ implements MouseListener, MouseMotionListener
 					} else {
 						g.setColor(Color.red);
 					}
-					int x = Line.logicalToVisualPos(line, this.buffer.caretx);
+					int x = Line.logicalToVisualPos(l, this.buffer.caretx);
 					g.fillRect(x * this.j.fx, 0, this.j.fx, this.j.fy);
 					g.setColor(Color.black);
 				}
