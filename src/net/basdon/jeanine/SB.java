@@ -203,6 +203,26 @@ public class SB implements CharSequence
 		return true;
 	}
 
+	public int lastIndexOf(char[] needle, int from)
+	{
+		int len = needle.length;
+		int offset = this.length - len;
+		if (from < offset) {
+			offset = from;
+		}
+		for (; offset >= 0; offset--) {
+			for (int i = 0; ; i++) {
+				if (i == len) {
+					return offset;
+				}
+				if (this.value[offset + i] != needle[i]) {
+					break;
+				}
+			}
+		}
+		return -1;
+	}
+
 	public int lastIndexOf(String needle)
 	{
 		int len = needle.length();

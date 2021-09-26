@@ -55,6 +55,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	private Point locationMoveFrom, locationMoveTo;
 	private long locationMoveStartTime;
 	private Point dragStart;
+	private char[] activeSearch;
 
 	public JeanineFrame(Jeanine j)
 	{
@@ -150,6 +151,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.liveSearchText = null;
 				if (this.commandbar.val.length() != 0) {
 					StringBuilder sb = this.commandbar.val;
+					this.activeSearch = new char[sb.length()];
+					sb.getChars(0, sb.length(), this.activeSearch, 0);
 				} else {
 					this.activeGroup = this.activeGroupBeforeSearch;
 					if (this.activeGroup != null) {
@@ -175,6 +178,14 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 		if (event.c == 'z') {
 			this.centerCaret();
+			return;
+		}
+		if (event.c == 'n') {
+			this.doSearch(true);
+			return;
+		}
+		if (event.c == 'N') {
+			this.doSearch(false);
 			return;
 		}
 		if (this.isSelectingFont) {
@@ -410,6 +421,47 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			buf.carety = p.y;
 			this.activeGroup.activePanel = this.activeGroup.panelAtLine(p.y);
 		}
+		this.activeGroup.repaintAll();
+		this.ensureCaretInView();
+	}
+
+	private void doSearch(boolean forwards)
+	{
+		if (this.activeSearch == null) {
+			Toolkit.getDefaultToolkit().beep();
+			return;
+		}
+		if (this.activeGroup == null) {
+			return;
+		}
+		EditBuffer buf = this.activeGroup.buffer;
+		Point p;
+		if (forwards) {
+			p = buf.find(this.activeSearch, buf.carety, buf.caretx + 1);
+			// search from start again
+			if (p == null) {
+				p = buf.find(this.activeSearch, 0, 0);
+			}
+		} else {
+			p = buf.findBackwards(this.activeSearch, buf.carety, buf.caretx - 1);
+			// search from end again
+			if (p == null) {
+				p = buf.findBackwards(
+					this.activeSearch,
+					Integer.MAX_VALUE,
+					Integer.MAX_VALUE
+				);
+			}
+		}
+		// also disregard finds that are already at cursor pos again
+		if (p == null || (p.y == buf.carety && p.x == buf.caretx)) {
+			Toolkit.getDefaultToolkit().beep();
+			return;
+		}
+		buf.caretx = p.x;
+		buf.virtualCaretx = p.x;
+		buf.carety = p.y;
+		this.activeGroup.activePanel = this.activeGroup.panelAtLine(p.y);
 		this.activeGroup.repaintAll();
 		this.ensureCaretInView();
 	}
@@ -743,7 +795,7 @@ o:
 		"Other: . u\n" +
 		"Select: ctrl-v\n" +
 		"View: z\n" +
-		"Search: /\n" +
+		"Search: / n N\n" +
 		"\n" +
 		"Commands:\n" +
 		":spl - split current view based on the visual line selection (ctrl-v)\n" +

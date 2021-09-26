@@ -923,4 +923,24 @@ public class EditBuffer
 		}
 		return null;
 	}
+
+	public Point findBackwards(char[] text, int fromy, int fromx)
+	{
+		if (text.length == 0) {
+			return null;
+		}
+		int maxx = fromx;
+		if (fromy >= this.lines.size()) {
+			fromy = this.lines.size() - 1;
+		}
+		for (int j = fromy; j >= 0; j--) {
+			SB line = this.lines.lines.get(j);
+			int idx = line.lastIndexOf(text, maxx);
+			if (idx != -1) {
+				return new Point(idx, j);
+			}
+			maxx = Integer.MAX_VALUE;
+		}
+		return null;
+	}
 }
