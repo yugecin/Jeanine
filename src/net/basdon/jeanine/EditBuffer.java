@@ -91,7 +91,7 @@ public class EditBuffer
 	private void putCaretX(int visual)
 	{
 		SB line = this.lines.get(this.carety);
-		if (visual > line.length()) {
+		if (visual >= Line.visualLength(line)) {
 			if (visual > this.virtualCaretx) {
 				this.virtualCaretx = visual;
 			}
