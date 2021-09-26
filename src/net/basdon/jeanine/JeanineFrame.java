@@ -140,7 +140,13 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			this.commandbar.handleKey(event.c);
 			if (this.commandbar.active) {
 				if (this.commandbar.isSearch()) {
-					this.doLiveSearch(this.commandbar.val.toString());
+					String searchTxt = this.commandbar.val.toString();
+					if (searchTxt == null) {
+						this.liveSearchText = null;
+					} else {
+						this.liveSearchText = searchTxt.toCharArray();
+					}
+					this.doSearch(this.liveSearchText, true, true);
 				}
 				return;
 			}
@@ -182,11 +188,11 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			return;
 		}
 		if (event.c == 'n') {
-			this.doSearch(true);
+			this.doSearch(this.activeSearch, false, true);
 			return;
 		}
 		if (event.c == 'N') {
-			this.doSearch(false);
+			this.doSearch(this.activeSearch, false, false);
 			return;
 		}
 		if (this.isSelectingFont) {
@@ -414,35 +420,9 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 	}
 
-	private void doLiveSearch(String searchText)
+	private void doSearch(char[] text, boolean live, boolean forwards)
 	{
-		this.liveSearchText = searchText.toCharArray();
-		if (this.activeGroup == null) {
-			return;
-		}
-		EditBuffer buf = this.activeGroup.buffer;
-		Point p = buf.find(this.liveSearchText, buf.carety, buf.caretx);
-		if (p == null) {
-			// search from start again
-			p = buf.find(this.liveSearchText, 0, 0);
-			// but disregard finds that are already at cursor pos again
-			if (p != null && p.y == buf.carety && p.x == buf.caretx) {
-				p = null;
-			}
-		}
-		if (p != null) {
-			buf.caretx = p.x;
-			buf.virtualCaretx = p.x;
-			buf.carety = p.y;
-			this.activeGroup.activePanel = this.activeGroup.panelAtLine(p.y);
-		}
-		this.activeGroup.repaintAll();
-		this.ensureCaretInView();
-	}
-
-	private void doSearch(boolean forwards)
-	{
-		if (this.activeSearch == null) {
+		if (text == null) {
 			Toolkit.getDefaultToolkit().beep();
 			return;
 		}
@@ -452,20 +432,16 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		EditBuffer buf = this.activeGroup.buffer;
 		Point p;
 		if (forwards) {
-			p = buf.find(this.activeSearch, buf.carety, buf.caretx + 1);
+			p = buf.find(text, buf.carety, buf.caretx + 1);
 			// search from start again
 			if (p == null) {
-				p = buf.find(this.activeSearch, 0, 0);
+				p = buf.find(text, 0, 0);
 			}
 		} else {
-			p = buf.findBackwards(this.activeSearch, buf.carety, buf.caretx - 1);
+			p = buf.findBackwards(text, buf.carety, buf.caretx - 1);
 			// search from end again
 			if (p == null) {
-				p = buf.findBackwards(
-					this.activeSearch,
-					Integer.MAX_VALUE,
-					Integer.MAX_VALUE
-				);
+				p = buf.findBackwards(text, Integer.MAX_VALUE, Integer.MAX_VALUE);
 			}
 		}
 		// also disregard finds that are already at cursor pos again
@@ -476,7 +452,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		buf.caretx = p.x;
 		buf.virtualCaretx = p.x;
 		buf.carety = p.y;
-		this.liveSearchText = this.activeSearch;
+		// Assign search to liveSearchText, to make highlighting happen
+		this.liveSearchText = text;
 		this.searchHighlightTimeout = System.currentTimeMillis() + 175;
 		this.activeGroup.activePanel = this.activeGroup.panelAtLine(p.y);
 		this.activeGroup.repaintAll();
