@@ -77,9 +77,16 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.setLocationByPlatform(true);
 		this.setError(null);
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
-		this.activeGroup = this.welcomeCodeGroup = new CodeGroup(this);
-		this.activeGroup.setLocation(30, 30);
-		this.activeGroup.setContents(new Util.LineIterator(WELCOMETEXT), true);
+		this.welcomeCodeGroup = new CodeGroup(this);
+		if (Jeanine.argsNumFilesToOpen > 0) {
+			for (int i = 0; i < Jeanine.argsNumFilesToOpen; i++) {
+				this.openFile(Jeanine.argsFilesToOpen[i]);
+			}
+		} else {
+			this.activeGroup = this.welcomeCodeGroup;
+			this.activeGroup.setLocation(30, 30);
+			this.activeGroup.setContents(new Util.LineIterator(WELCOMETEXT), true);
+		}
 		this.codegroups.add(this.activeGroup);
 		this.setPreferredSize(new Dimension(800, 800));
 		this.pack();
@@ -536,22 +543,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 					lastActiveGroup.activePanel.repaint(); // for cursor
 				}
 			}
-o:
 			for (File file : files) {
-				for (CodeGroup group : this.codegroups) {
-					if (file.equals(group.ownerFile)) {
-						this.activeGroup = group;
-						continue o;
-					}
-				}
-				this.activeGroup = new CodeGroup(this);
-				try {
-					this.activeGroup.readFile(file);
-				} catch (IOException e) {
-					// TODO
-					e.printStackTrace();
-				}
-				this.codegroups.add(this.activeGroup);
+				this.openFile(file);
 			}
 			this.ensureCaretInView();
 		} else if ("w".equals(parts[0])) {
@@ -591,6 +584,24 @@ o:
 		} else {
 			this.setError("unknown command: " + parts[0]);
 		}
+	}
+
+	private void openFile(File file)
+	{
+		for (CodeGroup group : this.codegroups) {
+			if (file.equals(group.ownerFile)) {
+				this.activeGroup = group;
+				return;
+			}
+		}
+		this.activeGroup = new CodeGroup(this);
+		try {
+			this.activeGroup.readFile(file);
+		} catch (IOException e) {
+			// TODO
+			e.printStackTrace();
+		}
+		this.codegroups.add(this.activeGroup);
 	}
 
 	public void setError(String error)
