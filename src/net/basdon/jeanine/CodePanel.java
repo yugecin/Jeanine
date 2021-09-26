@@ -181,7 +181,7 @@ implements MouseListener, MouseMotionListener
 				this.isDragging = true;
 				this.dragStart = e.getLocationOnScreen();
 			} else if (this.group.focusGained(this)) {
-				this.putCaret(e.getX(), e.getY());
+				this.putCaretFromMouseInput(e.getX(), e.getY());
 			}
 		}
 	}
@@ -195,7 +195,7 @@ implements MouseListener, MouseMotionListener
 				this.isDragging = false;
 				this.dragStart = null;
 			} else if (this.group.hasFocus(this)) {
-				this.putCaret(e.getX(), e.getY());
+				this.putCaretFromMouseInput(e.getX(), e.getY());
 			}
 		}
 	}
@@ -225,7 +225,7 @@ implements MouseListener, MouseMotionListener
 				this.dragStart = now;
 				this.jf.overlay.repaint();
 			} else if (this.group.hasFocus(this)) {
-				this.putCaret(e.getX(), e.getY());
+				this.putCaretFromMouseInput(e.getX(), e.getY());
 			}
 		}
 	}
@@ -255,7 +255,7 @@ implements MouseListener, MouseMotionListener
 		}
 	}
 
-	private void putCaret(int x, int y)
+	private void putCaretFromMouseInput(int x, int y)
 	{
 		x -=
 			/*border left*/ 1 +
@@ -272,10 +272,13 @@ implements MouseListener, MouseMotionListener
 		if (y < this.firstline) {
 			y = this.firstline;
 		}
-		x = Math.min(x, this.buffer.lines.get(y).length() - 1);
+		SB line = this.buffer.lines.get(y);
+		int len = Line.visualLength(line);
+		x = Math.min(x, len - 1);
 		if (x < 0) {
 			x = 0;
 		}
+		x = Line.visualToLogicalPos(line, x);
 		if (this.buffer.carety != y || this.buffer.caretx != x) {
 			this.buffer.carety = y;
 			this.buffer.caretx = x;

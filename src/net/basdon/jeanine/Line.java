@@ -36,13 +36,17 @@ public class Line
 
 	public static int visualToLogicalPos(SB sb, int visualPos)
 	{
+		int pos = 0;
 		for (int i = 0; i < sb.length; i++) {
 			if (visualPos <= 0) {
 				return i;
 			}
 			if (sb.value[i] == '\t') {
-				visualPos -= (8 - visualPos % 8);
+				int diff = (8 - pos % 8);
+				pos += diff;
+				visualPos -= diff;
 			} else {
+				pos++;
 				visualPos--;
 			}
 		}
