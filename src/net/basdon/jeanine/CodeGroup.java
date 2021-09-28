@@ -358,12 +358,13 @@ public class CodeGroup
 
 		Integer nextId = Integer.valueOf(this.findMaxId() + 1);
 		if (this.buffer.lineselectfrom == codepanel.firstline) {
+			int initialLastline = codepanel.lastline;
 			codepanel.lastline = this.buffer.lineselectto;
 			codepanel.recheckMaxLineLength();
 			codepanel.ensureCodeViewSize();
 			this.activePanel = this.add(nextId, this.activePanel, 1, 0, 30,
 				this.buffer.lineselectto,
-				this.buffer.lines.size());
+				initialLastline);
 		} else {
 			int initialLastline = codepanel.lastline;
 			codepanel.lastline = this.buffer.lineselectfrom;
