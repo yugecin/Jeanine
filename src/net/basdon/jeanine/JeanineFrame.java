@@ -154,7 +154,6 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 						this.liveSearchText = searchTxt.toCharArray();
 					}
 					this.doSearch(this.liveSearchText, true, true);
-					this.searchHighlightTimeout = Long.MAX_VALUE;
 				}
 				return;
 			}
@@ -441,6 +440,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		int fromx = buf.caretx;
 		if (forwards) {
 			if (!live) {
+				// If not live, we're searching for the next occurence, so start
+				// searching from the position after where the caret is currently.
 				fromx++;
 			}
 			p = buf.find(text, buf.carety, fromx);
@@ -450,6 +451,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 		} else {
 			if (!live) {
+				// If not live, we're searching for the prev occurence, so start
+				// searching from the position before where the caret is currently.
 				fromx--;
 			}
 			p = buf.findBackwards(text, buf.carety, fromx);
@@ -469,7 +472,13 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 		// Assign search to liveSearchText, to make highlighting happen
 		this.liveSearchText = text;
-		this.searchHighlightTimeout = System.currentTimeMillis() + 175;
+		// Keep highlighting for live search until not searching anymore,
+		// and let the highlighting only stay for a short while for non-live searches.
+		if (live) {
+			this.searchHighlightTimeout = Long.MAX_VALUE;
+		} else {
+			this.searchHighlightTimeout = System.currentTimeMillis() + 175;
+		}
 		this.activeGroup.repaintAll();
 		this.ensureCaretInView();
 	}
