@@ -154,6 +154,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 						this.liveSearchText = searchTxt.toCharArray();
 					}
 					this.doSearch(this.liveSearchText, true, true);
+					this.searchHighlightTimeout = Long.MAX_VALUE;
 				}
 				return;
 			}
@@ -246,7 +247,6 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.caretPosBeforeSearch.x = this.activeGroup.buffer.caretx;
 				this.caretPosBeforeSearch.y = this.activeGroup.buffer.carety;
 			}
-			this.searchHighlightTimeout = Long.MAX_VALUE;
 			this.commandbar.showForSearch();
 			this.repaintActivePanel(); // to update caret because it lost focus
 			return;
@@ -438,31 +438,38 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 		EditBuffer buf = this.activeGroup.buffer;
 		Point p;
+		int fromx = buf.caretx;
 		if (forwards) {
-			p = buf.find(text, buf.carety, buf.caretx + 1);
+			if (!live) {
+				fromx++;
+			}
+			p = buf.find(text, buf.carety, fromx);
 			// search from start again
 			if (p == null) {
 				p = buf.find(text, 0, 0);
 			}
 		} else {
-			p = buf.findBackwards(text, buf.carety, buf.caretx - 1);
+			if (!live) {
+				fromx--;
+			}
+			p = buf.findBackwards(text, buf.carety, fromx);
 			// search from end again
 			if (p == null) {
 				p = buf.findBackwards(text, Integer.MAX_VALUE, Integer.MAX_VALUE);
 			}
 		}
-		// also disregard finds that are already at cursor pos again
-		if (p == null || (p.y == buf.carety && p.x == buf.caretx)) {
+		// If not live searching, also disregard finds that are already at cursor pos again
+		if (p == null || (!live && p.y == buf.carety && p.x == buf.caretx)) {
 			Toolkit.getDefaultToolkit().beep();
-			return;
+		} else {
+			buf.caretx = p.x;
+			buf.virtualCaretx = p.x;
+			buf.carety = p.y;
+			this.activeGroup.activePanel = this.activeGroup.panelAtLine(p.y);
 		}
-		buf.caretx = p.x;
-		buf.virtualCaretx = p.x;
-		buf.carety = p.y;
 		// Assign search to liveSearchText, to make highlighting happen
 		this.liveSearchText = text;
 		this.searchHighlightTimeout = System.currentTimeMillis() + 175;
-		this.activeGroup.activePanel = this.activeGroup.panelAtLine(p.y);
 		this.activeGroup.repaintAll();
 		this.ensureCaretInView();
 	}
