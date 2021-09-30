@@ -202,6 +202,10 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			this.doSearch(this.activeSearch, false, false);
 			return;
 		}
+		if (event.c == '*') {
+			this.doSearchWordUnderCaret();
+			return;
+		}
 		if (this.isSelectingFont) {
 			Point oldcursorpos = this.findCursorPosition();
 			if (event.c == EditBuffer.ESC) {
@@ -424,6 +428,26 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				}
 			}
 		}
+	}
+
+	// The search on this doesn't check if the word is isolated, unlike in vim.
+	private void doSearchWordUnderCaret()
+	{
+		if (this.activeGroup == null) {
+			Toolkit.getDefaultToolkit().beep();
+			return;
+		}
+
+		EditBuffer buf = this.activeGroup.buffer;
+		SB line = buf.lines.get(buf.carety);
+		if (buf.caretx >= line.length) {
+			Toolkit.getDefaultToolkit().beep();
+			return;
+		}
+		Point p = VimOps.getWordUnderCaret(line, buf.caretx);
+		this.activeSearch = new char[p.y - p.x];
+		System.arraycopy(line.value, p.x, this.activeSearch, 0, p.y - p.x);
+		this.doSearch(this.activeSearch, false, true);
 	}
 
 	private void doSearch(char[] text, boolean live, boolean forwards)
@@ -816,7 +840,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"Other: . u\n" +
 		"Select: ctrl-v\n" +
 		"View: z\n" +
-		"Search: / n N\n" +
+		"Search: / n N *\n" +
 		"\n" +
 		"Commands:\n" +
 		":spl - split current view based on the visual line selection (ctrl-v)\n" +

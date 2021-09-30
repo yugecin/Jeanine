@@ -657,16 +657,8 @@ public class EditBuffer
 				this.mode = next_mode;
 				return;
 			}
-			char[] chars = line.value;
-			char clazz = VimOps.getCharClass(chars[this.caretx]);
-			int from = this.caretx;
-			int to = this.caretx + 1;
-			while (from > 0 && clazz == VimOps.getCharClass(chars[from - 1])) {
-				from--;
-			}
-			while (to < line.length() && clazz == VimOps.getCharClass(chars[to])) {
-				to++;
-			}
+			Point p = VimOps.getWordUnderCaret(line, this.caretx);
+			int from = p.x, to = p.y;
 			char[] dst = new char[to - from];
 			arraycopy(line.value, from, dst, 0, to - from);
 			line.delete(from, to);

@@ -177,4 +177,18 @@ public class VimOps
 			currentClass = clazz;
 		}
 	}
+
+	public static Point getWordUnderCaret(SB line, int caretx)
+	{
+		char clazz = VimOps.getCharClass(line.value[caretx]);
+		int from = caretx;
+		int to = caretx + 1;
+		while (from > 0 && clazz == VimOps.getCharClass(line.value[from - 1])) {
+			from--;
+		}
+		while (to < line.length() && clazz == VimOps.getCharClass(line.value[to])) {
+			to++;
+		}
+		return new Point(from, to);
+	}
 }
