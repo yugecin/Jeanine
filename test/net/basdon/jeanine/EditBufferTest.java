@@ -1661,6 +1661,57 @@ public class EditBufferTest
 		}
 	}
 
+	public static class Substitute
+	{
+		@Test
+		public void beginning()
+		{
+			createBuffer(
+				"<caret>hey"
+			).executeSuccess(
+				"sxxx<esc>"
+			).assertBuffer(
+				"xx<caret>xey"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>hey"
+			);
+		}
+
+		@Test
+		public void middle()
+		{
+			createBuffer(
+				"h<caret>ey"
+			).executeSuccess(
+				"sxxx<esc>"
+			).assertBuffer(
+				"hxx<caret>xy"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"h<caret>ey"
+			);
+		}
+
+		@Test
+		public void end()
+		{
+			createBuffer(
+				"he<caret>y"
+			).executeSuccess(
+				"sxxx<esc>"
+			).assertBuffer(
+				"hexx<caret>x"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"he<caret>y"
+			);
+		}
+	}
+
 	public static class Replace
 	{
 		@Test
@@ -2362,6 +2413,30 @@ public class EditBufferTest
 				"uuuu"
 			).assertBuffer(
 				"<caret>abcdefx"
+			);
+		}
+
+		@Test
+		public void s()
+		{
+			createBuffer(
+				"<caret>abc",
+				"def"
+			).executeSuccess(
+				"sxx<esc>"
+			).assertBuffer(
+				"x<caret>xbc",
+				"def"
+			).executeSuccess(
+				"j."
+			).assertBuffer(
+				"xxbc",
+				"dx<caret>xf"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"<caret>abc",
+				"def"
 			);
 		}
 	}

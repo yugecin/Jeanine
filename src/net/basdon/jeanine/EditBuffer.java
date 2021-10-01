@@ -121,6 +121,25 @@ public class EditBuffer
 		int prevCaretx = this.caretx;
 		int prevCarety = this.carety;
 		switch (e.c) { // break when the key starts a new command (for .), return otherwise
+		case 's':
+			if (this.readonly) { e.error = true; return; }
+			if (this.caretx >= this.lines.get(this.carety).length()) {
+				e.error = true;
+				return;
+			}
+			line = this.lines.get(this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
+			this.writingUndo.replacement.ensureCapacity(1);
+			this.writingUndo.replacement.value[0] = line.value[this.caretx];
+			this.writingUndo.replacement.length = 1;
+			if (this.caretx < line.length - 1) {
+				int from = this.caretx + 1;
+				len = line.length - from;
+				System.arraycopy(line.value, from, line.value, this.caretx, len);
+			}
+			line.length--;
+			this.mode = INSERT_MODE;
+			break;
 		case 'r':
 			if (this.readonly) { e.error = true; return; }
 			if (this.caretx >= this.lines.get(this.carety).length()) {
