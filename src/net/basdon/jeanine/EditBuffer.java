@@ -20,7 +20,8 @@ public class EditBuffer
 		DELETE_IN_MODE = 5,
 		G_MODE = 6,
 		SELECT_LINE_MODE = 8,
-		REPLACE_MODE = 9;
+		REPLACE_MODE = 10,
+		INDENT_MODE = 11;
 
 	private final Jeanine j;
 	private final CodeGroup group;
@@ -121,6 +122,11 @@ public class EditBuffer
 		int prevCaretx = this.caretx;
 		int prevCarety = this.carety;
 		switch (e.c) { // break when the key starts a new command (for .), return otherwise
+		case '>':
+		case '<':
+			if (this.readonly) { e.error = true; return; }
+			this.mode = INDENT_MODE;
+			break;
 		case 's':
 			if (this.readonly) { e.error = true; return; }
 			if (this.caretx >= this.lines.get(this.carety).length()) {
@@ -999,6 +1005,70 @@ public class EditBuffer
 		}
 	}
 
+	private void handleInputIndent(KeyInput e)
+	{
+		SB line;
+		switch (e.c) {
+		case '<':
+			this.mode = NORMAL_MODE;
+			line = this.lines.get(this.carety);
+			if (line.length == 0) {
+				return;
+			}
+			int from;
+			if (line.value[0] == '\t') {
+				from = 1;
+			} else if (line.value[0] == ' ') {
+				from = 1;
+				for (from = 1; from < line.length && from < 8; from++) {
+					if (line.value[from] != ' ') {
+						break;
+					}
+				}
+			} else {
+				return;
+			}
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
+			this.writingUndo.fromx = this.writingUndo.tox = 0;
+			this.writingUndo.replacement.append(line.value, 0, from);
+			this.addCurrentWritingUndo();
+			line.length -= from;
+			System.arraycopy(line.value, from, line.value, 0, line.length);
+			if (this.caretx >= from) {
+				this.caretx -= from;
+			} else {
+				this.caretx = 0;
+			}
+			e.needRepaint = true;
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			break;
+		case '>':
+			this.mode = NORMAL_MODE;
+			this.carety = this.lineselectfrom;
+			line = this.lines.get(this.carety);
+			if (line.length == 0) {
+				return;
+			}
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
+			this.writingUndo.fromx = 0;
+			this.writingUndo.tox = 1;
+			this.addCurrentWritingUndo();
+			System.arraycopy(line.value, 0, line.value, 1, line.length);
+			line.length++;
+			line.value[0] = '\t';
+			this.caretx++;
+			e.needRepaint = true;
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			break;
+		default:
+			e.error = true;
+		case ESC:
+			this.mode = NORMAL_MODE;
+		}
+	}
+
 	/**
 	 * Handles an input event, without storing the input in the command buffer.
 	 */
@@ -1031,6 +1101,9 @@ public class EditBuffer
 			break;
 		case REPLACE_MODE:
 			this.handleInputReplace(e);
+			break;
+		case INDENT_MODE:
+			this.handleInputIndent(e);
 			break;
 		}
 	}

@@ -1741,6 +1741,73 @@ public class EditBufferTest
 		}
 	}
 
+	public static class Indent
+	{
+		@Test
+		public void dont_add_when_empty()
+		{
+			createBuffer(
+				"<caret>"
+			).executeSuccess(
+				">>"
+			).assertBuffer(
+				"<caret>"
+			);
+		}
+
+		@Test
+		public void add()
+		{
+			createBuffer(
+				"<caret>hi"
+			).executeSuccess(
+				">>"
+			).assertBuffer(
+				"\t<caret>hi"
+			).executeSuccess(
+				">>"
+			).assertBuffer(
+				"\t\t<caret>hi"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"\t<caret>hi"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>hi"
+			);
+		}
+
+		@Test
+		public void remove()
+		{
+			createBuffer(
+				"  \t<caret>hi"
+			).executeSuccess(
+				"<<"
+			).assertBuffer(
+				"\t<caret>hi"
+			).executeSuccess(
+				"<<"
+			).assertBuffer(
+				"<caret>hi"
+			).executeSuccess(
+				"<<"
+			).assertBuffer(
+				"<caret>hi"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"\t<caret>hi"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"  \t<caret>hi"
+			);
+		}
+	}
+
 	public static class Paste
 	{
 		@Test
