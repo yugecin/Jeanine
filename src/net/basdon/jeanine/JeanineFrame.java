@@ -835,8 +835,9 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"\n" +
 		"Movement: h j k l ^ $ w b e gg G\n" +
 		"Insert: i I a A o O p P\n" +
-		"Delete: x dw db diw dd dj dk\n" +
-		"Change: cw cb ciw\n" +
+		"Delete: x dw db diw dd dj dk d$\n" +
+		"Change: cw cb ciw c$ r s\n" +
+		"Indent: << >> (< > in selection)\n" +
 		"Other: . u\n" +
 		"Select: ctrl-v\n" +
 		"View: z\n" +
