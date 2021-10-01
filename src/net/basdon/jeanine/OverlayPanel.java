@@ -92,7 +92,12 @@ public class OverlayPanel extends JComponent
 							this.j.fy / 2;
 						g.drawLine(x1, y1, x2, y2);
 						// left line (parent)
-						x2 = b.x + b.width;
+						// draw it to where the text ends
+						SB l = panel.parent.buffer.lines.get(line);
+						x2 = b.x +
+							(Line.visualLength(l) + 1) * this.j.fx +
+							/*border right*/ 1 +
+							/*padding right*/ 1;
 						y2 = y1;
 						g.drawLine(x1, y1, x2, y2);
 						break;
