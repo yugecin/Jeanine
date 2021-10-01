@@ -655,7 +655,7 @@ public class CodeGroup
 		}
 		child.parent = this.activePanel;
 		switch (position) {
-		case "bottom":
+		case "bot":
 			child.link = PanelLink.BOTTOM;
 			child.location.x = 0;
 			child.location.y = 30;
