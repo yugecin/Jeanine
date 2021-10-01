@@ -72,4 +72,17 @@ public class Line
 		}
 		return sb2;
 	}
+
+	public static int getStartingWhitespaceLen(SB line)
+	{
+		int wslen = 0;
+		while (wslen < line.length) {
+			char c = line.value[wslen];
+			if (c != '\t' && c != ' ') {
+				break;
+			}
+			wslen++;
+		}
+		return wslen;
+	}
 }

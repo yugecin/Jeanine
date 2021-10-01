@@ -634,6 +634,23 @@ public class EditBufferTest
 		}
 
 		@Test
+		public void enter_copy_indentation()
+		{
+			createBuffer(
+				"\t\tab<caret>c"
+			).executeSuccess(
+				"i\n<esc>"
+			).assertBuffer(
+				"\t\tab",
+				"\t<caret>\tc"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"\t\tab<caret>c"
+			);
+		}
+
+		@Test
 		public void bs()
 		{
 			createBuffer(
@@ -791,6 +808,23 @@ public class EditBufferTest
 				"abc"
 			);
 		}
+
+		@Test
+		public void copy_indentation()
+		{
+			createBuffer(
+				"<caret>\t\ta"
+			).executeSuccess(
+				"ohey<esc>"
+			).assertBuffer(
+				"\t\ta",
+				"\t\the<caret>y"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>\t\ta"
+			);
+		}
 	}
 
 	public static class InsertLineBefore
@@ -829,6 +863,23 @@ public class EditBufferTest
 			).assertBuffer(
 				"abc",
 				"the q<caret>uick"
+			);
+		}
+
+		@Test
+		public void copy_indentation()
+		{
+			createBuffer(
+				"<caret>\t\ta"
+			).executeSuccess(
+				"Ohey<esc>"
+			).assertBuffer(
+				"\t\the<caret>y",
+				"\t\ta"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>\t\ta"
 			);
 		}
 	}

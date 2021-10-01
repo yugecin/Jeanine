@@ -232,27 +232,31 @@ public class EditBuffer
 			return;
 		case 'o':
 			if (this.readonly) { e.error = true; return; }
+			line = this.lines.get(this.carety);
+			len = Line.getStartingWhitespaceLen(line);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
-			this.writingUndo.fromx = this.lines.get(this.carety).length();
+			this.writingUndo.fromx = line.length();
 			this.writingUndo.fromy = this.carety;
-			this.writingUndo.tox = 0;
+			this.writingUndo.tox = len;
 			this.writingUndo.toy = this.carety + 1;
 			this.carety++;
-			this.lines.add(this.carety, new SB());
-			this.caretx = 0;
+			this.lines.add(this.carety, new SB(line.value, 0, len));
+			this.caretx = len;
 			this.mode = INSERT_MODE;
 			e.needRepaint = true;
 			e.needEnsureViewSize = true;
 			break;
 		case 'O':
 			if (this.readonly) { e.error = true; return; }
+			line = this.lines.get(this.carety);
+			len = Line.getStartingWhitespaceLen(line);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = 0;
 			this.writingUndo.fromy = this.carety;
 			this.writingUndo.tox = 0;
 			this.writingUndo.toy = this.carety + 1;
-			this.lines.add(this.carety, new SB());
-			this.caretx = 0;
+			this.lines.add(this.carety, new SB(line.value, 0, len));
+			this.caretx = len;
 			this.mode = INSERT_MODE;
 			e.needRepaint = true;
 			e.needEnsureViewSize = true;
@@ -562,18 +566,20 @@ public class EditBuffer
 			break;
 		case '\r':
 		case '\n':
+			line = this.lines.get(this.carety);
+			int wslen = Line.getStartingWhitespaceLen(line);
 			if (this.writingUndo.toy >= this.carety) {
 				if (this.writingUndo.toy == this.carety) {
-					this.writingUndo.tox = 0;
+					this.writingUndo.tox = wslen;
 				}
 				this.writingUndo.toy++;
 			}
-			line = this.lines.get(this.carety);
-			char[] dst = new char[line.length() - this.caretx];
-			arraycopy(line.value, this.caretx, dst, 0, line.length - this.caretx);
+			char[] dst = new char[wslen + line.length() - this.caretx];
+			arraycopy(line.value, 0, dst, 0, wslen);
+			arraycopy(line.value, this.caretx, dst, wslen, line.length - this.caretx);
 			line.delete(this.caretx, line.length());
 			this.lines.add(++this.carety, new SB(dst));
-			this.caretx = this.virtualCaretx = 0;
+			this.caretx = this.virtualCaretx = wslen;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
 			break;
