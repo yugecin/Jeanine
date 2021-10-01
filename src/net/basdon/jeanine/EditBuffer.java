@@ -919,7 +919,11 @@ public class EditBuffer
 
 	public void handlePhysicalInput(KeyInput e)
 	{
+		int prevMode = this.mode;
 		this.handleInput(e);
+		if (prevMode != this.mode) {
+			e.needRepaintCaret = true;
+		}
 		if (!e.error && this.creatingCommand) {
 			if (this.creatingCmdBuf.length <= this.creatingCmdLength) {
 				int len = this.creatingCmdLength * 2;

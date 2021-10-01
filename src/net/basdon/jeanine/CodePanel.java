@@ -150,13 +150,17 @@ implements MouseListener, MouseMotionListener
 					}
 				}
 				if (needCaret && this.buffer.carety == i) {
+					int y = 0, height = this.j.fy;
 					if (this.buffer.mode == EditBuffer.INSERT_MODE) {
 						g.setColor(Color.green);
+					} else if (this.buffer.mode == EditBuffer.NORMAL_MODE) {
+						g.setColor(Color.red);
 					} else {
+						y = height = this.j.fy / 2;
 						g.setColor(Color.red);
 					}
 					int x = Line.logicalToVisualPos(l, this.buffer.caretx);
-					g.fillRect(x * this.j.fx, 0, this.j.fx, this.j.fy);
+					g.fillRect(x * this.j.fx, y, this.j.fx, height);
 				}
 				// line of code, try coloring comments
 				// this should check if comment start is not in string, but oh well
