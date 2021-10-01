@@ -155,7 +155,7 @@ implements MouseListener, MouseMotionListener
 					g.fillRect(x * this.j.fx, 0, this.j.fx, this.j.fy);
 					g.setColor(Color.black);
 				}
-				g.drawString(line.toString(), 0, this.j.fmaxascend);
+				g.drawChars(line.value, 0, line.length, 0, this.j.fmaxascend);
 			} else {
 				hiddenHeight -= this.j.fy;
 			}
