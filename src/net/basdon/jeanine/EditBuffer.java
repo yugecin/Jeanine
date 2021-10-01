@@ -168,8 +168,11 @@ public class EditBuffer
 			if (this.readonly) { e.error = true; return; }
 			if (this.j.undolistptr == 0) {
 				e.error = true;
-			} else {
-				Undo u = this.j.undolist.get(this.j.undolistptr - 1);
+				return;
+			}
+			Undo u;
+			do {
+				u = this.j.undolist.get(this.j.undolistptr - 1);
 				if (u.buffer != this) {
 					this.group.doUndo(u);
 					return;
@@ -219,7 +222,7 @@ public class EditBuffer
 				e.needRepaint = true;
 				e.needCheckLineLength = true;
 				e.needEnsureViewSize = true;
-			}
+			} while (u.linkPrevious);
 			return;
 		case 'o':
 			if (this.readonly) { e.error = true; return; }
@@ -882,6 +885,49 @@ public class EditBuffer
 			this.mode = NORMAL_MODE;
 			e.needRepaint = true;
 			e.needRepaintCaret = true;
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			break;
+		case '<':
+			this.caretx = 0;
+			this.carety = this.lineselectfrom;
+			boolean isAdditionalUndo = false;
+			for (int i = this.lineselectfrom; i < this.lineselectto; i++) {
+				SB line = this.lines.get(i);
+				if (line.length == 0) {
+					continue;
+				}
+				if (line.value[0] == '\t') {
+					from = 1;
+				} else if (line.value[0] == ' ') {
+					from = 1;
+					for (from = 1; from < line.length && from < 8; from++) {
+						if (line.value[from] != ' ') {
+							break;
+						}
+					}
+				} else {
+					continue;
+				}
+				this.writingUndo = this.newUndo(this.caretx, this.carety);
+				this.writingUndo.fromy = this.writingUndo.toy = i;
+				this.writingUndo.fromx = this.writingUndo.tox = 0;
+				this.writingUndo.replacement.append(line.value, 0, from);
+				this.writingUndo.linkPrevious = isAdditionalUndo;
+				this.addCurrentWritingUndo();
+				isAdditionalUndo = true;
+				line.length -= from;
+				System.arraycopy(line.value, from, line.value, 0, line.length);
+				if (this.carety == i) {
+					if (this.caretx > from) {
+						this.caretx -= from;
+					} else {
+						this.caretx = 0;
+					}
+				}
+			}
+			this.mode = NORMAL_MODE;
+			e.needRepaint = true;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
 			break;

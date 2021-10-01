@@ -19,6 +19,8 @@ public class Undo
 	(can be different from {@link #fromy} eg when the O command was used).*/
 	public int carety;
 	public SB replacement = new SB();
+	/**If linked, performing this undo means the previous undo must also be performed*/
+	public boolean linkPrevious;
 
 	public Undo(EditBuffer buffer, int caretx, int carety)
 	{

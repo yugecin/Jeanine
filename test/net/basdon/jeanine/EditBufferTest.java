@@ -2001,6 +2001,45 @@ public class EditBufferTest
 				"b"
 			);
 		}
+
+		@Test
+		public void deindent()
+		{
+			createBuffer(
+				"<caret>a",
+				"\tb",
+				"\t\tc",
+				"           d"
+			).executeSuccess(
+				"Vjjj<"
+			).assertBuffer(
+				"<caret>a",
+				"b",
+				"\tc",
+				"   d"
+			).executeSuccess(
+				"."
+			).assertBuffer(
+				"<caret>a",
+				"b",
+				"c",
+				"d"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>a",
+				"b",
+				"\tc",
+				"   d"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>a",
+				"\tb",
+				"\t\tc",
+				"           d"
+			);
+		}
 	}
 
 	public static class Repeat
