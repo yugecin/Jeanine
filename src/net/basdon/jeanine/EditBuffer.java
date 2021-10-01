@@ -572,6 +572,23 @@ public class EditBuffer
 		case ESC:
 			this.mode = NORMAL_MODE;
 			return;
+		case '$':
+			line = this.lines.get(this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
+			if (this.caretx < 0) {
+				this.caretx = 0;
+			}
+			this.writingUndo.replacement.append(line.value, this.caretx, line.length);
+			line.length = this.caretx;
+			if (next_mode == NORMAL_MODE) {
+				this.caretx--;
+				this.addCurrentWritingUndo();
+			}
+			this.mode = next_mode;
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			e.needRepaint = true;
+			return;
 		case 'b':
 			pt = VimOps.backwards(this.lines.lines, this.caretx, this.carety);
 			if (pt.x == this.caretx && pt.y == this.carety) {

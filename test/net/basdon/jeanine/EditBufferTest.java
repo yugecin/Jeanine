@@ -1438,6 +1438,38 @@ public class EditBufferTest
 				"abc"
 			);
 		}
+
+		@Test
+		public void d$()
+		{
+			createBuffer(
+				"xyz<caret>def"
+			).executeSuccess(
+				"d$"
+			).assertBuffer(
+				"xy<caret>z"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"xyz<caret>def"
+			);
+		}
+
+		@Test
+		public void d$_empty()
+		{
+			createBuffer(
+				"<caret>"
+			).executeSuccess(
+				"d$"
+			).assertBuffer(
+				"<caret>"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>"
+			);
+		}
 	}
 
 	public static class Change
@@ -1609,6 +1641,22 @@ public class EditBufferTest
 				"u"
 			).assertBuffer(
 				"\t<caret>\t"
+			);
+		}
+
+		@Test
+		public void c$()
+		{
+			createBuffer(
+				"\t<caret>\they"
+			).executeSuccess(
+				"c$okay<esc>"
+			).assertBuffer(
+				"\toka<caret>y"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"\t<caret>\they"
 			);
 		}
 	}
