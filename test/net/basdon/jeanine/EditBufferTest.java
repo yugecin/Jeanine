@@ -1579,6 +1579,38 @@ public class EditBufferTest
 				"on<caret>e two"
 			);
 		}
+
+		@Test
+		public void cc()
+		{
+			createBuffer(
+				"on<caret>e two"
+			).executeSuccess(
+				"cchey<esc>"
+			).assertBuffer(
+				"he<caret>y"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"on<caret>e two"
+			);
+		}
+
+		@Test
+		public void cc_with_indent()
+		{
+			createBuffer(
+				"\t<caret>\t"
+			).executeSuccess(
+				"cchey<esc>"
+			).assertBuffer(
+				"\t\the<caret>y"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"\t<caret>\t"
+			);
+		}
 	}
 
 	public static class Replace

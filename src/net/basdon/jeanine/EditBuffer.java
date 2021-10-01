@@ -710,6 +710,30 @@ public class EditBuffer
 		e.error = true;
 	}
 
+	private void handleInputC(KeyInput e)
+	{
+		if (e.c == 'c') {
+			SB line = this.lines.get(this.carety);
+			int from = 0;
+			for (; from < line.length; from++) {
+				if (line.value[from] != ' ' && line.value[from] != '\t') {
+					break;
+				}
+			}
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
+			this.writingUndo.replacement.append(line.value, from, line.length);
+			this.writingUndo.fromx = from;
+			this.writingUndo.tox = from;
+			this.mode = INSERT_MODE;
+			line.length = from;
+			this.caretx = from;
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+		} else {
+			this.handleInputChangeDelete(e, INSERT_MODE, CHANGE_IN_MODE);
+		}
+	}
+
 	private void handleInputD(KeyInput e)
 	{
 		SB line;
@@ -875,7 +899,7 @@ public class EditBuffer
 			this.handleInputInsert(e);
 			break;
 		case CHANGE_MODE:
-			this.handleInputChangeDelete(e, INSERT_MODE, CHANGE_IN_MODE);
+			this.handleInputC(e);
 			break;
 		case CHANGE_IN_MODE:
 			this.handleInputChangeDeleteIn(e, INSERT_MODE);
