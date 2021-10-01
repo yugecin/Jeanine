@@ -346,9 +346,9 @@ public class CodeGroup
 			return;
 		}
 
-		CodePanel codepanel = this.activePanel;
-		if (this.buffer.lineselectfrom == codepanel.firstline &&
-			this.buffer.lineselectto == codepanel.lastline)
+		CodePanel a = this.activePanel, b, c, newBotPanel;
+		if (this.buffer.lineselectfrom == a.firstline &&
+			this.buffer.lineselectto == a.lastline)
 		{
 			this.jf.setError("can't split, no lines left");
 			return;
@@ -356,37 +356,53 @@ public class CodeGroup
 
 		this.buffer.mode = EditBuffer.NORMAL_MODE;
 
+		int from, to;
+		int initialLastline = a.lastline;
 		Integer nextId = Integer.valueOf(this.findMaxId() + 1);
-		if (this.buffer.lineselectfrom == codepanel.firstline) {
-			int initialLastline = codepanel.lastline;
-			codepanel.lastline = this.buffer.lineselectto;
-			codepanel.recheckMaxLineLength();
-			codepanel.ensureCodeViewSize();
-			this.activePanel = this.add(nextId, this.activePanel, 1, 0, 30,
-				this.buffer.lineselectto,
-				initialLastline);
+		if (this.buffer.lineselectfrom == a.firstline) {
+			a.lastline = this.buffer.lineselectto;
+			a.recheckMaxLineLength();
+			a.ensureCodeViewSize();
+			from = this.buffer.lineselectto;
+			to = initialLastline;
+			b = this.add(nextId, a, 1, 0, 30, from, to);
+			newBotPanel = b;
 		} else {
-			int initialLastline = codepanel.lastline;
-			codepanel.lastline = this.buffer.lineselectfrom;
-			codepanel.recheckMaxLineLength();
-			codepanel.ensureCodeViewSize();
+			a.lastline = this.buffer.lineselectfrom;
+			a.recheckMaxLineLength();
+			a.ensureCodeViewSize();
 			if (this.buffer.lineselectto == initialLastline) {
-				this.activePanel = this.add(nextId, this.activePanel, 1, 0, 30,
-					this.buffer.lineselectfrom,
-					initialLastline);
+				from = this.buffer.lineselectfrom; to = initialLastline;
+				b = this.add(nextId, a, 1, 0, 30, from, to);
+				newBotPanel = b;
 			} else {
-				this.activePanel = this.add(nextId, this.activePanel, 1, 0, 30,
-					this.buffer.lineselectfrom,
-					this.buffer.lineselectto);
+				from = this.buffer.lineselectfrom; to = this.buffer.lineselectto;
+				b = this.add(nextId, a, 1, 0, 30, from, to);
 				nextId = Integer.valueOf(nextId.intValue() + 1);
-				this.add(nextId, this.activePanel, 1, 0, 30,
-					this.buffer.lineselectto,
-					initialLastline);
+				from = to;
+				to = initialLastline;
+				c = this.add(nextId, b, 1, 0, 30, from, to);
+				newBotPanel = c;
+			}
+		}
+
+		this.activePanel = b;
+		// Patch bot linked panels so they're bot linked to the new panel.
+		for (CodePanel pnl : this.panels.values()) {
+			if (pnl.parent == a && pnl != b && pnl.link == PanelLink.BOTTOM) {
+				pnl.parent = newBotPanel;
+			}
+		}
+
+		// Patch panels that were right linked but their parent changed and need update.
+		for (CodePanel pnl : this.panels.values()) {
+			if (pnl.parent == a && PanelLink.getAnchor(pnl.link) == 'r') {
+				pnl.parent = this.panelAtLine(PanelLink.getLine(pnl.link));
 			}
 		}
 
 		// Position the parent, since its max line length and thus size might have changed.
-		this.position(codepanel);
+		this.position(a);
 
 		this.activePanel = this.panelAtLine(this.buffer.carety);
 		if (this.activePanel != null) {
