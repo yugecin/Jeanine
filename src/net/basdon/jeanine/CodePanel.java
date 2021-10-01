@@ -14,6 +14,9 @@ public class CodePanel
 extends JPanel
 implements MouseListener, MouseMotionListener
 {
+	private static final char[] BLOCK_COMMENT_START = new char[] { '/', '*' };
+	private static final char[] BLOCK_COMMENT_END = new char[] { '*', '/' };
+	private static final char[] COMMENT_START = new char[] { '/', '/' };
 	private static final Color selectColor = new Color(0x66AAFF);
 
 	public final CodeGroup group;
@@ -123,7 +126,8 @@ implements MouseListener, MouseMotionListener
 		boolean needCaret = this.group.shouldDrawCaret(this);
 
 		// code & caret
-		g.setColor(Color.black);
+		int ma = this.j.fmaxascend;
+		boolean inBlockComment = false;
 		for (int i = this.firstline; i < this.lastline && heightleft > 0; i++) {
 			if (hiddenHeight < this.j.fy) {
 				SB l = this.buffer.lines.get(i);
@@ -153,9 +157,66 @@ implements MouseListener, MouseMotionListener
 					}
 					int x = Line.logicalToVisualPos(l, this.buffer.caretx);
 					g.fillRect(x * this.j.fx, 0, this.j.fx, this.j.fy);
-					g.setColor(Color.black);
 				}
-				g.drawChars(line.value, 0, line.length, 0, this.j.fmaxascend);
+				// line of code, try coloring comments
+				// this should check if comment start is not in string, but oh well
+				int from = 0;
+				int to = line.length;
+				int x = 0;
+				int len;
+				while (from < to) {
+					if (inBlockComment) {
+						int idx = line.indexOf(BLOCK_COMMENT_END, from);
+						if (idx == -1) {
+							g.setColor(Color.gray);
+							len = to - from;
+							g.drawChars(line.value, from, len, x, ma);
+							break;
+						}
+						idx += 2;
+						g.setColor(Color.gray);
+						len = idx - from;
+						g.drawChars(line.value, from, len, x, ma);
+						inBlockComment = false;
+						x += this.j.fx * len;
+						from = idx;
+					} else {
+						int lidx = line.indexOf(COMMENT_START, from);
+						int bidx = line.indexOf(BLOCK_COMMENT_START, from);
+						if (lidx != -1 && bidx != -1) {
+							if (lidx < bidx) {
+								bidx = -1;
+							} else {
+								lidx = -1;
+							}
+						}
+						if (bidx == -1 && lidx == -1) {
+							// no comment
+							g.setColor(Color.black);
+							len = to - from;
+							g.drawChars(line.value, from, len, x, ma);
+							break;
+						} else if (bidx != -1) {
+							// block comment
+							g.setColor(Color.black);
+							len = bidx - from;
+							g.drawChars(line.value, from, len, x, ma);
+							x += this.j.fx * len;
+							inBlockComment = true;
+							from = bidx;
+						} else {
+							// line comment
+							g.setColor(Color.black);
+							len = lidx - from;
+							g.drawChars(line.value, from, len, x, ma);
+							x += this.j.fx * len;
+							g.setColor(Color.gray);
+							len = to - lidx;
+							g.drawChars(line.value, lidx, len, x, ma);
+							break;
+						}
+					}
+				}
 			} else {
 				hiddenHeight -= this.j.fy;
 			}
