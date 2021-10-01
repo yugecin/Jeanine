@@ -190,29 +190,22 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				return;
 			}
 		}
-		if (event.c == 'z') {
-			this.centerCaret();
-			return;
-		}
-		if (event.c == 'n') {
-			this.doSearch(this.activeSearch, false, true);
-			return;
-		}
-		if (event.c == 'N') {
-			this.doSearch(this.activeSearch, false, false);
-			return;
-		}
-		if (event.c == '*') {
-			this.doSearchWordUnderCaret();
-			return;
-		}
-		if (this.isSelectingFont) {
-			Point oldcursorpos = this.findCursorPosition();
-			if (event.c == EditBuffer.ESC) {
+		EditBuffer buffer = this.activeGroup == null ? null : this.activeGroup.buffer;
+		switch (event.c) {
+		case EditBuffer.ESC:
+			if (this.isSelectingFont) {
 				this.stopSelectingFont();
-				oldcursorpos = cursorPosBeforeChangingFont;
-			} else if (event.c == '\n' || event.c == '\r') {
-				EditBuffer buffer = this.activeGroup.buffer;
+				Point oldcursorpos = cursorPosBeforeChangingFont;
+				for (CodeGroup group : this.codegroups) {
+					group.fontChanged();
+				}
+				this.moveToGetCursorAtPosition(oldcursorpos);
+				return;
+			}
+			break;
+		case '\n':
+		case '\r':
+			if (this.isSelectingFont && buffer != null) {
 				String directive = buffer.lines.get(buffer.carety).toString();
 				if (directive.length() > 3 && directive.charAt(0) == 'f') {
 					String fontName = directive.substring(2);
@@ -228,22 +221,34 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				} else {
 					return;
 				}
-			} else {
-				Toolkit.getDefaultToolkit().beep();
+				Point oldcursorpos = this.findCursorPosition();
+				for (CodeGroup group : this.codegroups) {
+					group.fontChanged();
+				}
+				this.moveToGetCursorAtPosition(oldcursorpos);
 				return;
 			}
-			for (CodeGroup group : this.codegroups) {
-				group.fontChanged();
-			}
-			this.moveToGetCursorAtPosition(oldcursorpos);
+			break;
+		case 'z':
+			this.centerCaret();
 			return;
-		}
-		if (event.c == ':') {
+		case 'n':
+			this.doSearch(this.activeSearch, false, true);
+			return;
+		case 'N':
+			this.doSearch(this.activeSearch, false, false);
+			return;
+		case '*':
+			this.doSearchWordUnderCaret();
+			return;
+		case ':':
+			if (this.isSelectingFont) {
+				break;
+			}
 			this.commandbar.showForCommand();
 			this.repaintActivePanel(); // to update caret because it lost focus
 			return;
-		}
-		if (event.c == '/') {
+		case '/':
 			this.activeGroupBeforeSearch = this.activeGroup;
 			if (this.activeGroup != null) {
 				this.caretPosBeforeSearch = new Point();
@@ -253,15 +258,11 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			this.commandbar.showForSearch();
 			this.repaintActivePanel(); // to update caret because it lost focus
 			return;
-		}
-		if (this.activeGroup != null) {
-			EditBuffer buffer;
-			switch (event.c) {
-			case 'l':
-				buffer = this.activeGroup.buffer;
-				if (buffer.mode != EditBuffer.NORMAL_MODE) {
-					break;
-				}
+		case 'l':
+			if (buffer == null) {
+				return;
+			}
+			if (buffer.mode == EditBuffer.NORMAL_MODE) {
 				for (CodePanel panel : this.activeGroup.panels.values()) {
 					if (panel.parent == this.activeGroup.activePanel &&
 						PanelLink.getAnchor(panel.link) == 'r' &&
@@ -277,12 +278,13 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 						return;
 					}
 				}
-				break;
-			case 'h':
-				buffer = this.activeGroup.buffer;
-				if (buffer.mode != EditBuffer.NORMAL_MODE) {
-					break;
-				}
+			}
+			break;
+		case 'h':
+			if (buffer == null) {
+				return;
+			}
+			if (buffer.mode == EditBuffer.NORMAL_MODE) {
 				CodePanel panel = this.activeGroup.activePanel;
 				if (panel != null && panel.parent != null &&
 					PanelLink.getAnchor(panel.link) == 'r' &&
@@ -300,8 +302,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 					panel.parent.repaint();
 					return;
 				}
-				break;
 			}
+			break;
 		}
 		Toolkit.getDefaultToolkit().beep();
 	}
