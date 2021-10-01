@@ -19,7 +19,8 @@ public class EditBuffer
 		DELETE_MODE = 4,
 		DELETE_IN_MODE = 5,
 		G_MODE = 6,
-		SELECT_LINE_MODE = 7;
+		SELECT_LINE_MODE = 8,
+		REPLACE_MODE = 9;
 
 	private final Jeanine j;
 	private final CodeGroup group;
@@ -120,6 +121,14 @@ public class EditBuffer
 		int prevCaretx = this.caretx;
 		int prevCarety = this.carety;
 		switch (e.c) { // break when the key starts a new command (for .), return otherwise
+		case 'r':
+			if (this.readonly) { e.error = true; return; }
+			if (this.caretx >= this.lines.get(this.carety).length()) {
+				e.error = true;
+				return;
+			}
+			this.mode = REPLACE_MODE;
+			break;
 		case 'c':
 			if (this.readonly) { e.error = true; return; }
 			if (this.caretx >= this.lines.get(this.carety).length()) {
@@ -826,6 +835,33 @@ public class EditBuffer
 		}
 	}
 
+	private void handleInputReplace(KeyInput e)
+	{
+		switch (e.c) {
+		case BS:
+		case DEL:
+		case '\r':
+		case '\n':
+			e.error = true;
+		case ESC:
+			this.mode = NORMAL_MODE;
+			break;
+		default:
+			SB line = this.lines.get(this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
+			this.writingUndo.replacement.length = 1;
+			this.writingUndo.replacement.value[0] = line.value[this.caretx];
+			this.writingUndo.tox++;
+			this.addCurrentWritingUndo();
+			line.value[this.caretx] = e.c;
+			this.mode = NORMAL_MODE;
+			e.needRepaint = true;
+			e.needRepaintCaret = true;
+			e.needCheckLineLength = true; // in case we're dealing with tabs
+			e.needEnsureViewSize = true;
+		}
+	}
+
 	/**
 	 * Handles an input event, without storing the input in the command buffer.
 	 */
@@ -855,6 +891,9 @@ public class EditBuffer
 			break;
 		case SELECT_LINE_MODE:
 			this.handleInputSelectLine(e);
+			break;
+		case REPLACE_MODE:
+			this.handleInputReplace(e);
 			break;
 		}
 	}

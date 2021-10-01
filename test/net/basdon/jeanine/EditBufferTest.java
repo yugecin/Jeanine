@@ -1581,6 +1581,35 @@ public class EditBufferTest
 		}
 	}
 
+	public static class Replace
+	{
+		@Test
+		public void simple()
+		{
+			createBuffer(
+				"a<caret>bc"
+			).executeSuccess(
+				"rx"
+			).assertBuffer(
+				"a<caret>xc"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"a<caret>bc"
+			);
+		}
+
+		@Test
+		public void disallow_on_empty_line()
+		{
+			createBuffer(
+				"<caret>"
+			).executeFail(
+				"r"
+			);
+		}
+	}
+
 	public static class Paste
 	{
 		@Test
@@ -2237,6 +2266,22 @@ public class EditBufferTest
 				"uu"
 			).assertBuffer(
 				"the quick br<caret>own fox"
+			);
+		}
+
+		@Test
+		public void r()
+		{
+			createBuffer(
+				"<caret>abcdefx"
+			).executeSuccess(
+				"rzl.l.l."
+			).assertBuffer(
+				"zzz<caret>zefx"
+			).executeSuccess(
+				"uuuu"
+			).assertBuffer(
+				"<caret>abcdefx"
 			);
 		}
 	}
