@@ -18,6 +18,7 @@ implements MouseListener, MouseMotionListener
 	private static final char[] BLOCK_COMMENT_END = new char[] { '*', '/' };
 	private static final char[] COMMENT_START = new char[] { '/', '/' };
 	private static final Color selectColor = new Color(0x66AAFF);
+	private static final Color whitespaceColor = new Color(0xff8c69);
 
 	public final CodeGroup group;
 	public final JeanineFrame jf;
@@ -132,6 +133,26 @@ implements MouseListener, MouseMotionListener
 			if (hiddenHeight < this.j.fy) {
 				SB l = this.buffer.lines.get(i);
 				SB line = Line.tabs2spaces(l);
+				// mark ending whitespace
+				if (this.buffer.mode == EditBuffer.NORMAL_MODE ||
+					this.buffer.carety != i)
+				{
+					int wsfrom = line.length, wsto = line.length;
+					while (wsfrom > 0) {
+						char c = line.value[wsfrom - 1];
+						if (c != '\t' && c != ' ') {
+							break;
+						}
+						wsfrom--;
+					}
+					if (wsfrom != wsto) {
+						int f = wsfrom * this.j.fx;
+						int t = wsto * this.j.fx - f;
+						g.setColor(whitespaceColor);
+						g.fillRect(f, 0, t, this.j.fy);
+					}
+				}
+				// search highlighting
 				if (this.jf.liveSearchText != null) {
 					int idx = 0;
 					for (;;) {
@@ -140,8 +161,9 @@ implements MouseListener, MouseMotionListener
 							int f = Line.logicalToVisualPos(line, idx);
 							int t = idx + this.jf.liveSearchText.length;
 							t = Line.logicalToVisualPos(line, t) - f;
+							f *= this.j.fx;
 							g.setColor(Color.cyan);
-							g.fillRect(f * this.j.fx, 0, t * this.j.fx, this.j.fy);
+							g.fillRect(f, 0, t * this.j.fx, this.j.fy);
 							g.setColor(Color.black);
 							idx++;
 						} else {
@@ -149,6 +171,7 @@ implements MouseListener, MouseMotionListener
 						}
 					}
 				}
+				// caret
 				if (needCaret && this.buffer.carety == i) {
 					int y = 0, height = this.j.fy;
 					if (this.buffer.mode == EditBuffer.INSERT_MODE) {
@@ -162,7 +185,8 @@ implements MouseListener, MouseMotionListener
 					int x = Line.logicalToVisualPos(l, this.buffer.caretx);
 					g.fillRect(x * this.j.fx, y, this.j.fx, height);
 				}
-				// line of code, try coloring comments
+				// the code text
+				// try coloring comments
 				// this should check if comment start is not in string, but oh well
 				int from = 0;
 				int to = line.length;
