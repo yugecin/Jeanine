@@ -2003,6 +2003,45 @@ public class EditBufferTest
 		}
 
 		@Test
+		public void indent()
+		{
+			createBuffer(
+				"<caret>a",
+				"",
+				"c",
+				"\td"
+			).executeSuccess(
+				"Vjjj>"
+			).assertBuffer(
+				"<caret>\ta",
+				"",
+				"\tc",
+				"\t\td"
+			).executeSuccess(
+				"."
+			).assertBuffer(
+				"<caret>\t\ta",
+				"",
+				"\t\tc",
+				"\t\t\td"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>\ta",
+				"",
+				"\tc",
+				"\t\td"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>a",
+				"",
+				"c",
+				"\td"
+			);
+		}
+
+		@Test
 		public void deindent()
 		{
 			createBuffer(

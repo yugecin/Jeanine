@@ -831,6 +831,7 @@ public class EditBuffer
 
 	private void handleInputSelectLine(KeyInput e)
 	{
+		boolean isAdditionalUndo;
 		switch (e.c) {
 		case 'h':
 		case 'l':
@@ -891,7 +892,7 @@ public class EditBuffer
 		case '<':
 			this.caretx = 0;
 			this.carety = this.lineselectfrom;
-			boolean isAdditionalUndo = false;
+			isAdditionalUndo = false;
 			for (int i = this.lineselectfrom; i < this.lineselectto; i++) {
 				SB line = this.lines.get(i);
 				if (line.length == 0) {
@@ -923,6 +924,36 @@ public class EditBuffer
 						this.caretx -= from;
 					} else {
 						this.caretx = 0;
+					}
+				}
+			}
+			this.mode = NORMAL_MODE;
+			e.needRepaint = true;
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			break;
+		case '>':
+			this.caretx = 0;
+			this.carety = this.lineselectfrom;
+			isAdditionalUndo = false;
+			for (int i = this.lineselectfrom; i < this.lineselectto; i++) {
+				SB line = this.lines.get(i);
+				if (line.length == 0) {
+					continue;
+				}
+				this.writingUndo = this.newUndo(this.caretx, this.carety);
+				this.writingUndo.fromy = this.writingUndo.toy = i;
+				this.writingUndo.fromx = 0;
+				this.writingUndo.tox = 1;
+				this.writingUndo.linkPrevious = isAdditionalUndo;
+				this.addCurrentWritingUndo();
+				isAdditionalUndo = true;
+				System.arraycopy(line.value, 0, line.value, 1, line.length);
+				line.length++;
+				line.value[0] = '\t';
+				if (this.carety == i) {
+					if (this.caretx > 0) {
+						this.caretx++;
 					}
 				}
 			}
