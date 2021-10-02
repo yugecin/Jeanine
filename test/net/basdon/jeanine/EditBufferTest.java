@@ -2720,6 +2720,58 @@ public class EditBufferTest
 				"def"
 			);
 		}
+
+		@Test
+		public void J()
+		{
+			createBuffer(
+				"<caret>abc",
+				"def",
+				"ghi"
+			).executeSuccess(
+				"J."
+			).assertBuffer(
+				"abc def<caret> ghi"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"<caret>abc",
+				"def",
+				"ghi"
+			);
+		}
+
+		@Test
+		public void indent()
+		{
+			createBuffer(
+				"<caret>abc"
+			).executeSuccess(
+				">>."
+			).assertBuffer(
+				"\t\t<caret>abc"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"<caret>abc"
+			);
+		}
+
+		@Test
+		public void deindent()
+		{
+			createBuffer(
+				"\t  <caret>abc"
+			).executeSuccess(
+				"<<.."
+			).assertBuffer(
+				"<caret>abc"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"\t  <caret>abc"
+			);
+		}
 	}
 
 	/**
