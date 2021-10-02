@@ -1792,6 +1792,91 @@ public class EditBufferTest
 		}
 	}
 
+	public static class Join
+	{
+		@Test
+		public void simple()
+		{
+			createBuffer(
+				"one <caret>two",
+				"three four"
+			).executeSuccess(
+				"J"
+			).assertBuffer(
+				"one two<caret> three four"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"one <caret>two",
+				"three four"
+			);
+		}
+
+		@Test
+		public void trim_leading_ws()
+		{
+			createBuffer(
+				"one <caret>two",
+				"\t  \tthree four"
+			).executeSuccess(
+				"J"
+			).assertBuffer(
+				"one two<caret> three four"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"one <caret>two",
+				"\t  \tthree four"
+			);
+		}
+
+		@Test
+		public void next_line_empty()
+		{
+			createBuffer(
+				"one <caret>two",
+				""
+			).executeSuccess(
+				"J"
+			).assertBuffer(
+				"one tw<caret>o"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"one <caret>two",
+				""
+			);
+		}
+
+		@Test
+		public void next_line_ws()
+		{
+			createBuffer(
+				"one <caret>two",
+				"\t  \t  "
+			).executeSuccess(
+				"J"
+			).assertBuffer(
+				"one tw<caret>o"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"one <caret>two",
+				"\t  \t  "
+			);
+		}
+
+		@Test
+		public void fail_when_last()
+		{
+			createBuffer(
+				"one <caret>two"
+			).executeFail(
+				"J"
+			);
+		}
+	}
+
 	public static class Indent
 	{
 		@Test

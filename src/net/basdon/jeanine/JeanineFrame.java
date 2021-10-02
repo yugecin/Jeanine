@@ -840,7 +840,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"Delete: x dw db diw dd dj dk d$\n" +
 		"Change: cw cb ciw c$ r s\n" +
 		"Indent: << >> (< > in selection)\n" +
-		"Other: . u\n" +
+		"Other: . u J\n" +
 		"Select: ctrl-v\n" +
 		"View: z\n" +
 		"Search: / n N *\n" +

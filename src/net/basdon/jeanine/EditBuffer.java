@@ -122,6 +122,36 @@ public class EditBuffer
 		int prevCaretx = this.caretx;
 		int prevCarety = this.carety;
 		switch (e.c) { // break when the key starts a new command (for .), return otherwise
+		case 'J':
+			if (this.readonly) { e.error = true; return; }
+			if (this.carety >= this.lines.size() - 1) {
+				e.error = true;
+				return;
+			}
+			line = this.lines.get(this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
+			this.writingUndo.replacement.append('\n');
+			SB line2 = this.lines.get(this.carety + 1);
+			// also trim leading whitespace of joint line
+			int offset = Line.getStartingWhitespaceLen(line2);
+			this.writingUndo.replacement.append(line2.value, 0, offset);
+			this.writingUndo.fromx = line.length;
+			this.writingUndo.tox = line.length;
+			if (offset == line2.length) {
+				// line to join is all whitespace or empty
+				this.virtualCaretx = this.caretx = line.length - 1;
+			} else {
+				this.virtualCaretx = this.caretx = line.length;
+				this.writingUndo.tox++;
+				line.append(' ');
+				line.append(line2.value, offset, line2.length);
+			}
+			this.addCurrentWritingUndo();
+			this.lines.remove(this.carety + 1);
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			e.needRepaint = true;
+			break;
 		case '>':
 		case '<':
 			if (this.readonly) { e.error = true; return; }
