@@ -842,7 +842,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"Indent: << >> (< > in selection)\n" +
 		"Other: . u J\n" +
 		"Select: ctrl-v\n" +
-		"View: z\n" +
+		"View: ^D ^U z\n" +
 		"Search: / n N *\n" +
 		"\n" +
 		"Commands:\n" +

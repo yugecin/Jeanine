@@ -122,6 +122,24 @@ public class EditBuffer
 		int prevCaretx = this.caretx;
 		int prevCarety = this.carety;
 		switch (e.c) { // break when the key starts a new command (for .), return otherwise
+		case 'U'-0x40: // ^U
+			int vx = this.curVisualX();
+			this.carety -= 20;
+			if (this.carety < 0) {
+				this.carety = 0;
+			}
+			this.putCaretX(vx);
+			e.needRepaintCaret = true;
+			return;
+		case 'D'-0x40: // ^D
+			int vx2 = this.curVisualX();
+			this.carety += 20;
+			if (this.carety >= this.lines.size()) {
+				this.carety = this.lines.size() - 1;
+			}
+			this.putCaretX(vx2);
+			e.needRepaintCaret = true;
+			return;
 		case 'J':
 			if (this.readonly) { e.error = true; return; }
 			if (this.carety >= this.lines.size() - 1) {
