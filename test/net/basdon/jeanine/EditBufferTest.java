@@ -2008,6 +2008,48 @@ public class EditBufferTest
 		}
 	}
 
+	public static class ChangeAround
+	{
+		// The behavior tested in ChangeIn also counts for ChangeAround
+
+		@Test
+		public void caparen()
+		{
+			createBuffer(
+				"okay (here <caret>it) goes"
+			).executeSuccess(
+				"ca(what<esc>"
+			).assertBuffer(
+				"okay wha<caret>t goes"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"okay (here <caret>it) goes"
+			);
+		}
+	}
+
+	public static class DeleteAround
+	{
+		// The behavior tested in ChangeIn also counts for DeleteAround
+
+		@Test
+		public void daparen()
+		{
+			createBuffer(
+				"okay (here <caret>it) goes"
+			).executeSuccess(
+				"da("
+			).assertBuffer(
+				"okay <caret> goes"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"okay (here <caret>it) goes"
+			);
+		}
+	}
+
 	public static class Substitute
 	{
 		@Test

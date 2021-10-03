@@ -15,11 +15,13 @@ public class EditBuffer
 		NORMAL_MODE = 0,
 		INSERT_MODE = 1,
 		CHANGE_MODE = 2,
-		CHANGE_IN_MODE = 3,
-		DELETE_MODE = 4,
-		DELETE_IN_MODE = 5,
-		G_MODE = 6,
-		SELECT_LINE_MODE = 8,
+		CHG_IN_MODE = 3,
+		CHG_AROUND_MODE = 4,
+		DELETE_MODE = 5,
+		DEL_IN_MODE = 6,
+		DEL_AROUND_MODE = 7,
+		G_MODE = 8,
+		SELECT_LINE_MODE = 9,
 		REPLACE_MODE = 10,
 		INDENT_MODE = 11;
 
@@ -664,7 +666,11 @@ public class EditBuffer
 		e.needRepaint = true;
 	}
 
-	private void handleInputChangeDelete(KeyInput e, int next_mode, int next_in_mode)
+	private void handleInputChangeDelete(
+		KeyInput e,
+		int next_mode,
+		int next_in_mode,
+		int next_around_mode)
 	{
 		SB line;
 		char[] dst;
@@ -772,6 +778,9 @@ public class EditBuffer
 		case 'i':
 			this.mode = next_in_mode;
 			return;
+		case 'a':
+			this.mode = next_around_mode;
+			return;
 		}
 		this.mode = NORMAL_MODE;
 		e.error = true;
@@ -810,29 +819,60 @@ public class EditBuffer
 			e.needRepaint = true;
 			return;
 		case '\'':
-			this.handleInputChangeDeleteIn(e, next_mode, '\'', '\'');
+			this.handleInputChangeDeleteInAround(e, next_mode, '\'', '\'', false);
 			return;
 		case '"':
-			this.handleInputChangeDeleteIn(e, next_mode, '"', '"');
+			this.handleInputChangeDeleteInAround(e, next_mode, '"', '"', false);
 			return;
 		case '[':
 		case ']':
-			this.handleInputChangeDeleteIn(e, next_mode, '[', ']');
+			this.handleInputChangeDeleteInAround(e, next_mode, '[', ']', false);
 			return;
 		case '{':
 		case '}':
-			this.handleInputChangeDeleteIn(e, next_mode, '{', '}');
+			this.handleInputChangeDeleteInAround(e, next_mode, '{', '}', false);
 			return;
 		case '(':
 		case ')':
-			this.handleInputChangeDeleteIn(e, next_mode, '(', ')');
+			this.handleInputChangeDeleteInAround(e, next_mode, '(', ')', false);
 			return;
 		}
 		this.mode = NORMAL_MODE;
 		e.error = true;
 	}
 
-	private void handleInputChangeDeleteIn(KeyInput e, int next_mode, char left, char right)
+	private void handleInputChangeDeleteAround(KeyInput e, int next_mode)
+	{
+		switch (e.c) {
+		case '\'':
+			this.handleInputChangeDeleteInAround(e, next_mode, '\'', '\'', true);
+			return;
+		case '"':
+			this.handleInputChangeDeleteInAround(e, next_mode, '"', '"', true);
+			return;
+		case '[':
+		case ']':
+			this.handleInputChangeDeleteInAround(e, next_mode, '[', ']', true);
+			return;
+		case '{':
+		case '}':
+			this.handleInputChangeDeleteInAround(e, next_mode, '{', '}', true);
+			return;
+		case '(':
+		case ')':
+			this.handleInputChangeDeleteInAround(e, next_mode, '(', ')', true);
+			return;
+		}
+		this.mode = NORMAL_MODE;
+		e.error = true;
+	}
+
+	private void handleInputChangeDeleteInAround(
+		KeyInput e,
+		int next_mode,
+		char left,
+		char right,
+		boolean around)
 	{
 		// TODO handle strings?
 		SB line = this.lines.get(this.carety);
@@ -892,6 +932,10 @@ public class EditBuffer
 			} else if (line.value[this.caretx] == right) {
 				after = new Point(this.caretx, this.carety);
 			}
+		}
+		if (around) {
+			before.x--;
+			after.x++;
 		}
 		this.writingUndo = this.newUndo(this.caretx, this.carety);
 		if (before.y != after.y) {
@@ -963,7 +1007,7 @@ public class EditBuffer
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
 		} else {
-			this.handleInputChangeDelete(e, INSERT_MODE, CHANGE_IN_MODE);
+			this.handleInputChangeDelete(e, INSERT_MODE, CHG_IN_MODE, CHG_AROUND_MODE);
 		}
 	}
 
@@ -997,7 +1041,7 @@ public class EditBuffer
 			this.lines.remove(this.carety);
 			this.writingUndo.fromy = this.writingUndo.toy = this.carety;
 		} else {
-			this.handleInputChangeDelete(e, NORMAL_MODE, DELETE_IN_MODE);
+			this.handleInputChangeDelete(e, NORMAL_MODE, DEL_IN_MODE, DEL_AROUND_MODE);
 			return;
 		}
 		this.writingUndo.fromx = 0;
@@ -1272,14 +1316,20 @@ public class EditBuffer
 		case CHANGE_MODE:
 			this.handleInputC(e);
 			break;
-		case CHANGE_IN_MODE:
+		case CHG_IN_MODE:
 			this.handleInputChangeDeleteIn(e, INSERT_MODE);
+			break;
+		case CHG_AROUND_MODE:
+			this.handleInputChangeDeleteAround(e, INSERT_MODE);
 			break;
 		case DELETE_MODE:
 			this.handleInputD(e);
 			break;
-		case DELETE_IN_MODE:
+		case DEL_IN_MODE:
 			this.handleInputChangeDeleteIn(e, NORMAL_MODE);
+			break;
+		case DEL_AROUND_MODE:
+			this.handleInputChangeDeleteAround(e, NORMAL_MODE);
 			break;
 		case G_MODE:
 			this.handleInputG(e);

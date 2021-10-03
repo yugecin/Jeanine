@@ -837,8 +837,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"\n" +
 		"Movement: h j k l ^ $ w b e gg G ^D ^U { }\n" +
 		"Insert: i I a A o O p P\n" +
-		"Delete: x dw db dd dj dk diw di' di\" di[ di( di{ d$\n" +
-		"Change: cw cb ciw ci' ci\" ci[ ci( ci{ c$ r s\n" +
+		"Delete: x dw db dd dj dk diw di' di\" di[ di( di{ da' da\" da[ da( da{ d$\n" +
+		"Change: cw cb ciw ci' ci\" ci[ ci( ci{ ca' ca\" ca[ ca( ca{ c$ r s\n" +
 		"Indent: << >> (< > in selection)\n" +
 		"Other: . u J\n" +
 		"Select: ctrl-v\n" +
