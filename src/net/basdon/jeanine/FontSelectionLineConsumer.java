@@ -20,18 +20,18 @@ public class FontSelectionLineConsumer implements Consumer<SB>
 	{
 		Point oldcursorpos = this.jf.findCursorPosition();
 		if (line.length() > 3 && line.value[0] == 'f') {
-			String fontName = new String(line.value, 2, line.length - 2);
-			this.j.setFont(new Font(fontName, Font.BOLD, 14));
+			this.j.fontFamily = new String(line.value, 2, line.length - 2);
 		} else if (line.length > 2 && line.value[0] == 's') {
 			int size = Integer.parseInt(new String(line.value, 2, line.length - 2));
-			this.j.setFont(this.j.font.deriveFont((float) size));
+			this.j.fontSize = size;
 		} else if (line.length > 0 && line.value[0] == 'b') {
-			this.j.setFont(this.j.font.deriveFont(Font.BOLD));
+			this.j.fontFlags |= Font.BOLD;
 		} else if (line.length > 0 && line.value[0] == 'p') {
-			this.j.setFont(this.j.font.deriveFont(Font.PLAIN));
+			this.j.fontFlags &= ~Font.BOLD;
 		} else {
 			return;
 		}
+		this.j.updateFont();
 		for (CodeGroup group : this.jf.codegroups) {
 			group.fontChanged();
 		}

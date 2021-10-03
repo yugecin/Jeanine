@@ -35,6 +35,9 @@ public class Jeanine
 	public final ArrayList<Undo> undolist;
 
 	public Font font;
+	public String fontFamily;
+	public int fontFlags;
+	public int fontSize;
 	public int fx, fy, fmaxascend;
 	public int undolistptr;
 	public String pastebuffer = "";
@@ -43,15 +46,18 @@ public class Jeanine
 
 	public Jeanine()
 	{
-		this.setFont(new Font("Courier New", Font.BOLD, 14));
+		this.fontFamily = "Courier New";
+		this.fontFlags = Font.BOLD;
+		this.fontSize = 14;
+		this.updateFont();
 		this.undolist = new ArrayList<>();
 		this.commandBuf = new char[100];
 		this.commandLength = 100;
 	}
 
-	public void setFont(Font font)
+	public void updateFont()
 	{
-		this.font = font;
+		this.font = new Font(this.fontFamily, this.fontFlags, this.fontSize);
 		FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
 		this.fx = metrics.charWidth('m');
 		this.fy = metrics.getHeight();
