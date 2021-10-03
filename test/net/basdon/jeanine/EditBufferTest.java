@@ -1664,6 +1664,22 @@ public class EditBufferTest
 		}
 
 		@Test
+		public void ciw_empty()
+		{
+			createBuffer(
+				"<caret>"
+			).executeSuccess(
+				"ciwxy<esc>"
+			).assertBuffer(
+				"x<caret>y"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>"
+			);
+		}
+
+		@Test
 		public void cc()
 		{
 			createBuffer(
@@ -1676,6 +1692,22 @@ public class EditBufferTest
 				"u"
 			).assertBuffer(
 				"on<caret>e two"
+			);
+		}
+
+		@Test
+		public void cc_empty()
+		{
+			createBuffer(
+				"<caret>"
+			).executeSuccess(
+				"cchey<esc>"
+			).assertBuffer(
+				"he<caret>y"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>"
 			);
 		}
 

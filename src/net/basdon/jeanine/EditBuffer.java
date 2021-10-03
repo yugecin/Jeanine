@@ -228,10 +228,6 @@ public class EditBuffer
 			break;
 		case 'c':
 			if (this.readonly) { e.error = true; return; }
-			if (this.caretx >= this.lines.get(this.carety).length()) {
-				e.error = true;
-				return;
-			}
 			this.mode = CHANGE_MODE;
 			break;
 		case 'd':
@@ -785,26 +781,25 @@ public class EditBuffer
 	{
 		if (e.c == 'w') {
 			SB line = this.lines.get(this.carety);
-			if (this.caretx >= line.length()) {
-				this.mode = next_mode;
-				return;
-			}
-			Point p = VimOps.getWordUnderCaret(line, this.caretx);
-			int from = p.x, to = p.y;
-			char[] dst = new char[to - from];
-			arraycopy(line.value, from, dst, 0, to - from);
-			line.delete(from, to);
-			this.j.pastebuffer = new String(dst);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
-			this.writingUndo.fromx = from;
-			this.writingUndo.fromy = this.carety;
-			this.writingUndo.tox = from;
-			this.writingUndo.toy = this.carety;
-			this.writingUndo.replacement.append(dst);
+			if (this.caretx >= line.length()) {
+			} else {
+				Point p = VimOps.getWordUnderCaret(line, this.caretx);
+				int from = p.x, to = p.y;
+				char[] dst = new char[to - from];
+				arraycopy(line.value, from, dst, 0, to - from);
+				line.delete(from, to);
+				this.j.pastebuffer = new String(dst);
+				this.writingUndo.fromx = from;
+				this.writingUndo.fromy = this.carety;
+				this.writingUndo.tox = from;
+				this.writingUndo.toy = this.carety;
+				this.writingUndo.replacement.append(dst);
+				this.caretx = from;
+			}
 			if (next_mode == NORMAL_MODE) {
 				this.addCurrentWritingUndo();
 			}
-			this.caretx = from;
 			if (next_mode != INSERT_MODE && this.caretx == line.length()) {
 				this.caretx--;
 			}
