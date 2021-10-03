@@ -835,7 +835,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	private static final String WELCOMETEXT =
 		"Welcome to Jeanine, a 2d editor with some Vim-like keybindings\n" +
 		"\n" +
-		"Movement: h j k l ^ $ w b e gg G ^D ^U { }\n" +
+		"Move: h j k l ^ $ w b e gg G ^D ^U { }\n" +
 		"Insert: i I a A o O p P\n" +
 		"Delete: x dw db dd dj dk diw di' di\" di[ di( di{ da' da\" da[ da( da{ d$\n" +
 		"Change: cw cb ciw ci' ci\" ci[ ci( ci{ ca' ca\" ca[ ca( ca{ c$ r s\n" +
@@ -846,7 +846,12 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"Search: / n N *\n" +
 		"\n" +
 		"Commands:\n" +
+		":e - open a file for editing\n" +
+		":bd - close the active editing group\n" +
 		":spl - split current view based on the visual line selection (ctrl-v)\n" +
+		":link <bot|right|top> <id> - link a child" +
+		":raw - toggle between raw and 2d mode\n" +
 		":<number> - jump to a line number\n" +
-		":link <bot|right|top> <id> - link a child";
+		":font - change the font\n" +
+		"";
 }
