@@ -779,7 +779,8 @@ public class EditBuffer
 
 	private void handleInputChangeDeleteIn(KeyInput e, int next_mode)
 	{
-		if (e.c == 'w') {
+		switch (e.c) {
+		case 'w':
 			SB line = this.lines.get(this.carety);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			if (this.caretx >= line.length()) {
@@ -808,10 +809,124 @@ public class EditBuffer
 			e.needEnsureViewSize = true;
 			e.needRepaint = true;
 			return;
+		case '\'':
+			this.handleInputChangeDeleteIn(e, next_mode, '\'', '\'');
+			return;
+		case '"':
+			this.handleInputChangeDeleteIn(e, next_mode, '"', '"');
+			return;
+		case '[':
+		case ']':
+			this.handleInputChangeDeleteIn(e, next_mode, '[', ']');
+			return;
+		case '{':
+		case '}':
+			this.handleInputChangeDeleteIn(e, next_mode, '{', '}');
+			return;
+		case '(':
+		case ')':
+			this.handleInputChangeDeleteIn(e, next_mode, '(', ')');
+			return;
 		}
-		// TODO handle strings?
 		this.mode = NORMAL_MODE;
 		e.error = true;
+	}
+
+	private void handleInputChangeDeleteIn(KeyInput e, int next_mode, char left, char right)
+	{
+		// TODO handle strings?
+		SB line = this.lines.get(this.carety);
+		char needle[] = { left };
+		Point before = this.findBackwards(needle, this.carety, this.caretx - 1);
+		needle[0] = right;
+		Point after = this.find(needle, this.carety, this.caretx + 1);
+		boolean skipCaretCheck = false;
+		if (before == null) {
+			if (line.value[this.caretx] != left) {
+				this.mode = NORMAL_MODE;
+				e.error = true;
+				return;
+			}
+			before = new Point(this.caretx, this.carety);
+			skipCaretCheck = true;
+		}
+		if (after == null) {
+			if (line.value[this.caretx] != right) {
+				this.mode = NORMAL_MODE;
+				e.error = true;
+				return;
+			}
+			after = new Point(this.caretx, this.carety);
+			skipCaretCheck = true;
+		}
+		if (before.equals(after)) {
+				this.mode = NORMAL_MODE;
+			e.error = true;
+			return;
+		}
+		if (!skipCaretCheck) {
+			if (left == right && line.value[this.caretx] == left) {
+				// need to use the caret and the closest
+				int distBefore = 0;
+				if (before.y == this.carety) {
+					distBefore = this.caretx - before.x;
+				} else {
+					SB beforeLine = this.lines.get(before.y);
+					distBefore = this.caretx + beforeLine.length - before.x;
+					distBefore += (this.carety - before.y) * 1000;
+				}
+				int distAfter = 0;
+				if (after.y == this.carety) {
+					distAfter = after.x - this.caretx;
+				} else {
+					distAfter = line.length - this.caretx + after.x;
+					distAfter += (after.y - this.carety) * 1000;
+				}
+				if (distBefore < distAfter) {
+					after = new Point(this.caretx, this.carety);
+				} else {
+					before = new Point(this.caretx, this.carety);
+				}
+			} else if (line.value[this.caretx] == left) {
+				before = new Point(this.caretx, this.carety);
+			} else if (line.value[this.caretx] == right) {
+				after = new Point(this.caretx, this.carety);
+			}
+		}
+		this.writingUndo = this.newUndo(this.caretx, this.carety);
+		if (before.y != after.y) {
+			SB lb = this.lines.get(before.y);
+			this.writingUndo.replacement.append(lb.value, before.x + 1, lb.length);
+			for (int i = before.y + 1; i < after.y; i++) {
+				this.writingUndo.replacement.append('\n');
+				this.writingUndo.replacement.append(this.lines.get(i));
+			}
+			SB la = this.lines.get(after.y);
+			this.writingUndo.replacement.append('\n').append(la.value, 0, after.x);
+			lb.length = before.x + 1;
+			int len = la.length - after.x;
+			arraycopy(la.value, after.x, lb.value, lb.length, len);
+			lb.length += len;
+			for (int i = after.y; i > before.y; i--) {
+				this.lines.remove(i);
+			}
+		} else {
+			this.writingUndo.replacement.append(line.value, before.x + 1, after.x);
+			int len = line.length - after.x;
+			arraycopy(line.value, after.x, line.value, before.x + 1, len);
+			line.length -= after.x - before.x - 1;
+		}
+		this.writingUndo.fromx = this.writingUndo.tox = before.x + 1;
+		this.writingUndo.fromy = this.writingUndo.toy = before.y;
+		this.caretx = this.virtualCaretx = before.x + 1;
+		this.carety = before.y;
+		if (next_mode == NORMAL_MODE) {
+			this.addCurrentWritingUndo();
+		}
+		this.mode = next_mode;
+		e.needCheckLineLength = true;
+		e.needEnsureViewSize = true;
+		e.needRepaint = true;
 	}
 
 	private void handleInputG(KeyInput e)

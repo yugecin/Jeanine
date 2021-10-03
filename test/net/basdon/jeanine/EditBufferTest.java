@@ -1616,6 +1616,73 @@ public class EditBufferTest
 		*/
 
 		@Test
+		public void cc()
+		{
+			createBuffer(
+				"on<caret>e two"
+			).executeSuccess(
+				"cchey<esc>"
+			).assertBuffer(
+				"he<caret>y"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"on<caret>e two"
+			);
+		}
+
+		@Test
+		public void cc_empty()
+		{
+			createBuffer(
+				"<caret>"
+			).executeSuccess(
+				"cchey<esc>"
+			).assertBuffer(
+				"he<caret>y"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>"
+			);
+		}
+
+		@Test
+		public void cc_with_indent()
+		{
+			createBuffer(
+				"\t<caret>\t"
+			).executeSuccess(
+				"cchey<esc>"
+			).assertBuffer(
+				"\t\the<caret>y"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"\t<caret>\t"
+			);
+		}
+
+		@Test
+		public void c$()
+		{
+			createBuffer(
+				"\t<caret>\they"
+			).executeSuccess(
+				"c$okay<esc>"
+			).assertBuffer(
+				"\toka<caret>y"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"\t<caret>\they"
+			);
+		}
+	}
+
+	public static class ChangeIn
+	{
+		@Test
 		public void ciw()
 		{
 			createBuffer(
@@ -1680,66 +1747,263 @@ public class EditBufferTest
 		}
 
 		@Test
-		public void cc()
+		public void ciquote()
 		{
 			createBuffer(
-				"on<caret>e two"
+				"okay 'here <caret>it' goes"
 			).executeSuccess(
-				"cchey<esc>"
+				"ci'what<esc>"
 			).assertBuffer(
-				"he<caret>y"
+				"okay 'wha<caret>t' goes"
 			).executeSuccess(
 				"u"
 			).assertBuffer(
-				"on<caret>e two"
+				"okay 'here <caret>it' goes"
 			);
 		}
 
 		@Test
-		public void cc_empty()
+		public void ciquote_caret_left()
 		{
 			createBuffer(
-				"<caret>"
+				"okay <caret>'here it' goes"
 			).executeSuccess(
-				"cchey<esc>"
+				"ci'what<esc>"
 			).assertBuffer(
-				"he<caret>y"
+				"okay 'wha<caret>t' goes"
 			).executeSuccess(
 				"u"
 			).assertBuffer(
-				"<caret>"
+				"okay <caret>'here it' goes"
 			);
 		}
 
 		@Test
-		public void cc_with_indent()
+		public void ciquote_caret_right()
 		{
 			createBuffer(
-				"\t<caret>\t"
+				"okay 'here it<caret>' goes"
 			).executeSuccess(
-				"cchey<esc>"
+				"ci'what<esc>"
 			).assertBuffer(
-				"\t\the<caret>y"
+				"okay 'wha<caret>t' goes"
 			).executeSuccess(
 				"u"
 			).assertBuffer(
-				"\t<caret>\t"
+				"okay 'here it<caret>' goes"
 			);
 		}
 
 		@Test
-		public void c$()
+		public void ciquote_lonely()
 		{
 			createBuffer(
-				"\t<caret>\they"
+				"'here <caret>it'"
 			).executeSuccess(
-				"c$okay<esc>"
+				"ci'what<esc>"
 			).assertBuffer(
-				"\toka<caret>y"
+				"'wha<caret>t'"
 			).executeSuccess(
 				"u"
 			).assertBuffer(
-				"\t<caret>\they"
+				"'here <caret>it'"
+			);
+		}
+
+		@Test
+		public void ciquote_lonely_caret_left()
+		{
+			createBuffer(
+				"<caret>'here it'"
+			).executeSuccess(
+				"ci'what<esc>"
+			).assertBuffer(
+				"'wha<caret>t'"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>'here it'"
+			);
+		}
+
+		@Test
+		public void ciquote_lonely_caret_right()
+		{
+			createBuffer(
+				"'here it<caret>'"
+			).executeSuccess(
+				"ci'what<esc>"
+			).assertBuffer(
+				"'wha<caret>t'"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"'here it<caret>'"
+			);
+		}
+
+		@Test
+		public void ciquote_use_closest_sameline_left()
+		{
+			createBuffer(
+				"abc 'd<caret>'ef' gh"
+			).executeSuccess(
+				"ci'x<esc>"
+			).assertBuffer(
+				"abc '<caret>x'ef' gh"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc 'd<caret>'ef' gh"
+			);
+		}
+
+		@Test
+		public void ciquote_multiline()
+		{
+			createBuffer(
+				"here 'it<caret>",
+				"goes'"
+			).executeSuccess(
+				"ci'what<esc>"
+			).assertBuffer(
+				"here 'wha<caret>t'"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"here 'it<caret>",
+				"goes'"
+			);
+		}
+
+		@Test
+		public void ciquote_multiline2()
+		{
+			createBuffer(
+				"' start",
+				"<caret>",
+				"here ' end"
+			).executeSuccess(
+				"ci'what<esc>"
+			).assertBuffer(
+				"'wha<caret>t' end"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"' start",
+				"<caret>",
+				"here ' end"
+			);
+		}
+
+		@Test
+		public void ciquote_use_closest_sameline_right()
+		{
+			createBuffer(
+				"abc 'de<caret>'f' gh"
+			).executeSuccess(
+				"ci'x<esc>"
+			).assertBuffer(
+				"abc 'de'<caret>x' gh"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc 'de<caret>'f' gh"
+			);
+		}
+
+		@Test
+		public void ciquote_use_closest_otherline_left()
+		{
+			createBuffer(
+				"'fxxxyyyzzzzzzzzzzz<caret>'",
+				"'abc"
+			).executeSuccess(
+				"ci'x<esc>"
+			).assertBuffer(
+				"'<caret>x'",
+				"'abc"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"'fxxxyyyzzzzzzzzzzz<caret>'",
+				"'abc"
+			);
+		}
+
+		@Test
+		public void ciquote_use_closest_otherline_right()
+		{
+			createBuffer(
+				"abc'",
+				"<caret>'fxxxyyyzzzzzzzzzzz'"
+			).executeSuccess(
+				"ci'x<esc>"
+			).assertBuffer(
+				"abc'",
+				"'<caret>x'"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"abc'",
+				"<caret>'fxxxyyyzzzzzzzzzzz'"
+			);
+		}
+
+		// Not testing all combinations. Quote has many tests with common behavior,
+		// just adding some tests with bracket here to see behavior when left and right
+		// are different.
+
+		@Test
+		public void cibracket()
+		{
+			createBuffer(
+				"okay [here <caret>it] goes"
+			).executeSuccess(
+				"ci[what<esc>"
+			).assertBuffer(
+				"okay [wha<caret>t] goes"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"okay [here <caret>it] goes"
+			);
+		}
+
+		@Test
+		public void cibracket_pick_correct_one()
+		{
+			createBuffer(
+				"okay [here ]<caret>it]]] goes"
+			).executeSuccess(
+				"ci[what<esc>"
+			).assertBuffer(
+				"okay [wha<caret>t]]] goes"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"okay [here ]<caret>it]]] goes"
+			);
+		}
+	}
+
+	public static class DeleteIn
+	{
+		// The behavior tested in ChangeIn also counts for DeleteIn
+
+		@Test
+		public void diquote()
+		{
+			createBuffer(
+				"okay 'here <caret>it' goes"
+			).executeSuccess(
+				"di'"
+			).assertBuffer(
+				"okay '<caret>' goes"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"okay 'here <caret>it' goes"
 			);
 		}
 	}
