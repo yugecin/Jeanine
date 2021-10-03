@@ -140,6 +140,30 @@ public class EditBuffer
 			this.putCaretX(vx2);
 			e.needRepaintCaret = true;
 			return;
+		case '{':
+			int vx3 = this.curVisualX();
+			for (; this.carety > 0;) {
+				this.carety--;
+				line = this.lines.get(this.carety);
+				if (Line.getStartingWhitespaceLen(line) == line.length) {
+					break;
+				}
+			}
+			this.putCaretX(vx3);
+			e.needRepaintCaret = true;
+			return;
+		case '}':
+			int vx4 = this.curVisualX();
+			for (; this.carety < this.lines.size() - 1;) {
+				this.carety++;
+				line = this.lines.get(this.carety);
+				if (Line.getStartingWhitespaceLen(line) == line.length) {
+					break;
+				}
+			}
+			this.putCaretX(vx4);
+			e.needRepaintCaret = true;
+			return;
 		case 'J':
 			if (this.readonly) { e.error = true; return; }
 			if (this.carety >= this.lines.size() - 1) {

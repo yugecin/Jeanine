@@ -2774,6 +2774,159 @@ public class EditBufferTest
 		}
 	}
 
+	public static class MoveParagraph
+	{
+		@Test
+		public void up()
+		{
+			createBuffer(
+				"a",
+				"",
+				"<caret>b"
+			).executeSuccess(
+				"{"
+			).assertBuffer(
+				"a",
+				"<caret>",
+				"b"
+			);
+		}
+
+		@Test
+		public void up_but_no_target_should_go_to_first_line()
+		{
+			createBuffer(
+				"a",
+				"<caret>b"
+			).executeSuccess(
+				"{"
+			).assertBuffer(
+				"<caret>a",
+				"b"
+			);
+		}
+
+		@Test
+		public void up_while_at_first_line_is_nop()
+		{
+			createBuffer(
+				"<caret>b",
+				"a"
+			).executeSuccess(
+				"{"
+			).assertBuffer(
+				"<caret>b",
+				"a"
+			);
+		}
+
+		@Test
+		public void down()
+		{
+			createBuffer(
+				"<caret>b",
+				"",
+				"a"
+			).executeSuccess(
+				"}"
+			).assertBuffer(
+				"b",
+				"<caret>",
+				"a"
+			);
+		}
+
+		@Test
+		public void down_but_no_target_should_go_to_last_line()
+		{
+			createBuffer(
+				"<caret>b",
+				"x",
+				"a"
+			).executeSuccess(
+				"}"
+			).assertBuffer(
+				"b",
+				"x",
+				"<caret>a"
+			);
+		}
+
+		@Test
+		public void down_while_at_last_line_is_nop()
+		{
+			createBuffer(
+				"a",
+				"<caret>b"
+			).executeSuccess(
+				"}"
+			).assertBuffer(
+				"a",
+				"<caret>b"
+			);
+		}
+
+		@Test
+		public void should_keep_virtual_x()
+		{
+			createBuffer(
+				"the quick",
+				"",
+				"brown fox jumps",
+				"",
+				"over the laz<caret>y dog"
+			).executeSuccess(
+				"{"
+			).assertBuffer(
+				"the quick",
+				"",
+				"brown fox jumps",
+				"<caret>",
+				"over the lazy dog"
+			).executeSuccess(
+				"{"
+			).assertBuffer(
+				"the quick",
+				"<caret>",
+				"brown fox jumps",
+				"",
+				"over the lazy dog"
+			).executeSuccess(
+				"{"
+			).assertBuffer(
+				"the quic<caret>k",
+				"",
+				"brown fox jumps",
+				"",
+				"over the lazy dog"
+			).executeSuccess(
+				"}"
+			).assertBuffer(
+				"the quick",
+				"<caret>",
+				"brown fox jumps",
+				"",
+				"over the lazy dog"
+			).executeSuccess(
+				"}"
+			).assertBuffer(
+				"the quick",
+				"",
+				"brown fox jumps",
+				"<caret>",
+				"over the lazy dog"
+			).executeSuccess(
+				"}"
+			).assertBuffer(
+				"the quick",
+				"",
+				"brown fox jumps",
+				"",
+				"over the laz<caret>y dog"
+			);
+		}
+	}
+
 	/**
 	 * Most previous test already test undo after their own tests, this thing tests more cases.
 	 */

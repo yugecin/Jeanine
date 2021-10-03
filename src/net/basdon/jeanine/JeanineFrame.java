@@ -835,14 +835,14 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	private static final String WELCOMETEXT =
 		"Welcome to Jeanine, a 2d editor with some Vim-like keybindings\n" +
 		"\n" +
-		"Movement: h j k l ^ $ w b e gg G\n" +
+		"Movement: h j k l ^ $ w b e gg G ^D ^U { }\n" +
 		"Insert: i I a A o O p P\n" +
 		"Delete: x dw db diw dd dj dk d$\n" +
 		"Change: cw cb ciw c$ r s\n" +
 		"Indent: << >> (< > in selection)\n" +
 		"Other: . u J\n" +
 		"Select: ctrl-v\n" +
-		"View: ^D ^U z\n" +
+		"View: z\n" +
 		"Search: / n N *\n" +
 		"\n" +
 		"Commands:\n" +
