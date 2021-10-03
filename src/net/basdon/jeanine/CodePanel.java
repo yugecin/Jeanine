@@ -17,8 +17,6 @@ implements MouseListener, MouseMotionListener
 	private static final char[] BLOCK_COMMENT_START = new char[] { '/', '*' };
 	private static final char[] BLOCK_COMMENT_END = new char[] { '*', '/' };
 	private static final char[] COMMENT_START = new char[] { '/', '/' };
-	private static final Color selectColor = new Color(0x66AAFF);
-	private static final Color whitespaceColor = new Color(0xff8c69);
 
 	public final CodeGroup group;
 	public final JeanineFrame jf;
@@ -72,16 +70,16 @@ implements MouseListener, MouseMotionListener
 		int h = this.getHeight() - 1;
 
 		g.setFont(this.j.font);
-		g.setColor(Color.black);
+		g.setColor(Colors.border);
 		g.drawRect(0, 0, w, h); // border
 		g.translate(1, 1);
 		w--;
 		h--;
 		hiddenHeight--;
 		if (hiddenHeight < this.j.fy) { // title
-			g.setColor(new Color(0xdddddd));
+			g.setColor(Colors.headerBg);
 			g.fillRect(0, 0, w, this.j.fy + 2);
-			g.setColor(Color.black);
+			g.setColor(Colors.headerFg);
 			SB title = new SB(100);
 			title.append(String.valueOf(this.id));
 			if (this.parent != null) {
@@ -98,13 +96,15 @@ implements MouseListener, MouseMotionListener
 				title.append("|RAW");
 			}
 			g.drawString(title.toString(), 1, 1 + this.j.fmaxascend);
+			g.setColor(Colors.headerBorder);
+			g.drawRect(0, this.j.fy + 1, w - 1, 0); // border
 		}
 		hiddenHeight -= this.j.fy + 2;
 		h -= this.j.fy + 2;
 		g.translate(0, this.j.fy + 2);
 		heightleft--;
 
-		g.setColor(Color.white); // bg
+		g.setColor(Colors.textBg);
 		g.fillRect(0, 0, w, h);
 
 		g.translate(1, 1);
@@ -112,7 +112,7 @@ implements MouseListener, MouseMotionListener
 
 		// line selection
 		if (this.buffer.mode == EditBuffer.SELECT_LINE_MODE) {
-			g.setColor(selectColor);
+			g.setColor(Colors.selectionBg);
 			int fromy = Math.max(this.buffer.lineselectfrom, this.firstline);
 			int toy = Math.min(this.buffer.lineselectto, this.lastline);
 			fromy -= this.firstline;
@@ -148,7 +148,7 @@ implements MouseListener, MouseMotionListener
 					if (wsfrom != wsto) {
 						int f = wsfrom * this.j.fx;
 						int t = wsto * this.j.fx - f;
-						g.setColor(whitespaceColor);
+						g.setColor(Colors.whitespaceBg);
 						g.fillRect(f, 0, t, this.j.fy);
 					}
 				}
@@ -164,7 +164,6 @@ implements MouseListener, MouseMotionListener
 							f *= this.j.fx;
 							g.setColor(Color.cyan);
 							g.fillRect(f, 0, t * this.j.fx, this.j.fy);
-							g.setColor(Color.black);
 							idx++;
 						} else {
 							break;
@@ -196,13 +195,13 @@ implements MouseListener, MouseMotionListener
 					if (inBlockComment) {
 						int idx = line.indexOf(BLOCK_COMMENT_END, from);
 						if (idx == -1) {
-							g.setColor(Color.gray);
+							g.setColor(Colors.commentFg);
 							len = to - from;
 							g.drawChars(line.value, from, len, x, ma);
 							break;
 						}
 						idx += 2;
-						g.setColor(Color.gray);
+						g.setColor(Colors.commentFg);
 						len = idx - from;
 						g.drawChars(line.value, from, len, x, ma);
 						inBlockComment = false;
@@ -220,13 +219,13 @@ implements MouseListener, MouseMotionListener
 						}
 						if (bidx == -1 && lidx == -1) {
 							// no comment
-							g.setColor(Color.black);
+							g.setColor(Colors.textFg);
 							len = to - from;
 							g.drawChars(line.value, from, len, x, ma);
 							break;
 						} else if (bidx != -1) {
 							// block comment
-							g.setColor(Color.black);
+							g.setColor(Colors.textFg);
 							len = bidx - from;
 							g.drawChars(line.value, from, len, x, ma);
 							x += this.j.fx * len;
@@ -234,11 +233,11 @@ implements MouseListener, MouseMotionListener
 							from = bidx;
 						} else {
 							// line comment
-							g.setColor(Color.black);
+							g.setColor(Colors.textFg);
 							len = lidx - from;
 							g.drawChars(line.value, from, len, x, ma);
 							x += this.j.fx * len;
-							g.setColor(Color.gray);
+							g.setColor(Colors.commentFg);
 							len = to - lidx;
 							g.drawChars(line.value, lidx, len, x, ma);
 							break;

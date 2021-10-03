@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 
 public class BackgroundPanel extends JPanel
 {
-	private final Color to = new Color(224, 248, 255, 255);
+	private final Color gradientTo = new Color(224, 248, 255, 255);
 
 	public BackgroundPanel()
 	{
@@ -25,8 +25,12 @@ public class BackgroundPanel extends JPanel
 
 		w = this.getWidth();
 		h = this.getHeight();
-		Paint p = new GradientPaint(0f, 0f, Color.white, 0f, h, to);
-		((Graphics2D) g).setPaint(p);
+		if (Colors.bg != null) {
+			g.setColor(Colors.bg);
+		} else {
+			Paint p = new GradientPaint(0f, 0f, Color.white, 0f, h, gradientTo);
+			((Graphics2D) g).setPaint(p);
+		}
 		g.fillRect(0, 0, w, h);
 	}
 }

@@ -24,6 +24,7 @@ public class Jeanine
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Throwable t) {}
+		Colors.reset();
 		SwingUtilities.invokeLater(Jeanine::show);
 	}
 
