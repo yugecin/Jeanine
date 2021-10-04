@@ -9,7 +9,7 @@ public class VimOps
 	{
 		if (('a' <= c && c <= 'z') ||
 			('A' <= c && c <= 'Z') ||
-			('0' <= c && c <= '9'))
+			('0' <= c && c <= '9') || c == '_')
 		{
 			return 0;
 		}
