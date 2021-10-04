@@ -1277,7 +1277,6 @@ public class EditBuffer
 			break;
 		case '>':
 			this.mode = NORMAL_MODE;
-			this.carety = this.lineselectfrom;
 			line = this.lines.get(this.carety);
 			if (line.length == 0) {
 				return;
