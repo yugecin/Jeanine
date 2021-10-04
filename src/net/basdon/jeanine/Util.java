@@ -100,4 +100,31 @@ public class Util
 			return this.sb;
 		}
 	}
+
+	public static class StringArray2SBIter implements Iterator<SB>
+	{
+		private String[] array;
+		private int pos;
+		private SB sb;
+
+		public StringArray2SBIter(String[] array)
+		{
+			this.sb = new SB(4096);
+			this.array = array;
+		}
+
+		@Override
+		public boolean hasNext()
+		{
+			return this.pos < array.length;
+		}
+
+		@Override
+		public SB next()
+		{
+			this.sb.length = 0;
+			this.sb.append(this.array[this.pos++]);
+			return this.sb;
+		}
+	}
 }

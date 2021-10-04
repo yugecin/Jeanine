@@ -249,4 +249,18 @@ o:
 	{
 		return new String(this.value, 0, this.length);
 	}
+
+	public boolean equals(String value)
+	{
+		if (value.length() != this.length) {
+			return false;
+		}
+		char[] c = value.toCharArray();
+		for (int i = 0; i < c.length; i++) {
+			if (c[i] != this.value[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

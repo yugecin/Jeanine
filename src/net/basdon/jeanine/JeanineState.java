@@ -10,4 +10,5 @@ public class JeanineState
 	public CodeGroup activeGroup;
 	public Point location;
 	public Consumer<SB> lineSelectionListener;
+	public Runnable postStateLeaveListener;
 }

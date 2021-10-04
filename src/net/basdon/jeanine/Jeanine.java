@@ -25,12 +25,9 @@ public class Jeanine
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Throwable t) {}
 		Colors.reset();
-		SwingUtilities.invokeLater(Jeanine::show);
-	}
-
-	public static void show()
-	{
-		new JeanineFrame(new Jeanine());
+		Jeanine j = new Jeanine();
+		Preferences.load(j);
+		SwingUtilities.invokeLater(() -> new JeanineFrame(j));
 	}
 
 	public final ArrayList<Undo> undolist;

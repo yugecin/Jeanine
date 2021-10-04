@@ -25,8 +25,8 @@ public class BackgroundPanel extends JPanel
 
 		w = this.getWidth();
 		h = this.getHeight();
-		if (Colors.bg != null) {
-			g.setColor(Colors.bg);
+		if (Colors.bg.col != null) {
+			g.setColor(Colors.bg.col);
 		} else {
 			Paint p = new GradientPaint(0f, 0f, Color.white, 0f, h, gradientTo);
 			((Graphics2D) g).setPaint(p);

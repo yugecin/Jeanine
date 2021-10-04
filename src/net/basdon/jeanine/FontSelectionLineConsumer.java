@@ -1,7 +1,6 @@
 package net.basdon.jeanine;
 
 import java.awt.Font;
-import java.awt.Point;
 import java.util.function.Consumer;
 
 public class FontSelectionLineConsumer implements Consumer<SB>
@@ -18,7 +17,6 @@ public class FontSelectionLineConsumer implements Consumer<SB>
 	@Override
 	public void accept(SB line)
 	{
-		Point oldcursorpos = this.jf.findCursorPosition();
 		if (line.length() > 3 && line.value[0] == 'f') {
 			this.j.fontFamily = new String(line.value, 2, line.length - 2);
 		} else if (line.length > 2 && line.value[0] == 's') {
@@ -31,10 +29,6 @@ public class FontSelectionLineConsumer implements Consumer<SB>
 		} else {
 			return;
 		}
-		this.j.updateFont();
-		for (CodeGroup group : this.jf.codegroups) {
-			group.fontChanged();
-		}
-		this.jf.moveToGetCursorAtPosition(oldcursorpos);
+		this.jf.updateFontKeepCursorFrozen();
 	}
 }

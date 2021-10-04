@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -49,7 +50,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public List<CodeGroup> codegroups, lastCodegroups;
 	public CodeGroup activeGroup, lastActiveGroup;
 	public Point location, lastLocation;
-	public Consumer<SB> lineSelectionListener = null;
+	public Consumer<SB> lineSelectionListener;
+	public Runnable postStateLeaveListener;
 
 	public Point cursorPosBeforeChangingFont;
 
@@ -98,6 +100,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.setPreferredSize(new Dimension(800, 800));
 		this.pack();
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		Preferences.interpretAndApply(this);
 		this.setVisible(true);
 		this.ensureCaretInView();
 		this.timer = new Timer(25, this);
@@ -201,15 +204,10 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		switch (event.c) {
 		case EditBuffer.ESC:
 			if (!this.pushedStates.isEmpty()) {
-				if (this.lineSelectionListener == fontLineSelectionListener) {
-					this.popState();
-					Point oldcursorpos = this.cursorPosBeforeChangingFont;
-					for (CodeGroup group : this.codegroups) {
-						group.fontChanged();
-					}
-					this.moveToGetCursorAtPosition(oldcursorpos);
-				} else {
-					this.popState();
+				Runnable listener = this.postStateLeaveListener;
+				this.popState();
+				if (listener != null) {
+					listener.run();
 				}
 				return;
 			}
@@ -535,6 +533,37 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 		} else if ("font".equals(parts[0])) {
 			this.startSelectingFont();
+		} else if ("prefs".equals(parts[0])) {
+			CodeGroup instr = new CodeGroup(this);
+			instr.title = "Information";
+			instr.setContents(Preferences.instructionlines.iterator(), false);
+			instr.setLocation(80, 30);
+			instr.buffer.readonly = true;
+			CodeGroup group = new CodeGroup(this);
+			group.title = "Preferences";
+			group.setContents(Preferences.lines.iterator(), true);
+			Preferences.lines = group.buffer.lines.lines;
+			group.activePanel = group.panelAtLine(group.buffer.carety);
+			int y = instr.location.y + (instr.buffer.lines.size() + 4) * this.j.fy;
+			group.setLocation(80, y);
+			Consumer<SB> listener;
+			listener = new Preferences.LineSelectionListener(this, instr, group);
+			Runnable leaveListener = () -> {
+				Preferences.interpretAndApply(this);
+				Preferences.save();
+			};
+			this.pushState(Arrays.asList(group, instr), group, listener, leaveListener);
+			if (Preferences.file == null) {
+				this.showDialog(
+					"Warning",
+					"Set either an environment variable or",
+					"jvm arg with name " + Preferences.FILENAME_PROPERTY,
+					"",
+					"Preferences will not persist unless this is set.",
+					"",
+					"Press enter to continue."
+				);
+			}
 		} else if ("link".equals(parts[0])) {
 			Integer childId;
 			String position;
@@ -687,20 +716,34 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		group.activePanel = group.panelAtLine(group.buffer.carety);
 		group.setLocation(0, 30);
 		List<CodeGroup> codegroups = Collections.singletonList(group);
-		this.pushState(codegroups, group, this.fontLineSelectionListener);
+		Runnable leaveListener = () -> {
+			Point oldcursorpos = this.cursorPosBeforeChangingFont;
+			for (CodeGroup grp : this.codegroups) {
+				grp.fontChanged();
+			}
+			this.moveToGetCursorAtPosition(oldcursorpos);
+			Preferences.updateAfterChangingFont();
+		};
+		this.pushState(codegroups, group, this.fontLineSelectionListener, leaveListener);
 	}
 
-	private void pushState(List<CodeGroup> codegroups, CodeGroup activeGroup, Consumer<SB> l)
+	private void pushState(
+		List<CodeGroup> codegroups,
+		CodeGroup activeGroup,
+		Consumer<SB> lineSelectionListener,
+		Runnable postStateLeaveListener)
 	{
 		JeanineState state = new JeanineState();
 		state.activeGroup = this.activeGroup;
 		state.codegroups = this.codegroups;
 		state.location = new Point(this.location);
 		state.lineSelectionListener = this.lineSelectionListener;
+		state.postStateLeaveListener = this.postStateLeaveListener;
 		this.pushedStates.push(state);
 		this.activeGroup = activeGroup;
 		this.codegroups = codegroups;
-		this.lineSelectionListener = l;
+		this.lineSelectionListener = lineSelectionListener;
+		this.postStateLeaveListener = postStateLeaveListener;
 		this.getContentPane().removeAll();
 		for (CodeGroup group : this.codegroups) {
 			for (CodePanel panel : group.panels.values()) {
@@ -711,13 +754,14 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.repaint();
 	}
 
-	private JeanineState popState()
+	private void popState()
 	{
 		JeanineState state = this.pushedStates.pop();
 		this.codegroups = state.codegroups;
 		this.activeGroup = state.activeGroup;
 		this.location = state.location;
 		this.lineSelectionListener = state.lineSelectionListener;
+		this.postStateLeaveListener = state.postStateLeaveListener;
 		this.getContentPane().removeAll();
 		for (CodeGroup group : this.codegroups) {
 			for (CodePanel panel : group.panels.values()) {
@@ -725,7 +769,16 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 		}
 		this.repaint();
-		return state;
+	}
+
+	private void showDialog(String title, String...contents)
+	{
+		CodeGroup group = new CodeGroup(this);
+		group.title = title;
+		group.buffer.readonly = true;
+		group.setContents(new Util.StringArray2SBIter(contents), true);
+		Consumer<SB> listener = line -> this.popState();
+		this.pushState(Collections.singletonList(group), group, listener, null);
 	}
 
 	public Point findCursorPosition()
@@ -764,7 +817,17 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 	}
 
-	private void ensureCaretInView()
+	public void updateFontKeepCursorFrozen()
+	{
+		Point oldcursorpos = this.findCursorPosition();
+		this.j.updateFont();
+		for (CodeGroup group : this.codegroups) {
+			group.fontChanged();
+		}
+		this.moveToGetCursorAtPosition(oldcursorpos);
+	}
+
+	public void ensureCaretInView()
 	{
 		Point pt = this.findCursorPosition();
 		if (pt == null) {
@@ -855,5 +918,6 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		":raw - toggle between raw and 2d mode\n" +
 		":<number> - jump to a line number\n" +
 		":font - change the font\n" +
+		":prefs - change preferences\n" +
 		"";
 }
