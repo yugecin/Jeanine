@@ -723,6 +723,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 			this.moveToGetCursorAtPosition(oldcursorpos);
 			Preferences.updateAfterChangingFont();
+			Preferences.save();
 		};
 		this.pushState(codegroups, group, this.fontLineSelectionListener, leaveListener);
 	}
