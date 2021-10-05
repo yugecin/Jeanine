@@ -910,7 +910,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"Indent: << >> (< > in selection)\n" +
 		"Other: . u J\n" +
 		"Select: ctrl-v\n" +
-		"Copy: yy\n" +
+		"Copy: yy (y in selection)\n" +
 		"View: z\n" +
 		"Search: / n N *\n" +
 		"\n" +

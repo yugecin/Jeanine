@@ -2302,6 +2302,36 @@ public class EditBufferTest
 		}
 
 		@Test
+		public void yanked_line_selection()
+		{
+			createBuffer(
+				"o<caret>ne",
+				"two",
+				"tri"
+			).executeSuccess(
+				"Vjy"
+			).assertBuffer(
+				"<caret>one",
+				"two",
+				"tri"
+			).executeSuccess(
+				"p"
+			).assertBuffer(
+				"one",
+				"<caret>one",
+				"two",
+				"two",
+				"tri"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>one",
+				"two",
+				"tri"
+			);
+		}
+
+		@Test
 		public void after()
 		{
 			createBuffer(

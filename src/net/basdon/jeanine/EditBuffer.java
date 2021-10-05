@@ -1131,6 +1131,16 @@ public class EditBuffer
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
 			break;
+		case 'y':
+			SB pastebuf = new SB(4096);
+			for (int i = this.lineselectfrom; i < this.lineselectto; i++) {
+				pastebuf.append(this.lines.get(i)).append('\n');
+			}
+			this.j.pastebuffer = pastebuf.toString();
+			this.mode = NORMAL_MODE;
+			this.carety = this.lineselectfrom;
+			this.caretx = this.virtualCaretx = 0;
+			break;
 		case '<':
 			this.caretx = 0;
 			this.carety = this.lineselectfrom;
