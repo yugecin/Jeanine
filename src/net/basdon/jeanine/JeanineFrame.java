@@ -392,12 +392,13 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		if (this.timer == e.getSource()) {
 			if (this.locationMoveFrom != null) {
 				long time = System.currentTimeMillis() - this.locationMoveStartTime;
-				if (time >= 300) {
+				int delay = Preferences.smoothScrollDelayMs;
+				if (time >= delay) {
 					this.location = this.locationMoveTo;
 					this.locationMoveFrom = null;
 					this.locationMoveTo = null;
 				} else {
-					double t = -Math.pow(2, -10 * (time / 300.0f)) + 1;
+					double t = -Math.pow(2, -10 * (time / (float) delay)) + 1;
 					int dx = this.locationMoveTo.x - this.locationMoveFrom.x;
 					int dy = this.locationMoveTo.y - this.locationMoveFrom.y;
 					this.location.x = this.locationMoveFrom.x + (int) (dx * t);
@@ -855,9 +856,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 		}
 		if (dx != 0 || dy != 0) {
-			this.locationMoveFrom = new Point(this.location);
-			this.locationMoveTo = new Point(this.location.x + dx, this.location.y + dy);
-			this.locationMoveStartTime = System.currentTimeMillis();
+			this.panView(dx, dy);
 		}
 	}
 
@@ -867,9 +866,22 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		Dimension size = this.getContentPane().getSize();
 		int dx = size.width / 2 - pt.x;
 		int dy = size.height / 2 - pt.y;
-		this.locationMoveFrom = new Point(this.location);
-		this.locationMoveTo = new Point(this.location.x + dx, this.location.y + dy);
-		this.locationMoveStartTime = System.currentTimeMillis();
+		this.panView(dx, dy);
+	}
+
+	private void panView(int dx, int dy)
+	{
+		if (Preferences.smoothScrollDelayMs == 0) {
+			this.location.x += dx;
+			this.location.y += dy;
+			for (CodeGroup group : this.codegroups) {
+				group.updateLocation();
+			}
+		} else {
+			this.locationMoveFrom = new Point(this.location);
+			this.locationMoveTo = new Point(this.location.x + dx, this.location.y + dy);
+			this.locationMoveStartTime = System.currentTimeMillis();
+		}
 	}
 
 	private void repaintActivePanel()
