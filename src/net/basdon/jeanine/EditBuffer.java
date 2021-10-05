@@ -41,6 +41,7 @@ public class EditBuffer
 	 */
 	public int caretx;
 	public int carety;
+	private boolean lineselectmovingup;
 	private int lineselectinitial;
 	public int lineselectfrom;
 	/**exclusive*/
@@ -1073,34 +1074,24 @@ public class EditBuffer
 
 	private void handleInputSelectLine(KeyInput e)
 	{
+		int prevCarety;
 		boolean isAdditionalUndo;
 		switch (e.c) {
 		case 'h':
 		case 'l':
 			this.handleInputNormal(e);
-			break;
-		case 'j':
-		case 'k':
-			this.handleInputNormal(e);
-			if (!e.error) {
-				if (this.carety <= this.lineselectinitial) {
-					this.lineselectfrom = this.carety;
-				}
-				if (this.carety >= this.lineselectinitial) {
-					this.lineselectto = this.carety + 1;
-				}
-				e.needRepaint = true;
-			}
-			break;
+			return;
 		case 'o':
 			if (this.carety == this.lineselectfrom) {
 				this.carety = this.lineselectto - 1;
+				this.lineselectmovingup = false;
 			} else {
 				this.carety = this.lineselectfrom;
+				this.lineselectmovingup = true;
 			}
 			this.caretx = this.virtualCaretx = 0;
 			e.needRepaintCaret = true;
-			break;
+			return;
 		case 'd':
 			this.writingUndo = this.newUndo(0, this.lineselectinitial);
 			int from = this.lineselectfrom;
@@ -1130,7 +1121,7 @@ public class EditBuffer
 			e.needRepaintCaret = true;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
-			break;
+			return;
 		case 'y':
 			SB pastebuf = new SB(4096);
 			for (int i = this.lineselectfrom; i < this.lineselectto; i++) {
@@ -1140,7 +1131,7 @@ public class EditBuffer
 			this.mode = NORMAL_MODE;
 			this.carety = this.lineselectfrom;
 			this.caretx = this.virtualCaretx = 0;
-			break;
+			return;
 		case '<':
 			this.caretx = 0;
 			this.carety = this.lineselectfrom;
@@ -1183,7 +1174,7 @@ public class EditBuffer
 			e.needRepaint = true;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
-			break;
+			return;
 		case '>':
 			this.caretx = 0;
 			this.carety = this.lineselectfrom;
@@ -1213,15 +1204,64 @@ public class EditBuffer
 			e.needRepaint = true;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
-			break;
+			return;
 		case ESC:
 			this.mode = NORMAL_MODE;
 			e.needRepaint = true;
 			e.needGlobalRepaint = true;
-			break;
+			return;
 		default:
 			e.error = true;
+			return;
+		// moving caret up
+		case 'k':
+		case 'U'-0x40: // ^U
+			prevCarety = this.carety;
+			this.handleInputNormal(e);
+			if (!e.error) {
+				if (prevCarety == this.lineselectfrom &&
+					prevCarety == this.lineselectto - 1)
+				{
+					this.lineselectmovingup = true;
+				}
+			}
+			break;
+		case 'g':
+			if (this.carety == this.lineselectfrom &&
+				this.carety == this.lineselectto - 1)
+			{
+				this.lineselectmovingup = true;
+			}
+			this.carety = 0;
+			break;
+		// moving caret down
+		case 'G':
+		case 'j':
+		case 'D'-0x40: // ^D
+			prevCarety = this.carety;
+			this.handleInputNormal(e);
+			if (!e.error) {
+				if (prevCarety == this.lineselectfrom &&
+					prevCarety == this.lineselectto - 1)
+				{
+					this.lineselectmovingup = false;
+				}
+			}
+			break;
 		}
+		// common end case for moving caret up/down
+		if (this.lineselectmovingup) {
+			this.lineselectfrom = this.carety;
+		} else {
+			this.lineselectto = this.carety + 1;
+		}
+		if (this.lineselectfrom >= this.lineselectto) {
+			int tmp = this.lineselectto - 1;
+			this.lineselectto = this.lineselectfrom + 1;
+			this.lineselectfrom = tmp;
+			this.lineselectmovingup = !this.lineselectmovingup;
+		}
+		e.needRepaint = true;
 	}
 
 	private void handleInputReplace(KeyInput e)
