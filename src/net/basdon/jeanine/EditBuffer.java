@@ -23,7 +23,8 @@ public class EditBuffer
 		G_MODE = 8,
 		SELECT_LINE_MODE = 9,
 		REPLACE_MODE = 10,
-		INDENT_MODE = 11;
+		INDENT_MODE = 11,
+		YANK_MODE = 12;
 
 	private final Jeanine j;
 	private final CodeGroup group;
@@ -124,6 +125,9 @@ public class EditBuffer
 		int prevCaretx = this.caretx;
 		int prevCarety = this.carety;
 		switch (e.c) { // break when the key starts a new command (for .), return otherwise
+		case 'y':
+			this.mode = YANK_MODE;
+			return;
 		case 'U'-0x40: // ^U
 			int vx = this.curVisualX();
 			this.carety -= 20;
@@ -1300,6 +1304,16 @@ public class EditBuffer
 		}
 	}
 
+	private void handleInputYank(KeyInput e)
+	{
+		if (e.c == 'y') {
+			this.j.pastebuffer = this.lines.get(this.carety).toString() + '\n';
+			this.mode = NORMAL_MODE;
+			return;
+		}
+		e.error = true;
+	}
+
 	/**
 	 * Handles an input event, without storing the input in the command buffer.
 	 */
@@ -1341,6 +1355,9 @@ public class EditBuffer
 			break;
 		case INDENT_MODE:
 			this.handleInputIndent(e);
+			break;
+		case YANK_MODE:
+			this.handleInputYank(e);
 			break;
 		}
 	}

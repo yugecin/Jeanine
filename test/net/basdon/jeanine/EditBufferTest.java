@@ -2285,6 +2285,23 @@ public class EditBufferTest
 	public static class Paste
 	{
 		@Test
+		public void yy()
+		{
+			createBuffer(
+				"o<caret>ne"
+			).executeSuccess(
+				"yyp"
+			).assertBuffer(
+				"one",
+				"<caret>one"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"o<caret>ne"
+			);
+		}
+
+		@Test
 		public void after()
 		{
 			createBuffer(
