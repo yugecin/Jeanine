@@ -497,7 +497,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		if (live) {
 			this.searchHighlightTimeout = Long.MAX_VALUE;
 		} else {
-			this.searchHighlightTimeout = System.currentTimeMillis() + 175;
+			this.searchHighlightTimeout = System.currentTimeMillis();
+			this.searchHighlightTimeout += Preferences.searchHighlightTime;
 		}
 		this.activeGroup.repaintAll();
 		this.ensureCaretInView();
