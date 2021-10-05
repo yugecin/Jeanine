@@ -3,6 +3,7 @@ package net.basdon.jeanine;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -60,6 +61,10 @@ implements MouseListener, MouseMotionListener
 	@Override
 	protected void paintComponent(Graphics g)
 	{
+		if (this.j.ensureFontMetrics((Graphics2D) g)) {
+			this.setCodeViewSize(this.rows, this.cols);
+			return;
+		}
 		Point thisloc = this.getLocationOnScreen();
 		Point contentloc = this.jf.getContentPane().getLocationOnScreen();
 		Dimension contentsize = this.jf.getContentPane().getSize();

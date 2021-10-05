@@ -2,7 +2,7 @@ package net.basdon.jeanine;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Toolkit;
+import java.awt.Graphics2D;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -37,6 +37,7 @@ public class Jeanine
 	public int fontFlags;
 	public int fontSize;
 	public int fx, fy, fmaxascend;
+	public boolean needUpdateFontMetrics;
 	public int undolistptr;
 	public String pastebuffer = "";
 	public char commandBuf[];
@@ -56,10 +57,20 @@ public class Jeanine
 	public void updateFont()
 	{
 		this.font = new Font(this.fontFamily, this.fontFlags, this.fontSize);
-		FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
-		this.fx = metrics.charWidth('m');
-		this.fy = metrics.getHeight();
-		this.fmaxascend = metrics.getMaxAscent();
+		this.needUpdateFontMetrics = true;
+	}
+
+	public boolean ensureFontMetrics(Graphics2D graphics)
+	{
+		if (graphics != null && this.needUpdateFontMetrics) {
+			this.needUpdateFontMetrics = false;
+			FontMetrics metrics = graphics.getFontMetrics(this.font);
+			this.fx = metrics.charWidth('m');
+			this.fy = metrics.getHeight();
+			this.fmaxascend = metrics.getMaxAscent();
+			return true;
+		}
+		return false;
 	}
 
 	public void storeCommand(char[] cmd, int len)

@@ -2,6 +2,7 @@ package net.basdon.jeanine;
 
 import java.awt.Dimension;
 import java.awt.FileDialog;
+import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
@@ -822,6 +823,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	{
 		Point oldcursorpos = this.findCursorPosition();
 		this.j.updateFont();
+		this.j.ensureFontMetrics((Graphics2D) this.getGraphics());
 		for (CodeGroup group : this.codegroups) {
 			group.fontChanged();
 		}
