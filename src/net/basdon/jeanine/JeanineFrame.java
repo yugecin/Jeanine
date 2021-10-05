@@ -373,11 +373,13 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public void mouseWheelMoved(MouseWheelEvent e)
 	{
 		if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-			int units = e.getUnitsToScroll() * 2;
+			int units = e.getUnitsToScroll();
 			if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
-				this.location.x -= units;
+				units *= Preferences.hscrollPercentage;
+				this.location.x -= (int) (units / 100f);
 			} else {
-				this.location.y -= units * 2;
+				units *= Preferences.vscrollPercentage;
+				this.location.y -= (int) (units / 100f);
 			}
 			for (CodeGroup cg : this.codegroups) {
 				cg.updateLocation();
@@ -392,7 +394,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		if (this.timer == e.getSource()) {
 			if (this.locationMoveFrom != null) {
 				long time = System.currentTimeMillis() - this.locationMoveStartTime;
-				int delay = Preferences.smoothScrollDelayMs;
+				int delay = Preferences.smoothScrollTimeMs;
 				if (time >= delay) {
 					this.location = this.locationMoveTo;
 					this.locationMoveFrom = null;
@@ -871,7 +873,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 
 	private void panView(int dx, int dy)
 	{
-		if (Preferences.smoothScrollDelayMs == 0) {
+		if (Preferences.smoothScrollTimeMs == 0) {
 			this.location.x += dx;
 			this.location.y += dy;
 			for (CodeGroup group : this.codegroups) {

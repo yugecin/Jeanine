@@ -18,7 +18,9 @@ public class Preferences
 
 	public static final String FILENAME_PROPERTY = "JEANINE_PREFERENCES_FILE";
 	public static final ArrayList<SB> instructionlines;
-	public static final String SMOOTHSCROLL_NAME = "smooth.scroll.delay.ms";
+	public static final String SMOOTHSCROLL_NAME = "scrolling.smooth.movement.time.ms";
+	public static final String VSCROLL_NAME = "scrolling.vertical.speed.modifier.percentage";
+	public static final String HSCROLL_NAME = "scrolling.horizontal.speed.modifier.percentage";
 
 	static
 	{
@@ -37,7 +39,9 @@ public class Preferences
 	public static Jeanine j;
 	public static File file;
 	public static ArrayList<SB> lines;
-	public static int smoothScrollDelayMs = 300;
+	public static int smoothScrollTimeMs = 300;
+	public static int vscrollPercentage = 100;
+	public static int hscrollPercentage = 200;
 
 	public static void load(Jeanine _j)
 	{
@@ -91,7 +95,9 @@ public class Preferences
 			lines.add(sb);
 		}
 		lines.add(new SB());
-		lines.add(new SB(SMOOTHSCROLL_NAME + " 300"));
+		lines.add(new SB(SMOOTHSCROLL_NAME + " " + smoothScrollTimeMs));
+		lines.add(new SB(VSCROLL_NAME + " " + vscrollPercentage));
+		lines.add(new SB(HSCROLL_NAME + " " + hscrollPercentage));
 		lines.add(new SB());
 		appendColorScheme(lines);
 	}
@@ -210,7 +216,9 @@ public class Preferences
 		if ("gradient".equals(properties.get(Colors.bg.name))) {
 			Colors.bg.col = null;
 		}
-		smoothScrollDelayMs = getIntProp(properties, SMOOTHSCROLL_NAME, 300);
+		smoothScrollTimeMs = getIntProp(properties, SMOOTHSCROLL_NAME, smoothScrollTimeMs);
+		vscrollPercentage = getIntProp(properties, VSCROLL_NAME, vscrollPercentage);
+		hscrollPercentage = getIntProp(properties, HSCROLL_NAME, hscrollPercentage);
 		String fontFamily = properties.get("font.family");
 		String fontFlagss = properties.get("font.flags");
 		int fontSize = getIntProp(properties, "font.size", j.fontSize);
