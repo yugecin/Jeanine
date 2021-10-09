@@ -1214,6 +1214,7 @@ public class EditBuffer
 			e.error = true;
 			return;
 		// moving caret up
+		case '{':
 		case 'k':
 		case 'U'-0x40: // ^U
 			prevCarety = this.carety;
@@ -1235,6 +1236,7 @@ public class EditBuffer
 			this.carety = 0;
 			break;
 		// moving caret down
+		case '}':
 		case 'G':
 		case 'j':
 		case 'D'-0x40: // ^D
