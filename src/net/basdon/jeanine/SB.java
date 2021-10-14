@@ -33,10 +33,11 @@ public class SB implements CharSequence
 		this(value, 0, value.length);
 	}
 
-	public SB(char[] value, int start, int len)
+	public SB(char[] value, int start, int to)
 	{
+		int len = to - start;
 		this.value = new char[len + 16];
-		this.append(value, start, len);
+		this.append(value, start, to);
 	}
 
 	@Override
