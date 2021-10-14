@@ -2128,6 +2128,40 @@ public class EditBufferTest
 				"r"
 			);
 		}
+
+		@Test
+		public void nl()
+		{
+			createBuffer(
+				"a<caret> b"
+			).executeSuccess(
+				"r\n"
+			).assertBuffer(
+				"a",
+				"<caret>b"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"a<caret> b"
+			);
+		}
+
+		@Test
+		public void nl_end()
+		{
+			createBuffer(
+				"ab<caret>c"
+			).executeSuccess(
+				"r\n"
+			).assertBuffer(
+				"ab",
+				"<caret>"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"ab<caret>c"
+			);
+		}
 	}
 
 	public static class Join

@@ -1268,17 +1268,35 @@ public class EditBuffer
 
 	private void handleInputReplace(KeyInput e)
 	{
+		SB line;
 		switch (e.c) {
 		case BS:
 		case DEL:
+			e.error = true;
 		case '\r':
 		case '\n':
-			e.error = true;
+			line = this.lines.get(this.carety);
+			this.writingUndo = this.newUndo(this.caretx, this.carety);
+			this.writingUndo.toy++;
+			this.writingUndo.tox = 0;
+			this.writingUndo.replacement.append(line.value[this.caretx]);
+			this.addCurrentWritingUndo();
+			SB newline = new SB(line.value, this.caretx + 1, line.length);
+			this.lines.add(this.carety + 1, newline);
+			line.length = this.caretx;
+			this.carety++;
+			this.caretx = 0;
+			this.mode = NORMAL_MODE;
+			e.needRepaint = true;
+			e.needRepaintCaret = true;
+			e.needCheckLineLength = true;
+			e.needEnsureViewSize = true;
+			break;
 		case ESC:
 			this.mode = NORMAL_MODE;
 			break;
 		default:
-			SB line = this.lines.get(this.carety);
+			line = this.lines.get(this.carety);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.replacement.length = 1;
 			this.writingUndo.replacement.value[0] = line.value[this.caretx];
