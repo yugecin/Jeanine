@@ -1708,7 +1708,11 @@ public class EditBufferTest
 			).assertBuffer(
 				"x<caret>y two"
 			).executeSuccess(
-				"u"
+				"P"
+			).assertBuffer(
+				"xon<caret>ey two"
+			).executeSuccess(
+				"uu"
 			).assertBuffer(
 				"o<caret>ne two"
 			);
@@ -1943,7 +1947,12 @@ public class EditBufferTest
 				"abc'",
 				"'<caret>x'"
 			).executeSuccess(
-				"u"
+				"P"
+			).assertBuffer(
+				"abc'",
+				"'fxxxyyyzzzzzzzzzz<caret>zx'"
+			).executeSuccess(
+				"uu"
 			).assertBuffer(
 				"abc'",
 				"<caret>'fxxxyyyzzzzzzzzzzz'"

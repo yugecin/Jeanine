@@ -967,6 +967,7 @@ public class EditBuffer
 		}
 		this.writingUndo.fromx = this.writingUndo.tox = before.x + 1;
 		this.writingUndo.fromy = this.writingUndo.toy = before.y;
+		this.j.pastebuffer = this.writingUndo.replacement.toString();
 		this.caretx = this.virtualCaretx = before.x + 1;
 		this.carety = before.y;
 		if (next_mode == NORMAL_MODE) {
