@@ -282,6 +282,31 @@ public class CodeGroup
 		this.setLocation(this.location.x, this.location.y);
 	}
 
+	public void getBounds(Rectangle rv)
+	{
+		if (this.panels.isEmpty()) {
+			rv.x = this.location.x;
+			rv.y = this.location.y;
+			rv.width = 0;
+			rv.height = 0;
+			return;
+		}
+		rv.x = Integer.MAX_VALUE;
+		rv.y = Integer.MAX_VALUE;
+		rv.width = Integer.MIN_VALUE;
+		rv.height = Integer.MIN_VALUE;
+		Rectangle rect = new Rectangle();
+		for (CodePanel panel : this.panels.values()) {
+			panel.getBounds(rect);
+			rv.x = Math.min(rv.x, rect.x);
+			rv.y = Math.min(rv.y, rect.y);
+			rv.width = Math.max(rv.width, rect.x + rect.width);
+			rv.height = Math.max(rv.height, rect.y + rect.height);
+		}
+		rv.width -= rv.x;
+		rv.height -= rv.y;
+	}
+
 	public void position(CodePanel panel)
 	{
 		int x = this.location.x + this.jf.location.x;

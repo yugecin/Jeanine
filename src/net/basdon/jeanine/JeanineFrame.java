@@ -7,6 +7,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -651,6 +652,10 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 	}
 
+	/**
+	 * Creates a new codegroup linked to the file, or if an existing codegroup is already
+	 * linked to the file, then that codegroup will become the {@link #activeGroup}.
+	 */
 	private void openFile(File file)
 	{
 		for (CodeGroup group : this.codegroups) {
@@ -660,6 +665,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 		}
 		this.activeGroup = new CodeGroup(this);
+		Rectangle rect = this.getGroupsBounds();
+		this.activeGroup.setLocation(rect.x + rect.width + 25, rect.y);
 		try {
 			this.activeGroup.readFile(file);
 		} catch (IOException e) {
@@ -913,6 +920,31 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			lastActive.activePanel.repaint(); // for cursor
 		}
 		return true;
+	}
+
+	public Rectangle getGroupsBounds()
+	{
+		if (this.codegroups.isEmpty()) {
+			return new Rectangle(0, 0, 0, 0);
+		}
+		Rectangle rect = new Rectangle(), rv = new Rectangle();
+		rv.x = Integer.MAX_VALUE;
+		rv.y = Integer.MAX_VALUE;
+		rv.width = Integer.MIN_VALUE;
+		rv.height = Integer.MIN_VALUE;
+		for (CodeGroup group : this.codegroups) {
+			group.getBounds(rect);
+			rv.x = Math.min(rv.x, rect.x);
+			rv.y = Math.min(rv.y, rect.y);
+			rv.width = Math.max(rv.width, rect.x + rect.width);
+			rv.height = Math.max(rv.height, rect.y + rect.height);
+		}
+		rv.width -= rv.x;
+		rv.height -= rv.y;
+		// Group bounds include the location of JeanineFrame, so subtract it here
+		rv.x -= this.location.x;
+		rv.y -= this.location.y;
+		return rv;
 	}
 
 	private static final String WELCOMETEXT =
