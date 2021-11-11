@@ -613,6 +613,32 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.openFile(file);
 			}
 			this.ensureCaretInView();
+		} else if ("bp".equals(parts[0])) {
+			int size = this.codegroups.size();
+			for (int i = 0; i < size; i++) {
+				if (this.codegroups.get(i) == this.activeGroup) {
+					if (i > 0) {
+						this.activeGroup = this.codegroups.get(i - 1);
+					} else {
+						this.activeGroup = this.codegroups.get(size - 1);
+					}
+					this.ensureCaretInView();
+					break;
+				}
+			}
+		} else if ("bn".equals(parts[0])) {
+			int size = this.codegroups.size();
+			for (int i = 0; i < size; i++) {
+				if (this.codegroups.get(i) == this.activeGroup) {
+					if (i + 1 < size) {
+						this.activeGroup = this.codegroups.get(i + 1);
+					} else {
+						this.activeGroup = this.codegroups.get(0);
+					}
+					this.ensureCaretInView();
+					break;
+				}
+			}
 		} else if ("w".equals(parts[0])) {
 			if (this.activeGroup == null) {
 				this.setError("no active panel");
@@ -964,6 +990,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"Commands:\n" +
 		":e - open a file for editing\n" +
 		":bd - close the active editing group\n" +
+		":bp/:bn - go to previous/next editing group\n" +
 		":spl - split current view based on the visual line selection (ctrl-v)\n" +
 		":link <bot|right|top> <id> - link a child" +
 		":raw - toggle between raw and 2d mode\n" +
