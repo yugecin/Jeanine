@@ -10,9 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
@@ -98,7 +96,12 @@ public class CodeGroup
 		this.panels.clear();
 
 		if (interpret) {
-			this.interpretSource(lines);
+			// TODO: show the errors if not empty
+			RawToGroupConverter parser = new RawToGroupConverter(this);
+			parser.interpretSource(lines);
+			this.buffer.lines.lines.addAll(parser.lines);
+			this.root = parser.root;
+			this.panels.putAll(parser.panels);
 		} else {
 			Integer id = Integer.valueOf(0);
 			this.root = new CodePanel(this, id, 0, 0);
@@ -118,223 +121,6 @@ public class CodeGroup
 		for (CodePanel pnl : this.panels.values()) {
 			this.jf.getContentPane().add(pnl);
 		}
-	}
-
-	private SB interpretSource(Iterator<SB> lines)
-	{
-		// TODO: show the errors if not empty
-		SB errors = new SB();
-		Integer id = Integer.valueOf(0);
-		Integer nextInvalidId = Integer.valueOf(9000);
-		int physicalLine = 0;
-		int logicalLine = 0;
-		// key:child, value:parentId
-		HashMap<CodePanel, Integer> parents = new HashMap<>();
-		// key:childId, value:lineNr
-		HashMap<Integer, Integer> rightLinks = new HashMap<>();
-		class ScndryLink
-		{
-			CodePanel parent;
-			Integer childId;
-			int link;
-			int physicalLine; /*for error reporting usage only*/
-		}
-		ArrayList<ScndryLink> secondaryLinks = new ArrayList<>();
-		CodePanel panel = this.root = new CodePanel(this, id, 0, 0);
-		this.panels.put(id, this.root);
-		while (lines.hasNext()) {
-			physicalLine++;
-			SB sb = lines.next();
-			if (!sb.startsWith("/*jeanine:") || sb.length < 12) {
-				int lineLength = sb.length, idx;
-				// TODO goes wrong when there's both primary and secondary links
-				// TODO even goes wrong when there's multiple secondary links
-				if (sb.endsWith("*/") &&
-					(idx = sb.lastIndexOf("/*jeanine:")) != -1 &&
-					idx < sb.length - 12 &&
-					sb.value[idx + 11] == ':')
-				{
-					if (sb.value[idx + 10] == 'l') {
-						// normal right link
-						Integer line = Integer.valueOf(logicalLine);
-						int from = idx + 12, len = sb.length - 2 - from;
-						String links = new String(sb.value, from, len);
-						for (String link : links.split(",")) {
-							int child;
-							try {
-								child = Integer.parseInt(link);
-							} catch (Exception e) {
-								errors.append(physicalLine + ":");
-								errors.append(" bad link id").lf();
-								continue;
-							}
-							Integer Child = Integer.valueOf(child);
-							rightLinks.put(Child, line);
-						}
-					} else if (sb.value[idx + 10] == 's') {
-						// secondary right link
-						JeanineProperties props;
-						props = JeanineProperties.parse(sb, idx + 12);
-						ScndryLink scnd = new ScndryLink();
-						scnd.parent = panel;
-						scnd.physicalLine = physicalLine;
-						// this can only be right link, because not in the beginning of a line
-						scnd.link = PanelLink.createRightLink(logicalLine);
-						// i: child id
-						if (props.isValidInt['i']) {
-							scnd.childId = Integer.valueOf(props.intValue['i']);
-							secondaryLinks.add(scnd);
-						} else {
-							errors.append(physicalLine + ": missing id in props").lf();
-						}
-					} else {
-						errors.append(physicalLine + ": unk directive");
-					}
-					lineLength = idx;
-				}
-				sb = new SB(sb.value, 0, lineLength);
-				this.buffer.lines.lines.add(sb);
-				panel.lastline++;
-				logicalLine++;
-			} else if (sb.value[10] == 'p') {
-				// new panel definition
-				JeanineProperties props = JeanineProperties.parse(sb, 12);
-				id = nextInvalidId;
-				if (props.isValidInt['i']) {
-					id = Integer.valueOf(props.intValue['i']);
-					if (this.panels.containsKey(id)) {
-						errors.append(physicalLine + ": duplicate id").lf();
-						id = nextInvalidId;
-					}
-				} else {
-					errors.append(physicalLine + ": missing id in props").lf();
-				}
-				panel = new CodePanel(this, id, panel.lastline, panel.lastline);
-				this.panels.put(id, panel);
-				nextInvalidId = Integer.valueOf(nextInvalidId.intValue() + 1);
-				if (props.isValidInt['p']) {
-					parents.put(panel, Integer.valueOf(props.intValue['p']));
-				} else {
-					parents.put(panel, Integer.valueOf(0));
-					errors.append(physicalLine + ": no parent in props").lf();
-				}
-				if (props.isValidInt['x']) {
-					panel.location.x = props.intValue['x'];
-				}
-				if (props.isValidInt['y']) {
-					panel.location.y = props.intValue['y'];
-				}
-				if (props.isPresent['a'] && props.strValue['a'].length() == 1) {
-					switch (props.strValue['a'].charAt(0)) {
-					default: errors.append(physicalLine + ": bad anchor").lf();
-					case 't': panel.link = PanelLink.TOP; break;
-					case 'b': panel.link = PanelLink.BOTTOM; break;
-					case 'r': panel.link = PanelLink.INVALID_RIGHT; break;
-					}
-				} else {
-					panel.link = PanelLink.TOP;
-					errors.append(physicalLine + ": bad anchor").lf();
-				}
-			} else if (sb.value[10] == 's') {
-				// secondary link
-				JeanineProperties props = JeanineProperties.parse(sb, 12);
-				ScndryLink scnd = new ScndryLink();
-				scnd.parent = panel;
-				scnd.physicalLine = physicalLine;
-				// c: child id
-				if (props.isValidInt['i']) {
-					scnd.childId = Integer.valueOf(props.intValue['i']);
-					secondaryLinks.add(scnd);
-				} else {
-					errors.append(physicalLine + ": missing id in props").lf();
-				}
-				// a: anchor
-				if (props.isPresent['a'] && props.strValue['a'].length() == 1) {
-					switch (props.strValue['a'].charAt(0)) {
-					default: errors.append(physicalLine + ": bad anchor").lf();
-					case 't': scnd.link = PanelLink.TOP; break;
-					case 'b': scnd.link = PanelLink.BOTTOM; break;
-					case 'r':
-						scnd.link = PanelLink.createRightLink(physicalLine);
-						break;
-					}
-				} else {
-					scnd.link = PanelLink.TOP;
-					errors.append(physicalLine + ": bad anchor").lf();
-				}
-			} else {
-				errors.append("unk directive at line ").append(physicalLine);
-				errors.append(": ").append(sb).lf();
-			}
-		}
-		// apply right links that were found
-		for (Map.Entry<Integer, Integer> entry : rightLinks.entrySet()) {
-			Integer child = entry.getKey();
-			Integer line = entry.getValue();
-			panel = this.panels.get(child);
-			if (panel == null) {
-				errors.append("bad link to nonexisting panel " + child).lf();
-			} else {
-				if (PanelLink.getAnchor(panel.link) != 'r') {
-					errors.append("overriding non-right link for panel ");
-					errors.append(child.toString()).lf();
-				} else if (panel.link != PanelLink.INVALID_RIGHT) {
-					errors.append("overriding existing right link for panel ");
-					errors.append(child.toString()).lf();
-				}
-				panel.link = PanelLink.createRightLink(line.intValue());
-			}
-		}
-		int invalids = 0;
-		// reset invalid right links
-		for (CodePanel pnl : this.panels.values()) {
-			if (pnl.link == PanelLink.INVALID_RIGHT) {
-				errors.append(pnl.id + " has right anchor but no link");
-				errors.lf();
-				pnl.link = PanelLink.TOP;
-				pnl.location.x = ++invalids * 20;
-				pnl.location.y = -100;
-			}
-		}
-		// apply parent links
-		for (Map.Entry<CodePanel, Integer> parentLink : parents.entrySet()) {
-			CodePanel child = parentLink.getKey();
-			Integer parentId = parentLink.getValue();
-			child.parent = this.panels.get(parentId);
-			if (child.parent == null) {
-				errors.append("parent " + parentId + " not found for " + child.id);
-				errors.lf();
-				child.parent = this.root;
-				child.link = PanelLink.TOP;
-				child.location.x = ++invalids * 20;
-				child.location.y = -100;
-			}
-		}
-		// ensure no cyclic dependencies (only applies to primary links)
-		for (CodePanel pnl : this.panels.values()) {
-			HashSet<CodePanel> seen = new HashSet<>();
-			seen.add(pnl);
-			while (pnl != null) {
-				pnl = pnl.parent;
-				if (!seen.add(pnl)) {
-					errors.append("cyclic dependency for " + pnl.id);
-					errors.lf();
-					pnl.parent = this.root;
-					break;
-				}
-			}
-		}
-		// apply secondary links
-		for (ScndryLink s : secondaryLinks) {
-			CodePanel child = this.panels.get(s.childId);
-			if (child != null) {
-				s.parent.secondaryLinks.add(new SecondaryLink(child, s.link));
-			} else {
-				errors.append("can't find child for link at line ");
-				errors.append(s.physicalLine).append(", dropping").lf();
-			}
-		}
-		return errors;
 	}
 
 	public void setLocation(int x, int y)
