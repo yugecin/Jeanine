@@ -571,24 +571,28 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				);
 			}
 		} else if ("link".equals(parts[0])) {
-			Integer childId;
-			String position;
-			if (parts.length != 3 ||
-				(!"bot".equals(position = parts[1]) &&
-				!"right".equals(position) &&
-				!"top".equals(position)) ||
-				(childId = Util.parseInt(parts[2])) == null)
-			{
-				this.setError("syntax: :link <bot|right|top> <id>");
-			} else if (this.activeGroup == null) {
-				this.setError("can't rechild, no active group or panel");
-			} else {
-				this.activeGroup.reChild(childId, position);
+			CodePanel[] child = new CodePanel[1];
+			String[] position = new String[1];
+			if (this.doLinkCommandPrechecks(parts, child, position)) {
+				this.activeGroup.reChild(child[0], position[0]);
+			}
+		} else if ("slink".equals(parts[0])) {
+			CodePanel[] child = new CodePanel[1];
+			String[] position = new String[1];
+			if (this.doLinkCommandPrechecks(parts, child, position)) {
+				this.activeGroup.slink(child[0], position[0]);
+			}
+		} else if ("unlink".equals(parts[0])) {
+			CodePanel[] child = new CodePanel[1];
+			String[] position = new String[1];
+			if (this.doLinkCommandPrechecks(parts, child, position)) {
+				this.activeGroup.unlink(child[0], position[0]);
 			}
 		} else if ("raw".equals(parts[0])) {
 			if (this.activeGroup == null) {
 				this.setError("no active panel");
 			} else {
+				// TODO don't allow while in line selection mode (it gets offset)
 				this.activeGroup.toggleRaw();
 			}
 		} else if ("e".equals(parts[0])) {
@@ -675,6 +679,34 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 		} else {
 			this.setError("unknown command: " + parts[0]);
+		}
+	}
+
+	/**
+	 * Validates command parameters, activeGroup/activePanel and valid childId
+	 */
+	private boolean doLinkCommandPrechecks(
+		String[] cmdParts,
+		CodePanel[] outChild,
+		String[] outPosition)
+	{
+		Integer childId;
+		if (cmdParts.length != 3 ||
+			(!"bot".equals(outPosition[0] = cmdParts[1]) &&
+			!"right".equals(outPosition[0]) &&
+			!"top".equals(outPosition[0])) ||
+			(childId = Util.parseInt(cmdParts[2])) == null)
+		{
+			this.setError("syntax: :" + cmdParts[0] + " <bot|right|top> <id>");
+			return false;
+		} else if (this.activeGroup == null || this.activeGroup.activePanel == null) {
+			this.setError("can't " + cmdParts[0] + ", no active group or panel");
+			return false;
+		} else if ((outChild[0] = this.activeGroup.panels.get(childId)) == null) {
+			this.setError("can't " + cmdParts[0] + ", unknown child");
+			return false;
+		} else {
+			return true;
 		}
 	}
 
@@ -992,7 +1024,9 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		":bd - close the active editing group\n" +
 		":bp/:bn - go to previous/next editing group\n" +
 		":spl - split current view based on the visual line selection (ctrl-v)\n" +
-		":link <bot|right|top> <id> - link a child" +
+		":link <bot|right|top> <id> - link a child\n" +
+		":slink <bot|right|top> <id> - like :link but as a secondary link\n" +
+		":unlink <bot|right|top> <id> - like :slink but removes a secondary link\n" +
 		":raw - toggle between raw and 2d mode\n" +
 		":<number> - jump to a line number\n" +
 		":font - change the font\n" +

@@ -13,6 +13,7 @@ public class GroupToRawConverter implements Iterator<SB>
 	private int nextLine;
 	private SB next;
 	private int carety;
+	private CodePanel secondaryLinksPrintedFor;
 
 	public int newCarety;
 
@@ -31,8 +32,33 @@ public class GroupToRawConverter implements Iterator<SB>
 	@Override
 	public boolean hasNext()
 	{
-		if (this.next == null && this.nextLine < this.lines.size()) {
-			if (currentPanel.lastline <= this.nextLine) {
+		if (this.next == null) {
+			if (this.currentPanel.lastline <= this.nextLine) {
+				if (this.secondaryLinksPrintedFor != this.currentPanel) {
+					for (int i = 0; i < this.currentPanel.secondaryLinks.size();
+						i++)
+					{
+						SecondaryLink slink;
+						slink = this.currentPanel.secondaryLinks.get(i);
+						char anchor = PanelLink.getAnchor(slink.link);
+						// right links are put on their line, not at the end
+						if (anchor != 'r') {
+							this.next = new SB(100);
+							this.next.append("/*jeanine:s:a:");
+							this.next.append(anchor);
+							this.next.append(";i:");
+							this.next.append(slink.child.id.intValue());
+							this.next.append(";*/");
+							// stopping after one for now..
+							// TODO: this may need to serialize multiple
+							this.secondaryLinksPrintedFor = this.currentPanel;
+							return true;
+						}
+					}
+				}
+				if (this.nextLine >= this.lines.size()) {
+					return false;
+				}
 				for (CodePanel panel : panels.values()) {
 					if (panel.firstline == this.nextLine) {
 						currentPanel = panel;
@@ -70,7 +96,7 @@ public class GroupToRawConverter implements Iterator<SB>
 					PanelLink.getLine(panel.link) == this.nextLine)
 				{
 					if (!hasLink) {
-						this.next = new SB(this.next);
+						this.next = new SB(this.next, 100);
 						this.next.append("/*jeanine:l:");
 						hasLink = true;
 					} else {
@@ -81,6 +107,19 @@ public class GroupToRawConverter implements Iterator<SB>
 			}
 			if (hasLink) {
 				this.next.append("*/");
+			}
+			// TODO: this may serialize multiple, but deserializing only supports one
+			for (int i = 0; i < this.currentPanel.secondaryLinks.size(); i++) {
+				SecondaryLink slink;
+				slink = this.currentPanel.secondaryLinks.get(i);
+				if (PanelLink.getAnchor(slink.link) == 'r' &&
+					PanelLink.getLine(slink.link) == this.nextLine)
+				{
+					this.next = new SB(this.next, 100);
+					this.next.append("/*jeanine:s:a:r;i:");
+					this.next.append(slink.child.id.intValue());
+					this.next.append(";*/");
+				}
 			}
 			this.nextLine++;
 		}
@@ -94,5 +133,4 @@ public class GroupToRawConverter implements Iterator<SB>
 		this.next = null;
 		return next;
 	}
-
 }

@@ -8,6 +8,7 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -34,6 +35,13 @@ implements MouseListener, MouseMotionListener
 	public boolean needRepaint;
 	public CodePanel parent;
 	public int link;
+	/**
+	 * Outgoing links, unlike the {@link #parent}/{@link #link} incoming link.
+	 *
+	 * {@link #parent} and {@link #link} describe to which panel this panel is linked to,
+	 * whereas {@link #secondaryLinks} describes what panels are linked to this panel.
+	 */
+	public ArrayList<SecondaryLink> secondaryLinks;
 	public Point location;
 
 	private int maxLineLength;
@@ -50,6 +58,7 @@ implements MouseListener, MouseMotionListener
 		this.buffer = group.buffer;
 		this.firstline = linefrom;
 		this.lastline = lineto;
+		this.secondaryLinks = new ArrayList<>();
 		this.location = new Point();
 		this.setFocusable(false);
 		this.addMouseListener(this);

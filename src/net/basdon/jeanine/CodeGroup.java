@@ -122,19 +122,82 @@ public class CodeGroup
 
 	private SB interpretSource(Iterator<SB> lines)
 	{
+		// TODO: show the errors if not empty
 		SB errors = new SB();
 		Integer id = Integer.valueOf(0);
 		Integer nextInvalidId = Integer.valueOf(9000);
 		int physicalLine = 0;
-		int parsedLine = 0;
+		int logicalLine = 0;
+		// key:child, value:parentId
 		HashMap<CodePanel, Integer> parents = new HashMap<>();
+		// key:childId, value:lineNr
 		HashMap<Integer, Integer> rightLinks = new HashMap<>();
+		class ScndryLink
+		{
+			CodePanel parent;
+			Integer childId;
+			int link;
+			int physicalLine; /*for error reporting usage only*/
+		}
+		ArrayList<ScndryLink> secondaryLinks = new ArrayList<>();
 		CodePanel panel = this.root = new CodePanel(this, id, 0, 0);
 		this.panels.put(id, this.root);
 		while (lines.hasNext()) {
 			physicalLine++;
 			SB sb = lines.next();
-			if (sb.startsWith("/*jeanine:p:")) {
+			if (!sb.startsWith("/*jeanine:") || sb.length < 12) {
+				int lineLength = sb.length, idx;
+				// TODO goes wrong when there's both primary and secondary links
+				// TODO even goes wrong when there's multiple secondary links
+				if (sb.endsWith("*/") &&
+					(idx = sb.lastIndexOf("/*jeanine:")) != -1 &&
+					idx < sb.length - 12 &&
+					sb.value[idx + 11] == ':')
+				{
+					if (sb.value[idx + 10] == 'l') {
+						// normal right link
+						Integer line = Integer.valueOf(logicalLine);
+						int from = idx + 12, len = sb.length - 2 - from;
+						String links = new String(sb.value, from, len);
+						for (String link : links.split(",")) {
+							int child;
+							try {
+								child = Integer.parseInt(link);
+							} catch (Exception e) {
+								errors.append(physicalLine + ":");
+								errors.append(" bad link id").lf();
+								continue;
+							}
+							Integer Child = Integer.valueOf(child);
+							rightLinks.put(Child, line);
+						}
+					} else if (sb.value[idx + 10] == 's') {
+						// secondary right link
+						JeanineProperties props;
+						props = JeanineProperties.parse(sb, idx + 12);
+						ScndryLink scnd = new ScndryLink();
+						scnd.parent = panel;
+						scnd.physicalLine = physicalLine;
+						// this can only be right link, because not in the beginning of a line
+						scnd.link = PanelLink.createRightLink(logicalLine);
+						// i: child id
+						if (props.isValidInt['i']) {
+							scnd.childId = Integer.valueOf(props.intValue['i']);
+							secondaryLinks.add(scnd);
+						} else {
+							errors.append(physicalLine + ": missing id in props").lf();
+						}
+					} else {
+						errors.append(physicalLine + ": unk directive");
+					}
+					lineLength = idx;
+				}
+				sb = new SB(sb.value, 0, lineLength);
+				this.buffer.lines.lines.add(sb);
+				panel.lastline++;
+				logicalLine++;
+			} else if (sb.value[10] == 'p') {
+				// new panel definition
 				JeanineProperties props = JeanineProperties.parse(sb, 12);
 				id = nextInvalidId;
 				if (props.isValidInt['i']) {
@@ -170,34 +233,38 @@ public class CodeGroup
 					}
 				} else {
 					panel.link = PanelLink.TOP;
+					errors.append(physicalLine + ": bad anchor").lf();
+				}
+			} else if (sb.value[10] == 's') {
+				// secondary link
+				JeanineProperties props = JeanineProperties.parse(sb, 12);
+				ScndryLink scnd = new ScndryLink();
+				scnd.parent = panel;
+				scnd.physicalLine = physicalLine;
+				// c: child id
+				if (props.isValidInt['i']) {
+					scnd.childId = Integer.valueOf(props.intValue['i']);
+					secondaryLinks.add(scnd);
+				} else {
+					errors.append(physicalLine + ": missing id in props").lf();
+				}
+				// a: anchor
+				if (props.isPresent['a'] && props.strValue['a'].length() == 1) {
+					switch (props.strValue['a'].charAt(0)) {
+					default: errors.append(physicalLine + ": bad anchor").lf();
+					case 't': scnd.link = PanelLink.TOP; break;
+					case 'b': scnd.link = PanelLink.BOTTOM; break;
+					case 'r':
+						scnd.link = PanelLink.createRightLink(physicalLine);
+						break;
+					}
+				} else {
+					scnd.link = PanelLink.TOP;
+					errors.append(physicalLine + ": bad anchor").lf();
 				}
 			} else {
-				int lineLength = sb.length;
-				if (sb.endsWith("*/")) {
-					int idx = sb.lastIndexOf("/*jeanine:l:");
-					if (idx != -1) {
-						Integer line = Integer.valueOf(parsedLine);
-						int from = idx + 12, len = sb.length - 2 - from;
-						String links = new String(sb.value, from, len);
-						for (String link : links.split(",")) {
-							int child;
-							try {
-								child = Integer.parseInt(link);
-							} catch (Exception e) {
-								errors.append(physicalLine + ":");
-								errors.append(" bad link id").lf();
-								continue;
-							}
-							Integer Child = Integer.valueOf(child);
-							rightLinks.put(Child, line);
-						}
-						lineLength = idx;
-					}
-				}
-				sb = new SB(sb.value, 0, lineLength);
-				this.buffer.lines.lines.add(sb);
-				panel.lastline++;
-				parsedLine++;
+				errors.append("unk directive at line ").append(physicalLine);
+				errors.append(": ").append(sb).lf();
 			}
 		}
 		// apply right links that were found
@@ -243,7 +310,7 @@ public class CodeGroup
 				child.location.y = -100;
 			}
 		}
-		// ensure no cyclic dependencies
+		// ensure no cyclic dependencies (only applies to primary links)
 		for (CodePanel pnl : this.panels.values()) {
 			HashSet<CodePanel> seen = new HashSet<>();
 			seen.add(pnl);
@@ -255,6 +322,16 @@ public class CodeGroup
 					pnl.parent = this.root;
 					break;
 				}
+			}
+		}
+		// apply secondary links
+		for (ScndryLink s : secondaryLinks) {
+			CodePanel child = this.panels.get(s.childId);
+			if (child != null) {
+				s.parent.secondaryLinks.add(new SecondaryLink(child, s.link));
+			} else {
+				errors.append("can't find child for link at line ");
+				errors.append(s.physicalLine).append(", dropping").lf();
 			}
 		}
 		return errors;
@@ -418,11 +495,28 @@ public class CodeGroup
 				pnl.parent = newBotPanel;
 			}
 		}
+		for (Iterator<SecondaryLink> iter = a.secondaryLinks.iterator(); iter.hasNext();) {
+			SecondaryLink slink = iter.next();
+			if (slink.link == PanelLink.BOTTOM) {
+				newBotPanel.secondaryLinks.add(slink);
+				iter.remove();
+			}
+		}
 
 		// Patch panels that were right linked but their parent changed and need update.
 		for (CodePanel pnl : this.panels.values()) {
 			if (pnl.parent == a && PanelLink.getAnchor(pnl.link) == 'r') {
 				pnl.parent = this.panelAtLine(PanelLink.getLine(pnl.link));
+			}
+		}
+		for (Iterator<SecondaryLink> iter = a.secondaryLinks.iterator(); iter.hasNext();) {
+			SecondaryLink slink = iter.next();
+			if (PanelLink.getAnchor(slink.link) == 'r') {
+				CodePanel np = this.panelAtLine(PanelLink.getLine(slink.link));
+				if (np != a) {
+					np.secondaryLinks.add(slink);
+					iter.remove();
+				}
 			}
 		}
 
@@ -529,7 +623,6 @@ public class CodeGroup
 	public void dispatchInputEvent(KeyInput event, CodePanel to)
 	{
 		to.handleInput(event);
-		// TODO: deal with panels that are empty now
 		CodePanel newActivePanel = null;
 		boolean needRepaintConnections = false;
 		Iterator<CodePanel> iter = this.panels.values().iterator();
@@ -576,6 +669,12 @@ public class CodeGroup
 			if (child.parent == parent) {
 				child.parent = newParent;
 			}
+			Iterator<SecondaryLink> slinks = child.secondaryLinks.iterator();
+			while (slinks.hasNext()) {
+				if (slinks.next().child == parent) {
+					slinks.remove();
+				}
+			}
 		}
 		this.position(newParent);
 	}
@@ -605,6 +704,15 @@ public class CodeGroup
 					panel.requireValidation = true;
 				}
 			}
+			for (int i = 0; i < panel.secondaryLinks.size(); i++) {
+				SecondaryLink slink = panel.secondaryLinks.get(i);
+				if (PanelLink.getAnchor(slink.link) == 'r') {
+					int line = PanelLink.getLine(slink.link);
+					if (line >= idx && line < slink.child.lastline) {
+						slink.link = PanelLink.createRightLink(line + 1);
+					}
+				}
+			}
 		}
 	}
 
@@ -628,6 +736,17 @@ public class CodeGroup
 				} else if (line > idx && line < panel.parent.lastline) {
 					panel.link = PanelLink.createRightLink(line - 1);
 					panel.requireValidation = true;
+				}
+			}
+			for (int i = 0; i < panel.secondaryLinks.size(); i++) {
+				SecondaryLink slink = panel.secondaryLinks.get(i);
+				if (PanelLink.getAnchor(slink.link) == 'r') {
+					int line = PanelLink.getLine(slink.link);
+					if (line == idx) {
+						slink.link = PanelLink.TOP;
+					} else if (line > idx && line < slink.child.lastline) {
+						slink.link = PanelLink.createRightLink(line - 1);
+					}
 				}
 			}
 		}
@@ -663,17 +782,8 @@ public class CodeGroup
 		this.position(this.root);
 	}
 
-	public void reChild(Integer childId, String position)
+	public void reChild(CodePanel child, String position)
 	{
-		if (this.activePanel == null) {
-			this.jf.setError("can't rechild, no active panel");
-			return;
-		}
-		CodePanel child = this.panels.get(childId);
-		if (child == null) {
-			this.jf.setError("can't rechild, unknown child");
-			return;
-		}
 		if (child == this.activePanel || child.isEventualParentOf(this.activePanel)) {
 			this.jf.setError("can't rechild, cyclic dependency");
 			return;
@@ -697,6 +807,43 @@ public class CodeGroup
 			break;
 		}
 		this.position(child);
+	}
+
+	public void slink(CodePanel child, String position)
+	{
+		// skip cyclic dependency checks for secondary links
+		int link;
+		switch (position) {
+		default: link = PanelLink.BOTTOM; break;
+		case "right": link = PanelLink.createRightLink(this.buffer.carety); break;
+		case "top": link = PanelLink.TOP; break;
+		}
+		for (SecondaryLink slink : this.activePanel.secondaryLinks) {
+			if (slink.child == child && slink.link == link) {
+				// an identical link already exists, return without error
+				return;
+			}
+		}
+		this.activePanel.secondaryLinks.add(new SecondaryLink(child, link));
+	}
+
+	public void unlink(CodePanel child, String position)
+	{
+		int link;
+		switch (position) {
+		default: link = PanelLink.BOTTOM; break;
+		case "right": link = PanelLink.createRightLink(this.buffer.carety); break;
+		case "top": link = PanelLink.TOP; break;
+		}
+		Iterator<SecondaryLink> iter = this.activePanel.secondaryLinks.iterator();
+		while (iter.hasNext()) {
+			SecondaryLink slink = iter.next();
+			if (slink.child == child && slink.link == link) {
+				iter.remove();
+				return;
+			}
+		}
+		this.jf.setError("can't unlink, specified link doesn't exist");
 	}
 
 	public void doUndo(Undo undo)

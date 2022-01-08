@@ -18,7 +18,12 @@ public class SB implements CharSequence
 
 	public SB(SB sb)
 	{
-		this(sb.value, 0, sb.length);
+		this(sb.value, 0, sb.length, 16);
+	}
+
+	public SB(SB sb, int padding)
+	{
+		this(sb.value, 0, sb.length, padding);
 	}
 
 	public SB(String value)
@@ -35,8 +40,13 @@ public class SB implements CharSequence
 
 	public SB(char[] value, int start, int to)
 	{
+		this(value, start, to, 16);
+	}
+
+	public SB(char[] value, int start, int to, int padding)
+	{
 		int len = to - start;
-		this.value = new char[len + 16];
+		this.value = new char[len + padding];
 		this.append(value, start, to);
 	}
 
