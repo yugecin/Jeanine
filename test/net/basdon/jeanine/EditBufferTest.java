@@ -2710,6 +2710,98 @@ public class EditBufferTest
 				"           d"
 			);
 		}
+
+		@Test
+		public void change()
+		{
+			createBuffer(
+				"<caret>a",
+				"b",
+				"c",
+				"d",
+				"e"
+			).executeSuccess(
+				"Vjjchi\nhi2<esc>"
+			).assertBuffer(
+				"hi",
+				"hi<caret>2",
+				"d",
+				"e"
+			).executeSuccess(
+				"."
+			).assertBuffer(
+				"hi",
+				"hi",
+				"hi<caret>2"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"<caret>a",
+				"b",
+				"c",
+				"d",
+				"e"
+			);
+		}
+
+		/**
+		 * Horizontal caret position shouldn't matter.
+		 */
+		@Test
+		public void change_lll()
+		{
+			createBuffer(
+				"<caret>the"
+			).executeSuccess(
+				"Vllchi<esc>"
+			).assertBuffer(
+				"h<caret>i"
+			);
+		}
+
+		@Test
+		public void change_all_one()
+		{
+			createBuffer(
+				"<caret>the"
+			).executeSuccess(
+				"Vchi\nhi2<esc>"
+			).assertBuffer(
+				"hi",
+				"hi<caret>2"
+			).executeSuccess(
+				"."
+			).assertBuffer(
+				"hi",
+				"hi",
+				"hi<caret>2"
+			).executeSuccess(
+				"uu"
+			).assertBuffer(
+				"<caret>the"
+			);
+		}
+
+		@Test
+		public void change_all_three()
+		{
+			createBuffer(
+				"<caret>the",
+				"two",
+				"three"
+			).executeSuccess(
+				"Vjjchi\nhi2<esc>"
+			).assertBuffer(
+				"hi",
+				"hi<caret>2"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>the",
+				"two",
+				"three"
+			);
+		}
 	}
 
 	public static class Repeat

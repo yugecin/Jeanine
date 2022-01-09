@@ -1093,10 +1093,19 @@ public class EditBuffer
 			this.caretx = this.virtualCaretx = 0;
 			e.needRepaintCaret = true;
 			return;
+		case 'c':
 		case 'd':
 			this.writingUndo = this.newUndo(0, this.lineselectinitial);
 			int from = this.lineselectfrom;
-			for (int i = this.lineselectfrom; i < this.lineselectto; i++) {
+			for (int i = this.lineselectfrom; i < this.lineselectto - 1; i++) {
+				SB line = this.lines.remove(from);
+				this.writingUndo.replacement.append(line).append('\n');
+			}
+			if (e.c == 'c') {
+				SB line = this.lines.get(from);
+				this.writingUndo.replacement.append(line);
+				line.length = 0;
+			} else {
 				SB line = this.lines.remove(from);
 				this.writingUndo.replacement.append(line).append('\n');
 			}
@@ -1116,8 +1125,12 @@ public class EditBuffer
 				this.carety = from;
 			}
 			this.writingUndo.fromy = this.writingUndo.toy = this.carety;
-			this.addCurrentWritingUndo();
-			this.mode = NORMAL_MODE;
+			if (e.c == 'c') {
+				this.mode = INSERT_MODE;
+			} else {
+				this.addCurrentWritingUndo();
+				this.mode = NORMAL_MODE;
+			}
 			e.needRepaint = true;
 			e.needRepaintCaret = true;
 			e.needCheckLineLength = true;
