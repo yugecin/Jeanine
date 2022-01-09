@@ -339,8 +339,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	{
 	}
 
-	@Override
 	/*MouseListener*/
+	@Override
 	public void mouseClicked(MouseEvent e)
 	{
 	}
@@ -1033,5 +1033,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		":<number> - jump to a line number\n" +
 		":font - change the font\n" +
 		":prefs - change preferences\n" +
+		"\n" +
+		"Some dialogs have lines that can be interacted with by\n" +
+		"pressing ENTER or double clicking\n" +
 		"";
 }

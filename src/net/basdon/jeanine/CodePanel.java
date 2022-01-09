@@ -272,6 +272,16 @@ implements MouseListener, MouseMotionListener
 	@Override
 	public void mouseClicked(MouseEvent e)
 	{
+		if (!this.jf.shouldBlockInput() &&
+			e.getClickCount() == 2 &&
+			this.jf.lineSelectionListener != null)
+		{
+			int line = this.getLocalLineAtY(e.getY());
+			if (-1 < line && line < this.lastline - this.firstline) {
+				line += this.firstline;
+				this.jf.lineSelectionListener.accept(this.buffer.lines.get(line));
+			}
+		}
 	}
 
 	/*MouseListener*/
@@ -363,17 +373,7 @@ implements MouseListener, MouseMotionListener
 			/*border left*/ 1 +
 			/*content padding left*/ 1;
 		x /= this.j.fx;
-		y -=
-			/*border top*/ 1 +
-			/*title padding up/down*/ 2 +
-			/*title*/ this.j.fy +
-			/*content padding up*/ 1;
-		y /= this.j.fy;
-		y = Math.min(y, this.lastline - this.firstline - 1);
-		y += this.firstline;
-		if (y < this.firstline) {
-			y = this.firstline;
-		}
+		y = this.getLineAtY(y);
 		SB line = this.buffer.lines.get(y);
 		int len = Line.visualLength(line);
 		x = Math.min(x, len - 1);
@@ -387,6 +387,32 @@ implements MouseListener, MouseMotionListener
 			this.buffer.virtualCaretx = x;
 			this.repaint(); // TODO: should only really repaint caret
 		}
+	}
+
+	/**
+	 * @param y relative to this component
+	 * @return local line not adjusted with {@link #firstline} yet
+	 */
+	private int getLocalLineAtY(int y)
+	{
+		y -=
+			/*border top*/ 1 +
+			/*title padding up/down*/ 2 +
+			/*title*/ this.j.fy +
+			/*content padding up*/ 1;
+		y /= this.j.fy;
+		return y;
+	}
+
+	private int getLineAtY(int y)
+	{
+		y = this.getLocalLineAtY(y);
+		y += this.firstline;
+		y = Math.min(y, this.lastline - 1);
+		if (y < this.firstline) {
+			y = this.firstline;
+		}
+		return y;
 	}
 
 	public void ensureCodeViewSize()
