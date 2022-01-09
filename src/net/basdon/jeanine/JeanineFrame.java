@@ -254,6 +254,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			if (buffer == null) {
 				return;
 			}
+			// TODO check secondary links
 			if (buffer.mode == EditBuffer.NORMAL_MODE) {
 				for (CodePanel panel : this.activeGroup.panels.values()) {
 					if (panel.parent == this.activeGroup.activePanel &&
@@ -276,6 +277,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			if (buffer == null) {
 				return;
 			}
+			// TODO check secondary links
 			if (buffer.mode == EditBuffer.NORMAL_MODE) {
 				CodePanel panel = this.activeGroup.activePanel;
 				if (panel != null && panel.parent != null &&

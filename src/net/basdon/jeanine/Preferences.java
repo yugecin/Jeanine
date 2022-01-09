@@ -54,7 +54,7 @@ public class Preferences
 			filepath = System.getProperty(FILENAME_PROPERTY);
 		}
 		if (filepath != null) {
-		file = new File(filepath);
+			file = new File(filepath);
 			try {
 				if (file.exists() && Files.size(file.toPath()) > 0) {
 					List<String> lns = Files.readAllLines(file.toPath());
