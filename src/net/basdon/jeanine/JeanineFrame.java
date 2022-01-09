@@ -3,7 +3,6 @@ package net.basdon.jeanine;
 import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -24,10 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
@@ -40,7 +37,6 @@ public class JeanineFrame
 extends JFrame
 implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, ActionListener
 {
-	private final Consumer<SB> fontLineSelectionListener;
 	private final Timer timer;
 	private final CodeGroup welcomeCodeGroup;
 
@@ -52,10 +48,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public List<CodeGroup> codegroups, lastCodegroups;
 	public CodeGroup activeGroup, lastActiveGroup;
 	public Point location, lastLocation;
-	public Consumer<SB> lineSelectionListener;
+	public LineSelectionListener lineSelectionListener;
 	public Runnable postStateLeaveListener;
-
-	public Point cursorPosBeforeChangingFont;
 
 	public char[] liveSearchText;
 	public long searchHighlightTimeout;
@@ -70,7 +64,6 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public JeanineFrame(Jeanine j)
 	{
 		this.j = j;
-		this.fontLineSelectionListener = new FontSelectionLineConsumer(j, this);
 		this.pushedStates = new ArrayDeque<>();
 		this.dragStart = new Point();
 		this.location = new Point();
@@ -217,7 +210,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		case '\n':
 		case '\r':
 			if (buffer != null && this.lineSelectionListener != null) {
-				this.lineSelectionListener.accept(buffer.lines.get(buffer.carety));
+				SB line = buffer.lines.get(buffer.carety);
+				this.lineSelectionListener.lineSelected(line);
 				return;
 			}
 			break;
@@ -540,38 +534,9 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.activeGroup.split();
 			}
 		} else if ("font".equals(parts[0])) {
-			this.startSelectingFont();
+			new DialogFontSelection(this);
 		} else if ("prefs".equals(parts[0])) {
-			CodeGroup instr = new CodeGroup(this);
-			instr.title = "Information";
-			instr.setContents(Preferences.instructionlines.iterator(), false);
-			instr.setLocation(80, 30);
-			instr.buffer.readonly = true;
-			CodeGroup group = new CodeGroup(this);
-			group.title = "Preferences";
-			group.setContents(Preferences.lines.iterator(), true);
-			Preferences.lines = group.buffer.lines.lines;
-			group.activePanel = group.panelAtLine(group.buffer.carety);
-			int y = instr.location.y + (instr.buffer.lines.size() + 4) * this.j.fy;
-			group.setLocation(80, y);
-			Consumer<SB> listener;
-			listener = new Preferences.LineSelectionListener(this, instr, group);
-			Runnable leaveListener = () -> {
-				Preferences.interpretAndApply(this);
-				Preferences.save();
-			};
-			this.pushState(Arrays.asList(group, instr), group, listener, leaveListener);
-			if (Preferences.file == null) {
-				this.showDialog(
-					"Warning",
-					"Set either an environment variable or",
-					"jvm arg with name " + Preferences.FILENAME_PROPERTY,
-					"",
-					"Preferences will not persist unless this is set.",
-					"",
-					"Press enter to continue."
-				);
-			}
+			new DialogPreferences(this);
 		} else if ("link".equals(parts[0])) {
 			CodePanel[] child = new CodePanel[1];
 			String[] position = new String[1];
@@ -746,64 +711,33 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 	}
 
-	private void startSelectingFont()
+	public void pushState(JeanineState state)
 	{
-		this.cursorPosBeforeChangingFont = this.findCursorPosition();
-		ArrayList<String> lines = new ArrayList<>();
-		lines.add("c Welcome to font selection.");
-		lines.add("c Put the caret on a setting and press enter.");
-		lines.add("c Exit by pressing ESC.");
-		lines.add("/*jeanine:p:i:2;p:0;x:0;y:20;a:b*/");
-		lines.add("c Font size:");
-		lines.add("s 6");
-		lines.add("s 7");
-		lines.add("s 8");
-		lines.add("s 9");
-		lines.add("s 10");
-		lines.add("s 11");
-		lines.add("s 12");
-		lines.add("s 13");
-		lines.add("s 14");
-		lines.add("s 15");
-		lines.add("s 16");
-		lines.add("s 17");
-		lines.add("s 18");
-		lines.add("s 19");
-		lines.add("s 20");
-		lines.add("/*jeanine:p:i:3;p:2;x:0;y:20;a:b*/");
-		lines.add("c Font style:");
-		lines.add("b bold");
-		lines.add("p plain");
-		lines.add("/*jeanine:p:i:1;p:0;x:20;y:0;a:t*/");
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		String[] fonts = ge.getAvailableFontFamilyNames();
-		for (String font : fonts) {
-			lines.add("f " + font);
-		}
-		CodeGroup group = new CodeGroup(this);
-		group.title = "Font selection";
-		group.buffer.readonly = true;
-		group.setContents(new Util.String2SBIter(lines.iterator()), true);
-		group.buffer.carety = 22;
-		group.activePanel = group.panelAtLine(group.buffer.carety);
-		group.setLocation(0, 30);
-		List<CodeGroup> codegroups = Collections.singletonList(group);
-		Runnable leaveListener = () -> {
-			Point oldcursorpos = this.cursorPosBeforeChangingFont;
-			for (CodeGroup grp : this.codegroups) {
-				grp.fontChanged();
+		JeanineState oldState = new JeanineState();
+		oldState.activeGroup = this.activeGroup;
+		oldState.codegroups = this.codegroups;
+		oldState.location = new Point(this.location);
+		oldState.lineSelectionListener = this.lineSelectionListener;
+		oldState.postStateLeaveListener = this.postStateLeaveListener;
+		this.pushedStates.push(oldState);
+		this.activeGroup = state.activeGroup;
+		this.codegroups = state.codegroups;
+		this.lineSelectionListener = state.lineSelectionListener;
+		this.postStateLeaveListener = state.postStateLeaveListener;
+		this.getContentPane().removeAll();
+		for (CodeGroup group : this.codegroups) {
+			for (CodePanel panel : group.panels.values()) {
+				this.getContentPane().add(panel);
 			}
-			this.moveToGetCursorAtPosition(oldcursorpos);
-			Preferences.updateAfterChangingFont();
-			Preferences.save();
-		};
-		this.pushState(codegroups, group, this.fontLineSelectionListener, leaveListener);
+		}
+		this.ensureCaretInView();
+		this.repaint();
 	}
 
-	private void pushState(
+	public void pushState(
 		List<CodeGroup> codegroups,
 		CodeGroup activeGroup,
-		Consumer<SB> lineSelectionListener,
+		LineSelectionListener lineSelectionListener,
 		Runnable postStateLeaveListener)
 	{
 		JeanineState state = new JeanineState();
@@ -827,7 +761,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.repaint();
 	}
 
-	private void popState()
+	public void popState()
 	{
 		JeanineState state = this.pushedStates.pop();
 		this.codegroups = state.codegroups;
@@ -842,16 +776,6 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 		}
 		this.repaint();
-	}
-
-	private void showDialog(String title, String...contents)
-	{
-		CodeGroup group = new CodeGroup(this);
-		group.title = title;
-		group.buffer.readonly = true;
-		group.setContents(new Util.StringArray2SBIter(contents), true);
-		Consumer<SB> listener = line -> this.popState();
-		this.pushState(Collections.singletonList(group), group, listener, null);
 	}
 
 	public Point findCursorPosition()

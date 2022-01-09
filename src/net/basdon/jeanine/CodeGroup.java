@@ -113,14 +113,19 @@ public class CodeGroup
 		}
 
 		this.activePanel = this.root;
-		for (CodePanel pnl : this.panels.values()) {
-			pnl.recheckMaxLineLength();
-			pnl.ensureCodeViewSize(); // TODO: this should not repaint stuff etc
-		}
-		this.position(this.root);
+		this.revalidateSizesAndReposition();
 		for (CodePanel pnl : this.panels.values()) {
 			this.jf.getContentPane().add(pnl);
 		}
+	}
+
+	public void revalidateSizesAndReposition()
+	{
+		for (CodePanel pnl : this.panels.values()) {
+			pnl.recheckMaxLineLength();
+			pnl.ensureCodeViewSize();
+		}
+		this.position(this.root);
 	}
 
 	public void setLocation(int x, int y)

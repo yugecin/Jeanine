@@ -102,20 +102,20 @@ public class Preferences
 		lines.add(new SB(HSCROLL_NAME + " " + hscrollPercentage));
 		lines.add(new SB(SEARCH_HL_NAME + " " + searchHighlightTime));
 		lines.add(new SB());
-		appendColorScheme(lines);
+		appendColorScheme(lines::add);
 	}
 
-	private static void appendColorScheme(List<SB> lines)
+	public static void appendColorScheme(Consumer<SB> accepter)
 	{
 		if (Colors.bg.col == null) {
-			lines.add(new SB(Colors.bg.name + " gradient"));
+			accepter.accept(new SB(Colors.bg.name + " gradient"));
 		}
 		for (Colors c : Colors.ALL) {
 			if (c.col != null) {
 				int col = (c.col.getRed() << 16) |
 					(c.col.getGreen() << 8) |
 					(c.col.getBlue());
-				lines.add(new SB(c.name + " " + String.format("%06X", col)));
+				accepter.accept(new SB(c.name + " " + String.format("%06X", col)));
 			}
 		}
 	}
@@ -258,46 +258,5 @@ public class Preferences
 			}
 		} catch (Exception e) {}
 		return def;
-	}
-
-	public static class LineSelectionListener implements Consumer<SB>
-	{
-		private final CodeGroup instr, group;
-		private final JeanineFrame jf;
-
-		public LineSelectionListener(JeanineFrame jf, CodeGroup instr, CodeGroup group)
-		{
-			this.jf = jf;
-			this.instr = instr;
-			this.group = group;
-		}
-
-		@Override
-		public void accept(SB line)
-		{
-			if (this.jf.activeGroup == this.instr) {
-				if (line.equals("light")) {
-					lines.add(new SB());
-					lines.add(new SB("/*light (default) colorscheme*/"));
-					Colors.reset();
-				} else if (line.equals("blue")) {
-					lines.add(new SB());
-					lines.add(new SB("/*blue colorscheme*/"));
-					Colors.blue();
-				} else {
-					return;
-				}
-				appendColorScheme(lines);
-				group.setContents(new ArrayList<>(lines).iterator(), true);
-				Preferences.lines = group.buffer.lines.lines;
-				this.jf.activeGroup = group;
-				group.buffer.carety = group.buffer.lines.size() - 1;
-				group.buffer.caretx = 0;
-				interpretAndApply(this.jf);
-				this.jf.ensureCaretInView();
-			} else {
-				interpretAndApply(this.jf);
-			}
-		}
 	}
 }

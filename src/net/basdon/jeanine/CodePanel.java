@@ -279,7 +279,8 @@ implements MouseListener, MouseMotionListener
 			int line = this.getLocalLineAtY(e.getY());
 			if (-1 < line && line < this.lastline - this.firstline) {
 				line += this.firstline;
-				this.jf.lineSelectionListener.accept(this.buffer.lines.get(line));
+				SB sb = this.buffer.lines.get(line);
+				this.jf.lineSelectionListener.lineSelected(sb);
 			}
 		}
 	}
