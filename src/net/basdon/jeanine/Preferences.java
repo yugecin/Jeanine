@@ -34,6 +34,8 @@ public class Preferences
 		instructionlines.add(new SB("light"));
 		instructionlines.add(new SB("blue"));
 		instructionlines.add(new SB());
+		instructionlines.add(new SB("Append current font settings"));
+		instructionlines.add(new SB());
 		instructionlines.add(new SB("Press ENTER to apply the settings"));
 	}
 
@@ -120,50 +122,6 @@ public class Preferences
 		}
 	}
 
-	public static void updateAfterChangingFont()
-	{
-		boolean haveFontFamily = false;
-		boolean haveFontSize = false;
-		boolean haveFontFlags = false;
-		for (int i = lines.size(); i > 0; ) {
-			SB line = lines.get(--i);
-			if (!haveFontFamily && line.startsWith("font.family ")) {
-				haveFontFamily = true;
-				line.length = 12;
-				line.append(j.fontFamily);
-			} else if (!haveFontSize && line.startsWith("font.size ")) {
-				haveFontSize = true;
-				line.length = 10;
-				line.append(j.fontSize);
-			} else if (!haveFontFlags && line.startsWith("font.flags ")) {
-				haveFontSize = true;
-				line.length = 10;
-				if ((j.fontFlags & Font.BOLD) != 0) {
-					line.append(" BOLD");
-				}
-				if ((j.fontFlags & Font.ITALIC) != 0) {
-					line.append(" ITALIC");
-				}
-			}
-		}
-		if (!haveFontFamily) {
-			lines.add(new SB("font.family " + j.fontFamily));
-		}
-		if (!haveFontSize) {
-			lines.add(new SB("font.size " + j.fontSize));
-		}
-		if (!haveFontFlags) {
-			SB sb = new SB("font.flags");
-			if ((j.fontFlags & Font.BOLD) != 0) {
-				sb.append(" BOLD");
-			}
-			if ((j.fontFlags & Font.ITALIC) != 0) {
-				sb.append(" ITALIC");
-			}
-			lines.add(sb);
-		}
-	}
-
 	public static void save()
 	{
 		if (file != null) {
@@ -197,6 +155,14 @@ public class Preferences
 			}
 			int spaceIdx = line.indexOf(' ', 0);
 			if (spaceIdx <= 0) {
+				if (line.length > 0) {
+					String prop = line.toString();
+					if (!properties.containsKey(prop)) {
+						// Shouldn't use props.remove because it's
+						// evaluated from bottom to top.
+						properties.put(prop, null);
+					}
+				}
 				continue;
 			}
 			String key = new String(line.value, 0, spaceIdx);

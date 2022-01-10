@@ -18,6 +18,7 @@ public class DialogFontSelection extends JeanineDialogState
 		ArrayList<String> lines = new ArrayList<>();
 		lines.add("c Welcome to font selection.");
 		lines.add("c Put the caret on a setting and press enter.");
+		lines.add("c Settings can be persisted using the preferences editor");
 		lines.add("c Exit by pressing ESC.");
 		lines.add("/*jeanine:p:i:2;p:0;x:0;y:20;a:b*/");
 		lines.add("c Font size:");
@@ -50,7 +51,7 @@ public class DialogFontSelection extends JeanineDialogState
 		group.title = "Font selection";
 		group.buffer.readonly = true;
 		group.setContents(new Util.String2SBIter(lines.iterator()), true);
-		group.buffer.carety = 22;
+		group.buffer.carety = group.panels.get(Integer.valueOf(1)).firstline;
 		group.activePanel = group.panelAtLine(group.buffer.carety);
 		group.setLocation(0, 30);
 		this.pushDialogState(jf, group, group);
@@ -83,7 +84,5 @@ public class DialogFontSelection extends JeanineDialogState
 			grp.fontChanged();
 		}
 		this.jf.moveToGetCursorAtPosition(this.cursorPosBeforeChangingFont);
-		Preferences.updateAfterChangingFont();
-		Preferences.save();
 	}
 }

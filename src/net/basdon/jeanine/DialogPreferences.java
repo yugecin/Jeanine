@@ -1,5 +1,7 @@
 package net.basdon.jeanine;
 
+import java.awt.Font;
+
 public class DialogPreferences extends JeanineDialogState
 {
 	private static final String[] WARN_PREFS_WONT_BE_SAVED = {
@@ -45,14 +47,30 @@ public class DialogPreferences extends JeanineDialogState
 				lines.add(new SB());
 				lines.add(new SB("/*light (default) colorscheme*/"));
 				Colors.reset();
+				Preferences.appendColorScheme(lines::add);
 			} else if (line.equals("blue")) {
 				lines.add(new SB());
 				lines.add(new SB("/*blue colorscheme*/"));
 				Colors.blue();
+				Preferences.appendColorScheme(lines::add);
+			} else if (line.equals("Append current font settings")) {
+				lines.add(new SB());
+				lines.add(new SB("font.family " + this.jf.j.fontFamily));
+				lines.add(new SB("font.size " + this.jf.j.fontSize));
+				SB sb = new SB("font.flags ");
+				if ((this.jf.j.fontFlags & Font.BOLD) != 0) {
+					sb.append("BOLD ");
+				}
+				if ((this.jf.j.fontFlags & Font.ITALIC) != 0) {
+					sb.append("ITALIC ");
+				}
+				if (sb.value[sb.length - 1] == ' ') {
+					sb.length--;
+				}
+				lines.add(sb);
 			} else {
 				return;
 			}
-			Preferences.appendColorScheme(lines::add);
 			this.main.revalidateSizesAndReposition();
 			this.main.buffer.carety = lines.size() - 1;
 			this.main.buffer.caretx = 0;
