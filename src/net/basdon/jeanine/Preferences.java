@@ -17,27 +17,10 @@ public class Preferences
 	private static final String HEADER = "/*Preferences are evaluated from top to bottom.*/";
 
 	public static final String FILENAME_PROPERTY = "JEANINE_PREFERENCES_FILE";
-	public static final ArrayList<SB> instructionlines;
 	public static final String SMOOTHSCROLL_NAME = "scrolling.smooth.movement.time.ms";
 	public static final String VSCROLL_NAME = "scrolling.vertical.speed.modifier.percentage";
 	public static final String HSCROLL_NAME = "scrolling.horizontal.speed.modifier.percentage";
 	public static final String SEARCH_HL_NAME = "search.highlight.timeout";
-
-	static
-	{
-		instructionlines = new ArrayList<>();
-		instructionlines.add(new SB("Preferences will be saved when"));
-		instructionlines.add(new SB("exiting (with ESC)"));
-		instructionlines.add(new SB());
-		instructionlines.add(new SB("Default colorschemes:"));
-		instructionlines.add(new SB("(Press ENTER to append to your settings)"));
-		instructionlines.add(new SB("light"));
-		instructionlines.add(new SB("blue"));
-		instructionlines.add(new SB());
-		instructionlines.add(new SB("Append current font settings"));
-		instructionlines.add(new SB());
-		instructionlines.add(new SB("Press ENTER to apply the settings"));
-	}
 
 	public static Jeanine j;
 	public static File file;

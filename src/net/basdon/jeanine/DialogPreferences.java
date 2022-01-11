@@ -1,6 +1,8 @@
 package net.basdon.jeanine;
 
 import java.awt.Font;
+import java.awt.Rectangle;
+import java.util.ArrayList;
 
 public class DialogPreferences extends JeanineDialogState
 {
@@ -12,24 +14,46 @@ public class DialogPreferences extends JeanineDialogState
 		"",
 		"Press ENTER or ESC to continue."
 	};
+	public static final ArrayList<SB> instructionlines;
+
+	static
+	{
+		instructionlines = new ArrayList<>();
+		instructionlines.add(new SB("Preferences will be saved when"));
+		instructionlines.add(new SB("exiting (with ESC)"));
+		instructionlines.add(new SB());
+		instructionlines.add(new SB("Press ENTER to apply the settings"));
+		instructionlines.add(new SB());
+		instructionlines.add(new SB("The actions in the panel to the right"));
+		instructionlines.add(new SB("can be invoked by pressing ENTER or"));
+		instructionlines.add(new SB("double cliking whilst on the line"));
+		instructionlines.add(new SB("/*jeanine:p:i:1;p:0;a:b;y:30*/"));
+		instructionlines.add(new SB("Append default light colorscheme"));
+		instructionlines.add(new SB("Append default blue colorscheme"));
+		instructionlines.add(new SB("Append current font settings"));
+		instructionlines.add(new SB("Exit without saving preferences"));
+	}
 
 	private final JeanineFrame jf;
 	private final CodeGroup instr, main;
 
+	private boolean discardChanges;
+
 	public DialogPreferences(JeanineFrame jf)
 	{
 		this.jf = jf;
-		this.instr = new CodeGroup(this.jf);
+		this.instr = new CodeGroup(jf);
 		this.instr.title = "Information";
-		this.instr.setContents(Preferences.instructionlines.iterator(), false);
+		this.instr.setContents(instructionlines.iterator(), true);
 		this.instr.setLocation(80, 30);
 		this.instr.buffer.readonly = true;
-		int y = this.instr.location.y + (this.instr.buffer.lines.size() + 4) * this.jf.j.fy;
-		this.main = new CodeGroup(this.jf);
+		Rectangle rect = new Rectangle();
+		this.instr.getBounds(rect);
+		this.main = new CodeGroup(jf);
 		this.main.title = "Preferences";
 		this.main.setContents(Preferences.lines.iterator(), true);
 		this.main.activePanel = this.main.panelAtLine(this.main.buffer.carety);
-		this.main.setLocation(80, y);
+		this.main.setLocation(rect.x + rect.width, 30);
 		Preferences.lines = this.main.buffer.lines.lines;
 		this.pushDialogState(jf, this.main, this.main, this.instr);
 		if (Preferences.file == null) {
@@ -41,20 +65,23 @@ public class DialogPreferences extends JeanineDialogState
 	@Override
 	public void lineSelected(LineSelectionListener.Info info)
 	{
-		if (this.jf.activeGroup == this.instr) {
+		if (info.group == this.instr && info.panel.id.intValue() == 1) {
 			// TODO: just adding to lines makes it not undoable...
 			BufferLines lines = this.main.buffer.lines;
-			if (info.lineContent.equals("light")) {
+			switch (info.lineNumber - info.panel.firstline) {
+			case 0: // append default light colorscheme
 				lines.add(new SB());
 				lines.add(new SB("/*light (default) colorscheme*/"));
 				Colors.reset();
 				Preferences.appendColorScheme(lines::add);
-			} else if (info.lineContent.equals("blue")) {
+				break;
+			case 1: // append default blue colorscheme
 				lines.add(new SB());
 				lines.add(new SB("/*blue colorscheme*/"));
 				Colors.blue();
 				Preferences.appendColorScheme(lines::add);
-			} else if (info.lineContent.equals("Append current font settings")) {
+				break;
+			case 2: // append current font settings
 				lines.add(new SB());
 				lines.add(new SB("font.family " + this.jf.j.fontFamily));
 				lines.add(new SB("font.size " + this.jf.j.fontSize));
@@ -69,7 +96,10 @@ public class DialogPreferences extends JeanineDialogState
 					sb.length--;
 				}
 				lines.add(sb);
-			} else {
+				break;
+			case 3: // exit without changing settings
+				this.discardChanges = true;
+				this.jf.popState();
 				return;
 			}
 			this.main.revalidateSizesAndReposition();
@@ -86,6 +116,8 @@ public class DialogPreferences extends JeanineDialogState
 	public void run()
 	{
 		Preferences.interpretAndApply(this.jf);
-		Preferences.save();
+		if (!this.discardChanges) {
+			Preferences.save();
+		}
 	}
 }
