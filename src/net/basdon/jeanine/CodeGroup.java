@@ -69,8 +69,9 @@ public class CodeGroup
 			return;
 		}
 		// TODO: check file modify time, to warn if we're overriding unknown changes
+		ArrayList<SB> lines = this.buffer.lines.lines;
 		GroupToRawConverter converter;
-		converter = new GroupToRawConverter(this.buffer.lines.lines, this.panels, 0);
+		converter = new GroupToRawConverter(this.j, lines, this.panels, 0);
 		// TODO: write to tmp file first to not lose data in case of error?
 		try (FileOutputStream fos = new FileOutputStream(this.ownerFile, false)) {
 			OutputStreamWriter writer;
@@ -97,7 +98,7 @@ public class CodeGroup
 
 		if (interpret) {
 			// TODO: show the errors if not empty
-			RawToGroupConverter parser = new RawToGroupConverter(this);
+			RawToGroupConverter parser = new RawToGroupConverter(this.j, this);
 			parser.interpretSource(lines);
 			this.buffer.lines.lines.addAll(parser.lines);
 			this.root = parser.root;
@@ -559,7 +560,8 @@ public class CodeGroup
 				}
 			}
 		} else {
-			GroupToRawConverter conv = new GroupToRawConverter(lines, panels, carety);
+			GroupToRawConverter conv;
+			conv = new GroupToRawConverter(this.j, lines, panels, carety);
 			this.setContents(conv, false);
 			carety = conv.newCarety;
 		}

@@ -8,7 +8,9 @@ import java.util.Map;
 
 public class RawToGroupConverter
 {
+	private final Jeanine j;
 	private final CodeGroup group;
+
 	private Integer nextInvalidId;
 	private int physicalLine;
 	private CodePanel panel;
@@ -23,8 +25,9 @@ public class RawToGroupConverter
 	public HashMap<Integer, CodePanel> panels;
 	public ArrayList<SB> lines;
 
-	public RawToGroupConverter(CodeGroup group)
+	public RawToGroupConverter(Jeanine j, CodeGroup group)
 	{
+		this.j = j;
 		this.group = group;
 		this.errors = new SB();
 		this.panels = new HashMap<>();
@@ -66,6 +69,14 @@ public class RawToGroupConverter
 		// y: y pos
 		if (dir.isValidInt['y']) {
 			this.panel.location.y = dir.intValue['y'];
+		}
+		// m: additional x pos but as a multiple of font width
+		if (dir.isValidInt['m']) {
+			this.panel.location.x += dir.intValue['m'] * this.j.fx;
+		}
+		// n: additional y pos but as a multiple of font height
+		if (dir.isValidInt['n']) {
+			this.panel.location.y += dir.intValue['n'] * this.j.fy;
 		}
 		// a: anchor
 		if (dir.strLength['a'] == 1) {
