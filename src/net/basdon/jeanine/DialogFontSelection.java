@@ -59,8 +59,9 @@ public class DialogFontSelection extends JeanineDialogState
 
 	/*LineSelectionListener*/
 	@Override
-	public void lineSelected(SB line)
+	public void lineSelected(LineSelectionListener.Info info)
 	{
+		SB line = info.lineContent;
 		if (line.length() > 3 && line.value[0] == 'f') {
 			this.jf.j.fontFamily = new String(line.value, 2, line.length - 2);
 		} else if (line.length > 2 && line.value[0] == 's') {

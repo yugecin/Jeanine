@@ -19,7 +19,7 @@ public class JeanineDialogState extends JeanineState implements LineSelectionLis
 
 	/*LineSelectionListener*/
 	@Override
-	public void lineSelected(SB line)
+	public void lineSelected(LineSelectionListener.Info info)
 	{
 	}
 

@@ -278,9 +278,7 @@ implements MouseListener, MouseMotionListener
 		{
 			int line = this.getLocalLineAtY(e.getY());
 			if (-1 < line && line < this.lastline - this.firstline) {
-				line += this.firstline;
-				SB sb = this.buffer.lines.get(line);
-				this.jf.lineSelectionListener.lineSelected(sb);
+				this.invokeLineSelectionListener(line + this.firstline);
 			}
 		}
 	}
@@ -414,6 +412,16 @@ implements MouseListener, MouseMotionListener
 			y = this.firstline;
 		}
 		return y;
+	}
+
+	public void invokeLineSelectionListener(int lineNumber)
+	{
+		LineSelectionListener.Info info = new LineSelectionListener.Info();
+		info.panel = this;
+		info.group = this.group;
+		info.lineNumber = lineNumber;
+		info.lineContent = this.buffer.lines.get(lineNumber);
+		this.jf.lineSelectionListener.lineSelected(info);
 	}
 
 	public void ensureCodeViewSize()

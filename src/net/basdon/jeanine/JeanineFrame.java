@@ -210,8 +210,10 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		case '\n':
 		case '\r':
 			if (buffer != null && this.lineSelectionListener != null) {
-				SB line = buffer.lines.get(buffer.carety);
-				this.lineSelectionListener.lineSelected(line);
+				CodePanel panel = this.activeGroup.panelAtLine(buffer.carety);
+				if (panel != null) {
+					panel.invokeLineSelectionListener(buffer.carety);
+				}
 				return;
 			}
 			break;

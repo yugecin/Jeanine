@@ -16,7 +16,7 @@ public class DialogSimpleMessage extends JeanineDialogState
 
 	/*LineSelectionListener*/
 	@Override
-	public void lineSelected(SB line)
+	public void lineSelected(LineSelectionListener.Info info)
 	{
 		this.jf.popState();
 	}

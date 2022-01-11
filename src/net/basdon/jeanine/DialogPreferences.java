@@ -39,21 +39,22 @@ public class DialogPreferences extends JeanineDialogState
 
 	/*LineSelectionListener*/
 	@Override
-	public void lineSelected(SB line)
+	public void lineSelected(LineSelectionListener.Info info)
 	{
 		if (this.jf.activeGroup == this.instr) {
+			// TODO: just adding to lines makes it not undoable...
 			BufferLines lines = this.main.buffer.lines;
-			if (line.equals("light")) {
+			if (info.lineContent.equals("light")) {
 				lines.add(new SB());
 				lines.add(new SB("/*light (default) colorscheme*/"));
 				Colors.reset();
 				Preferences.appendColorScheme(lines::add);
-			} else if (line.equals("blue")) {
+			} else if (info.lineContent.equals("blue")) {
 				lines.add(new SB());
 				lines.add(new SB("/*blue colorscheme*/"));
 				Colors.blue();
 				Preferences.appendColorScheme(lines::add);
-			} else if (line.equals("Append current font settings")) {
+			} else if (info.lineContent.equals("Append current font settings")) {
 				lines.add(new SB());
 				lines.add(new SB("font.family " + this.jf.j.fontFamily));
 				lines.add(new SB("font.size " + this.jf.j.fontSize));
