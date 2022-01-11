@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 public class GroupToRawConverter implements Iterator<SB>
 {
-	private final Jeanine j;
 	private final ArrayList<SB> lines;
 	private final HashMap<Integer, CodePanel> panels;
 
@@ -19,12 +18,10 @@ public class GroupToRawConverter implements Iterator<SB>
 	public int newCarety;
 
 	public GroupToRawConverter(
-		Jeanine j,
 		ArrayList<SB> lines,
 		HashMap<Integer, CodePanel> panels,
 		int carety)
 	{
-		this.j = j;
 		this.lines = lines;
 		this.panels = panels;
 		this.currentPanel = panels.get(Integer.valueOf(0));
@@ -79,30 +76,24 @@ public class GroupToRawConverter implements Iterator<SB>
 					this.next.append("a:");
 					this.next.append(PanelLink.getAnchor(panel.link));
 					this.next.append(';');
-					int x = panel.location.x;
-					int y = panel.location.y;
-					int m = x / this.j.fx;
-					int n = y / this.j.fy;
-					x -= m * this.j.fx;
-					y -= n * this.j.fy;
-					if (x != 0) {
+					if (panel.locationXY.x != 0) {
 						this.next.append("x:");
-						this.next.append(x);
+						this.next.append(panel.locationXY.x);
 						this.next.append(';');
 					}
-					if (y != 0) {
+					if (panel.locationXY.y != 0) {
 						this.next.append("y:");
-						this.next.append(y);
+						this.next.append(panel.locationXY.y);
 						this.next.append(';');
 					}
-					if (m != 0) {
+					if (panel.locationMN.x != 0) {
 						this.next.append("m:");
-						this.next.append(m);
+						this.next.append(panel.locationMN.x);
 						this.next.append(';');
 					}
-					if (n != 0) {
+					if (panel.locationMN.y != 0) {
 						this.next.append("n:");
-						this.next.append(n);
+						this.next.append(panel.locationMN.y);
 						this.next.append(';');
 					}
 					this.next.append("*/");

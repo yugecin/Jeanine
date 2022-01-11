@@ -70,8 +70,7 @@ public class CodeGroup
 		}
 		// TODO: check file modify time, to warn if we're overriding unknown changes
 		ArrayList<SB> lines = this.buffer.lines.lines;
-		GroupToRawConverter converter;
-		converter = new GroupToRawConverter(this.j, lines, this.panels, 0);
+		GroupToRawConverter converter = new GroupToRawConverter(lines, this.panels, 0);
 		// TODO: write to tmp file first to not lose data in case of error?
 		try (FileOutputStream fos = new FileOutputStream(this.ownerFile, false)) {
 			OutputStreamWriter writer;
@@ -201,8 +200,8 @@ public class CodeGroup
 				}
 			}
 		}
-		x += panel.location.x;
-		y += panel.location.y;
+		x += panel.locationXY.x + panel.locationMN.x * this.j.fx;
+		y += panel.locationXY.y + panel.locationMN.y * this.j.fy;
 		panel.setLocation(x, y);
 		panel.requireValidation = false;
 		this.positionChildrenOf(panel);
@@ -334,8 +333,7 @@ public class CodeGroup
 		this.panels.put(id, cf);
 		cf.parent = parent;
 		cf.link = link;
-		cf.location.x = posX;
-		cf.location.y = posY;
+		cf.location(posX, posY);
 		cf.recheckMaxLineLength();
 		this.jf.getContentPane().add(cf);
 		return cf;
@@ -546,7 +544,9 @@ public class CodeGroup
 
 	public void toggleRaw()
 	{
-		Point rootLocation = this.root.location;
+		// setContents clears lines/panels and will lose the location
+		Point rootLocationXY = this.root.locationXY;
+		Point rootLocationMN = this.root.locationMN;
 		ArrayList<SB> lines = new ArrayList<>(this.buffer.lines.lines);
 		HashMap<Integer, CodePanel> panels = new HashMap<>(this.panels);
 		int caretx = this.buffer.caretx;
@@ -560,8 +560,7 @@ public class CodeGroup
 				}
 			}
 		} else {
-			GroupToRawConverter conv;
-			conv = new GroupToRawConverter(this.j, lines, panels, carety);
+			GroupToRawConverter conv = new GroupToRawConverter(lines, panels, carety);
 			this.setContents(conv, false);
 			carety = conv.newCarety;
 		}
@@ -571,7 +570,8 @@ public class CodeGroup
 		this.activePanel = this.panelAtLine(this.buffer.carety);
 		this.jf.moveToGetCursorAtPosition(cursorPos);
 		this.raw = !this.raw;
-		this.root.location = rootLocation;
+		this.root.locationXY = rootLocationXY;
+		this.root.locationMN = rootLocationMN;
 		this.position(this.root);
 	}
 
@@ -585,18 +585,15 @@ public class CodeGroup
 		switch (position) {
 		case "bot":
 			child.link = PanelLink.BOTTOM;
-			child.location.x = 0;
-			child.location.y = 30;
+			child.location(0, 30);
 			break;
 		case "right":
 			child.link = PanelLink.createRightLink(this.buffer.carety);
-			child.location.x = 30;
-			child.location.y = 0;
+			child.location(30, 0);
 			break;
 		case "top":
 			child.link = PanelLink.TOP;
-			child.location.x = 30;
-			child.location.y = 0;
+			child.location(0, 30);
 			break;
 		}
 		this.position(child);

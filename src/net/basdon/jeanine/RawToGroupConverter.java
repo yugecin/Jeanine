@@ -62,22 +62,26 @@ public class RawToGroupConverter
 			this.panel.parent = this.root;
 			e.append(this.physicalLine).append(": no parent panel id in props\n");
 		}
-		// x: x pos
+		int x = 0, y = 0, m = 0, n = 0;
+		// x: partial x pos in pixels
 		if (dir.isValidInt['x']) {
-			this.panel.location.x = dir.intValue['x'];
+			x = dir.intValue['x'];
 		}
-		// y: y pos
+		// y: partial y pos in pixels
 		if (dir.isValidInt['y']) {
-			this.panel.location.y = dir.intValue['y'];
+			y = dir.intValue['y'];
 		}
-		// m: additional x pos but as a multiple of font width
+		// m: partial x pos as a multiple of font width
 		if (dir.isValidInt['m']) {
-			this.panel.location.x += dir.intValue['m'] * this.j.fx;
+			m = dir.intValue['m'];
 		}
-		// n: additional y pos but as a multiple of font height
+		// n: partial y pos as a multiple of font height
 		if (dir.isValidInt['n']) {
-			this.panel.location.y += dir.intValue['n'] * this.j.fy;
+			n = dir.intValue['n'];
 		}
+		// Don't change this .location() call to directly assigning locationXY/locationMN.
+		// Using .location() ensures that xy values are normalized.
+		this.panel.location(x + m * this.j.fx, y + n * this.j.fy);
 		// a: anchor
 		if (dir.strLength['a'] == 1) {
 			switch (dir.strValue['a'].charAt(0)) {
@@ -269,8 +273,7 @@ public class RawToGroupConverter
 				e.append(" has right anchor but no associated right link ");
 				e.append("directive found, changing to top anchor\n");
 				pnl.link = PanelLink.TOP;
-				pnl.location.x = ++invalidLinkedPanels * 20;
-				pnl.location.y = -100;
+				pnl.location(++invalidLinkedPanels * 20, -100);
 			}
 		}
 		// apply parent links
@@ -284,8 +287,7 @@ public class RawToGroupConverter
 				e.append(", reparenting to root panel\n");
 				child.parent = this.root;
 				child.link = PanelLink.TOP;
-				child.location.x = ++invalidLinkedPanels * 20;
-				child.location.y = -100;
+				child.location(++invalidLinkedPanels * 20, -100);
 			}
 		}
 		// reparent right linked parents where the line linked is not in the parent
@@ -313,8 +315,7 @@ public class RawToGroupConverter
 					"reparenting to root panel\n");
 				pnl.parent = this.root;
 				pnl.link = PanelLink.TOP;
-				pnl.location.x = ++invalidLinkedPanels * 20;
-				pnl.location.y = -100;
+				pnl.location(++invalidLinkedPanels * 20, -100);
 			}
 		}
 		// ensure no cyclic dependencies (only applies to primary links)

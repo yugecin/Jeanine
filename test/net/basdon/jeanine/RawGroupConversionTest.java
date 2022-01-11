@@ -115,8 +115,10 @@ public class RawGroupConversionTest
 	{
 		assertEquals("bad parent", p0, p1.parent);
 		assertEquals("bad anchor", PanelLink.createRightLink(0), p1.link);
-		assertEquals("bad x", 6 * j.fx, p1.location.x);
-		assertEquals("bad y", 0, p1.location.y);
+		assertEquals("bad x", 0, p1.locationXY.x);
+		assertEquals("bad y", 0, p1.locationXY.y);
+		assertEquals("bad m", 6, p1.locationMN.x);
+		assertEquals("bad n", 0, p1.locationMN.y);
 	}
 
 	@Test
@@ -124,8 +126,10 @@ public class RawGroupConversionTest
 	{
 		assertEquals("bad parent", p1, p2.parent);
 		assertEquals("bad anchor", PanelLink.BOTTOM, p2.link);
-		assertEquals("bad x", -3 + j.fx * -45, p2.location.x);
-		assertEquals("bad y", 8 + j.fy * 19, p2.location.y);
+		assertEquals("bad x", -3, p2.locationXY.x);
+		assertEquals("bad y", 8, p2.locationXY.y);
+		assertEquals("bad m", -45, p2.locationMN.x);
+		assertEquals("bad n", 19, p2.locationMN.y);
 	}
 
 	@Test
@@ -133,8 +137,10 @@ public class RawGroupConversionTest
 	{
 		assertEquals("bad parent", p2, p3.parent);
 		assertEquals("bad anchor", PanelLink.BOTTOM, p3.link);
-		assertEquals("bad x", 4 + j.fx * 48, p3.location.x);
-		assertEquals("bad y", 3 + j.fy * 11, p3.location.y);
+		assertEquals("bad x", 4, p3.locationXY.x);
+		assertEquals("bad y", 3, p3.locationXY.y);
+		assertEquals("bad m", 48, p3.locationMN.x);
+		assertEquals("bad n", 11, p3.locationMN.y);
 	}
 
 	@Test
@@ -192,8 +198,7 @@ public class RawGroupConversionTest
 	@Test
 	public void serialize()
 	{
-		GroupToRawConverter c;
-		c = new GroupToRawConverter(p0.j, parser.lines, parser.panels, 0);
+		GroupToRawConverter c = new GroupToRawConverter(parser.lines, parser.panels, 0);
 		for (int i = 0; i < lines.size(); i++) {
 			assertTrue("missing line #" + i, c.hasNext());
 			assertEquals("line #" + i, lines.get(i).toString(), c.next().toString());
