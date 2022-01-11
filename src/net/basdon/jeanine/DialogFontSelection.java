@@ -2,19 +2,15 @@ package net.basdon.jeanine;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-import java.awt.Point;
 import java.util.ArrayList;
 
 public class DialogFontSelection extends JeanineDialogState
 {
 	private final JeanineFrame jf;
 
-	private Point cursorPosBeforeChangingFont;
-
 	public DialogFontSelection(JeanineFrame jf)
 	{
 		this.jf = jf;
-		this.cursorPosBeforeChangingFont = this.jf.findCursorPosition();
 		ArrayList<String> lines = new ArrayList<>();
 		lines.add("c Welcome to font selection.");
 		lines.add("c Put the caret on a setting and press enter.");
@@ -75,15 +71,5 @@ public class DialogFontSelection extends JeanineDialogState
 			return;
 		}
 		this.jf.updateFontKeepCursorFrozen();
-	}
-
-	/*Runnable*/
-	@Override
-	public void run()
-	{
-		for (CodeGroup grp : this.jf.codegroups) {
-			grp.fontChanged();
-		}
-		this.jf.moveToGetCursorAtPosition(this.cursorPosBeforeChangingFont);
 	}
 }

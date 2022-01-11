@@ -721,6 +721,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		oldState.location = new Point(this.location);
 		oldState.lineSelectionListener = this.lineSelectionListener;
 		oldState.postStateLeaveListener = this.postStateLeaveListener;
+		oldState.font = this.j.font;
 		this.pushedStates.push(oldState);
 		this.activeGroup = state.activeGroup;
 		this.codegroups = state.codegroups;
@@ -748,6 +749,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		state.location = new Point(this.location);
 		state.lineSelectionListener = this.lineSelectionListener;
 		state.postStateLeaveListener = this.postStateLeaveListener;
+		state.font = this.j.font;
+		state.cursorPos = this.findCursorPosition();
 		this.pushedStates.push(state);
 		this.activeGroup = activeGroup;
 		this.codegroups = codegroups;
@@ -772,6 +775,12 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.lineSelectionListener = state.lineSelectionListener;
 		this.postStateLeaveListener = state.postStateLeaveListener;
 		this.getContentPane().removeAll();
+		if (!this.j.font.equals(state.font)) {
+			for (CodeGroup grp : this.codegroups) {
+				grp.fontChanged();
+			}
+			this.moveToGetCursorAtPosition(state.cursorPos);
+		}
 		for (CodeGroup group : this.codegroups) {
 			for (CodePanel panel : group.panels.values()) {
 				this.getContentPane().add(panel);
