@@ -11,7 +11,6 @@ public class Colors
 	public static final Colors textBg = new Colors("color.text.bg");
 	public static final Colors headerFg = new Colors("color.header.fg");
 	public static final Colors headerBg = new Colors("color.header.bg");
-	public static final Colors headerBorder = new Colors("color.header.border");
 	public static final Colors selectionBg = new Colors("color.selection.bg");
 	public static final Colors commentFg = new Colors("color.comment.fg");
 	public static final Colors whitespaceBg = new Colors("color.whitespace.bg");
@@ -23,7 +22,6 @@ public class Colors
 		textBg,
 		headerFg,
 		headerBg,
-		headerBorder,
 		selectionBg,
 		commentFg,
 		whitespaceBg,
@@ -37,7 +35,6 @@ public class Colors
 		textBg.col = Color.white;
 		headerFg.col = textFg.col;
 		headerBg.col = new Color(0xdddddd);
-		headerBorder.col = headerBg.col;
 		selectionBg.col = new Color(0x66AAFF);
 		commentFg.col = Color.gray;
 		whitespaceBg.col = new Color(0xff8c69);
@@ -51,7 +48,6 @@ public class Colors
 		textBg.col = new Color(0x00379B);
 		headerBg.col = textBg.col.darker();
 		headerFg.col = textFg.col;
-		headerBorder.col = border.col;
 		selectionBg.col = new Color(0x008000);
 		commentFg.col = new Color(0x3A96DD);
 		whitespaceBg.col = new Color(0xff8c69);
