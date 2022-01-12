@@ -17,26 +17,22 @@ public class RawGroupConversionTest
 	private static ArrayList<SB> lines = new ArrayList<>();
 	private static RawToGroupConverter parser;
 	private static CodePanel p0, p1, p2, p3;
-	private static Jeanine j;
 
 	static
 	{
 		lines.add(new SB("hi/*jeanine:r:i:1;:s:a:r;i:2;:s:a:r;i:3;*/"));
 		lines.add(new SB("/*jeanine:s:a:b;i:2;:s:a:t;i:1;*/"));
-		lines.add(new SB("/*jeanine:p:i:1;p:0;a:r;m:6;*/"));
+		lines.add(new SB("/*jeanine:p:i:1;p:0;a:r;*/"));
 		lines.add(new SB("hi2"));
-		lines.add(new SB("/*jeanine:p:i:2;p:1;a:b;x:-3;y:8;m:-45;n:19;*/"));
+		lines.add(new SB("/*jeanine:p:i:2;p:1;a:b;x:-3.02;y:8.55;*/"));
 		lines.add(new SB("hi3/*jeanine:s:a:r;i:1;*/"));
-		lines.add(new SB("/*jeanine:p:i:3;p:2;a:b;x:4;y:3;m:48;n:11;*/"));
+		lines.add(new SB("/*jeanine:p:i:3;p:2;a:b;x:4.11;y:3.00;*/"));
 		lines.add(new SB("hi4"));
 		lines.add(new SB("/*jeanine:s:a:b;i:2;*/"));
-		j = new Jeanine();
+		Jeanine j = new Jeanine();
 		System.clearProperty(Preferences.FILENAME_PROPERTY);
 		Preferences.load(j);
 		JeanineFrame jf = new JeanineFrame(j);
-		// font sizes are not set (because no paint happens?)
-		j.fx = 5;
-		j.fy = 10;
 		parser = new RawToGroupConverter(j, new CodeGroup(jf));
 		parser.interpretSource(lines.iterator());
 		p0 = parser.panels.get(Integer.valueOf(0));
@@ -115,10 +111,8 @@ public class RawGroupConversionTest
 	{
 		assertEquals("bad parent", p0, p1.parent);
 		assertEquals("bad anchor", PanelLink.createRightLink(0), p1.link);
-		assertEquals("bad x", 0, p1.locationXY.x);
-		assertEquals("bad y", 0, p1.locationXY.y);
-		assertEquals("bad m", 6, p1.locationMN.x);
-		assertEquals("bad n", 0, p1.locationMN.y);
+		assertEquals("bad x", 0, p1.location.x, 0.01f);
+		assertEquals("bad y", 0, p1.location.y, 0.01f);
 	}
 
 	@Test
@@ -126,10 +120,8 @@ public class RawGroupConversionTest
 	{
 		assertEquals("bad parent", p1, p2.parent);
 		assertEquals("bad anchor", PanelLink.BOTTOM, p2.link);
-		assertEquals("bad x", -3, p2.locationXY.x);
-		assertEquals("bad y", 8, p2.locationXY.y);
-		assertEquals("bad m", -45, p2.locationMN.x);
-		assertEquals("bad n", 19, p2.locationMN.y);
+		assertEquals("bad x", -3.01f, p2.location.x, 0.01f);
+		assertEquals("bad y", 8.55, p2.location.y, 0.01f);
 	}
 
 	@Test
@@ -137,10 +129,8 @@ public class RawGroupConversionTest
 	{
 		assertEquals("bad parent", p2, p3.parent);
 		assertEquals("bad anchor", PanelLink.BOTTOM, p3.link);
-		assertEquals("bad x", 4, p3.locationXY.x);
-		assertEquals("bad y", 3, p3.locationXY.y);
-		assertEquals("bad m", 48, p3.locationMN.x);
-		assertEquals("bad n", 11, p3.locationMN.y);
+		assertEquals("bad x", 4.11f, p3.location.x, 0.01f);
+		assertEquals("bad y", 3.00f, p3.location.y, 0.01f);
 	}
 
 	@Test

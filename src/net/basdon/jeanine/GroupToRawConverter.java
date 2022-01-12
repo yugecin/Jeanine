@@ -76,24 +76,14 @@ public class GroupToRawConverter implements Iterator<SB>
 					this.next.append("a:");
 					this.next.append(PanelLink.getAnchor(panel.link));
 					this.next.append(';');
-					if (panel.locationXY.x != 0) {
+					if (panel.location.x != 0) {
 						this.next.append("x:");
-						this.next.append(panel.locationXY.x);
+						this.next.append(panel.location.x, 2);
 						this.next.append(';');
 					}
-					if (panel.locationXY.y != 0) {
+					if (panel.location.y != 0) {
 						this.next.append("y:");
-						this.next.append(panel.locationXY.y);
-						this.next.append(';');
-					}
-					if (panel.locationMN.x != 0) {
-						this.next.append("m:");
-						this.next.append(panel.locationMN.x);
-						this.next.append(';');
-					}
-					if (panel.locationMN.y != 0) {
-						this.next.append("n:");
-						this.next.append(panel.locationMN.y);
+						this.next.append(panel.location.y, 2);
 						this.next.append(';');
 					}
 					this.next.append("*/");

@@ -8,6 +8,7 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
@@ -43,13 +44,9 @@ implements MouseListener, MouseMotionListener
 	 */
 	public ArrayList<SecondaryLink> secondaryLinks;
 	/**
-	 * The partial location in pixels. To be summed with {@link #locationMN}.
+	 * The location as a factor of font xy size.
 	 */
-	public Point locationXY;
-	/**
-	 * The partial location in multiples of font xy size. To be summed with {@link #locationXY}.
-	 */
-	public Point locationMN;
+	public Point2D.Float location;
 
 	private int maxLineLength;
 	private int rows, cols;
@@ -66,8 +63,7 @@ implements MouseListener, MouseMotionListener
 		this.firstline = linefrom;
 		this.lastline = lineto;
 		this.secondaryLinks = new ArrayList<>();
-		this.locationXY = new Point();
-		this.locationMN = new Point();
+		this.location = new Point2D.Float();
 		this.setFocusable(false);
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
@@ -338,12 +334,8 @@ implements MouseListener, MouseMotionListener
 		if (!this.jf.shouldBlockInput()) {
 			if (this.isDragging) {
 				Point now = e.getLocationOnScreen();
-				this.locationXY.x += now.x - this.dragStart.x;
-				this.locationXY.y += now.y - this.dragStart.y;
-				this.locationMN.x += this.locationXY.x / this.j.fx;
-				this.locationMN.y += this.locationXY.y / this.j.fy;
-				this.locationXY.x %= this.j.fx;
-				this.locationXY.y %= this.j.fy;
+				this.location.x += (now.x - this.dragStart.x) / (float) this.j.fx;
+				this.location.y += (now.y - this.dragStart.y) / (float) this.j.fy;
 				this.group.position(this);
 				this.dragStart = now;
 				this.jf.overlay.repaint();
@@ -490,14 +482,6 @@ implements MouseListener, MouseMotionListener
 		} else if (this.getHeight() != size.height) {
 			this.setSize(size);
 		}
-	}
-
-	public void location(int x, int y)
-	{
-		this.locationXY.x = x / this.j.fx;
-		this.locationXY.y = y / this.j.fy;
-		this.locationMN.x = x % this.j.fx;
-		this.locationMN.y = y % this.j.fy;
 	}
 
 	public boolean isEventualParentOf(CodePanel other)

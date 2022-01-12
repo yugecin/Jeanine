@@ -97,6 +97,11 @@ public class SB implements CharSequence
 		return this.append(String.valueOf(value));
 	}
 
+	public SB append(float value, int precision)
+	{
+		return this.append(String.format("%." + precision + "f", value));
+	}
+
 	public SB append(char[] value)
 	{
 		return this.append(value, 0, value.length);

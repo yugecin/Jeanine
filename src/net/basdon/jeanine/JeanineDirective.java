@@ -33,6 +33,7 @@ public class JeanineDirective
 				dir.isPresent[c] = true;
 				dir.strValue[c] = null;
 				dir.isValidInt[c] = false;
+				dir.isValidFloat[c] = false;
 				dir.intValue[c] = 0;
 				int length = 0;
 				boolean negativeInt = false;
@@ -53,6 +54,7 @@ public class JeanineDirective
 					} else if (length == 0 && d == '-') {
 						negativeInt = true;
 					} else {
+						dir.isValidFloat[c] = d == '.' && dir.isValidInt[c];
 						dir.isValidInt[c] = false;
 					}
 					length++;
@@ -62,6 +64,9 @@ public class JeanineDirective
 				}
 				dir.strValue[c] = new String(sb.value, from - 1 - length, length);
 				dir.strLength[c] = length;
+				if (dir.isValidFloat[c]) {
+					dir.floatValue[c] = Float.parseFloat(dir.strValue[c]);
+				}
 			} else {
 				dir.errors.append("col " + from + ": unexpected character '" + c
 					+ "'," + " skipping to next semicolon\n");
@@ -75,7 +80,9 @@ public class JeanineDirective
 	public char directive;
 	public String[] strValue = new String[MAX_PROPS];
 	public int[] intValue = new int[MAX_PROPS];
+	public float[] floatValue = new float[MAX_PROPS];
 	public boolean[] isValidInt = new boolean[MAX_PROPS];
+	public boolean[] isValidFloat = new boolean[MAX_PROPS];
 	public boolean[] isPresent = new boolean[MAX_PROPS];
 	public int[] strLength = new int[MAX_PROPS];
 	/**

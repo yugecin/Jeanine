@@ -2,6 +2,7 @@ package net.basdon.jeanine;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -200,8 +201,8 @@ public class CodeGroup
 				}
 			}
 		}
-		x += panel.locationXY.x + panel.locationMN.x * this.j.fx;
-		y += panel.locationXY.y + panel.locationMN.y * this.j.fy;
+		x += panel.location.x * this.j.fx;
+		y += panel.location.y * this.j.fy;
 		panel.setLocation(x, y);
 		panel.requireValidation = false;
 		this.positionChildrenOf(panel);
@@ -333,7 +334,8 @@ public class CodeGroup
 		this.panels.put(id, cf);
 		cf.parent = parent;
 		cf.link = link;
-		cf.location(posX, posY);
+		cf.location.x = posX / (float) this.j.fx;
+		cf.location.y = posY / (float) this.j.fy;
 		cf.recheckMaxLineLength();
 		this.jf.getContentPane().add(cf);
 		return cf;
@@ -545,8 +547,7 @@ public class CodeGroup
 	public void toggleRaw()
 	{
 		// setContents clears lines/panels and will lose the location
-		Point rootLocationXY = this.root.locationXY;
-		Point rootLocationMN = this.root.locationMN;
+		Point2D.Float rootLocation = this.root.location;
 		ArrayList<SB> lines = new ArrayList<>(this.buffer.lines.lines);
 		HashMap<Integer, CodePanel> panels = new HashMap<>(this.panels);
 		int caretx = this.buffer.caretx;
@@ -570,8 +571,7 @@ public class CodeGroup
 		this.activePanel = this.panelAtLine(this.buffer.carety);
 		this.jf.moveToGetCursorAtPosition(cursorPos);
 		this.raw = !this.raw;
-		this.root.locationXY = rootLocationXY;
-		this.root.locationMN = rootLocationMN;
+		this.root.location = rootLocation;
 		this.position(this.root);
 	}
 
@@ -585,15 +585,18 @@ public class CodeGroup
 		switch (position) {
 		case "bot":
 			child.link = PanelLink.BOTTOM;
-			child.location(0, 30);
+			child.location.x = 0.0f;
+			child.location.y = 30.0f / this.j.fy;
 			break;
 		case "right":
 			child.link = PanelLink.createRightLink(this.buffer.carety);
-			child.location(30, 0);
+			child.location.x = 30.0f / this.j.fx;
+			child.location.y = 0.0f;
 			break;
 		case "top":
 			child.link = PanelLink.TOP;
-			child.location(0, 30);
+			child.location.x = 0.0f;
+			child.location.y = 30.0f / this.j.fy;
 			break;
 		}
 		this.position(child);
