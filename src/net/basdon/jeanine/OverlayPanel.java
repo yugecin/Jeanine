@@ -63,12 +63,20 @@ public class OverlayPanel extends JComponent
 			// right line (child)
 			x1 = a.x;
 			x2 = a.x - 10;
-			y1 = a.y + /*border top*/ 1 + /*title padding top*/ 2 + this.j.fy / 2;
+			y1 = a.y +
+				Padding.BORDER +
+				Padding.TOP +
+				Padding.IN_HEADER +
+				this.j.fy / 2;
 			y2 = y1;
 			g.drawLine(x1, y1, x2, y2);
 			// connecting line
 			x1 = b.x + b.width + 10;
-			y1 = b.y + /*border top*/ 1 + /*title padding top*/ 2 + this.j.fy / 2;
+			y1 = b.y +
+				Padding.BORDER +
+				Padding.TOP +
+				Padding.IN_HEADER +
+				this.j.fy / 2;
 			g.drawLine(x1, y1, x2, y2);
 			// left line (parent)
 			x2 = b.x + b.width;
@@ -81,29 +89,34 @@ public class OverlayPanel extends JComponent
 			x1 = a.x;
 			x2 = a.x - 10;
 			y1 = a.y +
-				/*border top*/ 1 +
-				/*title padding*/ 2 +
-				/*title*/ this.j.fy +
-				/*offset*/ this.j.fy / 2;
+				Padding.BORDER +
+				Padding.TOP +
+				Padding.IN_HEADER +
+				this.j.fy +
+				Padding.IN_HEADER +
+				Padding.BETWEEN_HEADER_AND_CONTENTS +
+				this.j.fy / 2;
 			y2 = y1;
 			g.drawLine(x1, y1, x2, y2);
 			// connecting line
+			int localLine = line - parent.firstline;
 			x1 = b.x + b.width + 10;
 			y1 = b.y +
-				/*border top*/ 1 +
-				/*title padding*/ 2 +
-				/*title*/ this.j.fy +
-				/*line offset*/ this.j.fy *
-					(line - parent.firstline) +
-				this.j.fy / 2;
+				Padding.BORDER +
+				Padding.TOP +
+				Padding.IN_HEADER +
+				this.j.fy +
+				Padding.IN_HEADER +
+				Padding.BETWEEN_HEADER_AND_CONTENTS +
+				this.j.fy * localLine + this.j.fy / 2;
 			g.drawLine(x1, y1, x2, y2);
 			// left line (parent)
 			// draw it to where the text ends
 			SB l = parent.buffer.lines.get(line);
 			x2 = b.x +
 				(Line.visualLength(l) + 1) * this.j.fx +
-				/*border right*/ 1 +
-				/*padding right*/ 1;
+				Padding.BORDER +
+				Padding.RIGHT;
 			y2 = y1;
 			g.drawLine(x1, y1, x2, y2);
 			break;

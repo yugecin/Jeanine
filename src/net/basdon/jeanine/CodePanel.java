@@ -103,7 +103,7 @@ implements MouseListener, MouseMotionListener
 		hiddenHeight -= Padding.BORDER + Padding.TOP;
 		if (hiddenHeight <= this.j.fy) { // title
 			g.setColor(Colors.headerBg.col);
-			g.fillRect(0, 0, w, this.j.fy + Padding.IN_HEADER * Padding.IN_HEADER);
+			g.fillRect(0, 0, w, Padding.IN_HEADER + this.j.fy + Padding.IN_HEADER);
 			g.setColor(Colors.headerFg.col);
 			SB title = new SB(100);
 			title.append(String.valueOf(this.id));
@@ -299,13 +299,13 @@ implements MouseListener, MouseMotionListener
 	public void mousePressed(MouseEvent e)
 	{
 		if (!this.jf.shouldBlockInput()) {
-			int dragHeight =
+			int dragAreaHeight =
 				Padding.BORDER +
 				Padding.TOP +
 				Padding.IN_HEADER +
 				this.j.fy +
 				Padding.IN_HEADER;
-			if (e.getY() <= dragHeight) {
+			if (e.getY() <= dragAreaHeight) {
 				this.isDragging = true;
 				this.dragStart = e.getLocationOnScreen();
 			} else if (this.group.focusGained(this)) {
