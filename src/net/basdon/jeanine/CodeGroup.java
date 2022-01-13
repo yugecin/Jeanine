@@ -595,8 +595,8 @@ public class CodeGroup
 			break;
 		case "top":
 			child.link = PanelLink.TOP;
-			child.location.x = 0.0f;
-			child.location.y = 30.0f / this.j.fy;
+			child.location.x = 30.0f / this.j.fx;
+			child.location.y = 0.0f;
 			break;
 		}
 		this.position(child);
