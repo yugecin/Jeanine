@@ -24,7 +24,7 @@ public class DialogPreferences extends JeanineDialogState
 		instructionlines.add(new SB());
 		instructionlines.add(new SB("Press ENTER to apply the settings"));
 		instructionlines.add(new SB());
-		instructionlines.add(new SB("The actions in the panel to the right"));
+		instructionlines.add(new SB("The actions in the panel below"));
 		instructionlines.add(new SB("can be invoked by pressing ENTER or"));
 		instructionlines.add(new SB("double cliking whilst on the line"));
 		instructionlines.add(new SB("/*jeanine:p:i:1;p:0;a:b;y:30*/"));
