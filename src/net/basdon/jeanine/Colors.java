@@ -76,7 +76,7 @@ public class Colors
 		textBg.col = new Color(0x292929);
 		headerBg.col = textFg.col;
 		headerFg.col = textBg.col;
-		selectionBg.col = new Color(0x808080);
+		selectionBg.col = new Color(0x000eff);
 		selectionFg.col = null;
 		commentFg.col = new Color(0xeadf10);
 		whitespaceBg.col = new Color(0xff8c69);
