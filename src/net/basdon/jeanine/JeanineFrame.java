@@ -63,6 +63,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	private CodeGroup activeGroupBeforeSearch;
 	private Point locationMoveFrom, locationMoveTo;
 	private long locationMoveStartTime;
+	private Point locationZoominTo;
+	private long locationZoominStartTime;
 	private Point dragStart;
 	private char[] activeSearch;
 
@@ -393,30 +395,22 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				if (this.commandbar.active) {
 					return;
 				}
+				// cancel any moving 'animation'
 				this.locationMoveFrom = null;
 				this.locationMoveTo = null;
-				float mx = e.getX() - this.location.x;
-				float umx = mx / (this.scale / 10f);
-				float my = e.getY() - this.location.y;
-				float umy = my / (this.scale / 10f);
+				int delta;
 				if (units < 0) {
 					if (this.scale >= 10) {
 						return;
 					}
-					this.scale += 1;
+					delta = 1;
 				} else {
 					if (this.scale <= 1) {
 						return;
 					}
-					this.scale -= 1;
+					delta = -1;
 				}
-				float nmx = umx * this.scale / 10f;
-				float nmy = umy * this.scale / 10f;
-				this.location.x -= nmx - mx;
-				this.location.y -= nmy - my;
-				for (CodeGroup group : this.codegroups) {
-					group.forceResizeAndReposition();
-				}
+				this.doZoom(e.getX(), e.getY(), delta);
 				CodePanel panel = this.findHoveringPanel(e.getX(), e.getY());
 				this.updateZoomedOverlayMouseHover(e.getX(), e.getY(), panel);
 				return;
@@ -456,6 +450,16 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 					group.updateLocation();
 				}
 			}
+			if (this.locationZoominTo != null &&
+				// this doesn't matter if timerinterval=25, but keeping it for now
+				this.locationZoominStartTime + 15 < System.currentTimeMillis())
+			{
+				this.locationZoominStartTime = System.currentTimeMillis();
+				this.doZoom(this.locationZoominTo.x, this.locationZoominTo.y, 1);
+				if (this.scale == 10) {
+					this.locationZoominTo = null;
+				}
+			}
 			if (this.liveSearchText != null &&
 				this.searchHighlightTimeout < System.currentTimeMillis())
 			{
@@ -473,11 +477,49 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	}
 
 	/**
+	 * @param x panel local click position x
+	 * @param y panel local click position y
+	 */
+	public void panelClickedWhileZoomed(CodePanel panel, int x, int y)
+	{
+		// TODO: setting to disable or something
+		this.locationZoominStartTime = System.currentTimeMillis();
+		this.locationZoominTo = new Point(x + panel.getX(), y + panel.getY());
+		this.updateZoomedOverlayMouseHover(0, 0, (CodePanel) null);
+		this.activeGroup = panel.group;
+		this.activeGroup.activePanel = panel;
+		x /= (this.scale / 10f);
+		y /= (this.scale / 10f);
+		panel.putCaretFromMouseInput(x, y);
+	}
+
+	/**
+	 * @param x [0,this.width]
+	 * @param y [0,this.height]
+	 * @param delta -1 to zoom out, +1 to zoom in
+	 */
+	private void doZoom(int x, int y, int delta)
+	{
+		float mx = x - this.location.x;
+		float umx = mx / (this.scale / 10f);
+		float my = y - this.location.y;
+		float umy = my / (this.scale / 10f);
+		this.scale += delta;
+		float nmx = umx * this.scale / 10f;
+		float nmy = umy * this.scale / 10f;
+		this.location.x -= nmx - mx;
+		this.location.y -= nmy - my;
+		for (CodeGroup group : this.codegroups) {
+			group.forceResizeAndReposition();
+		}
+	}
+
+	/**
 	 * To draw info panel on overlay for hovering {@link CodePanel} while zoomed out.
 	 */
 	public void updateZoomedOverlayMouseHover(int x, int y, CodePanel hoveredPanel)
 	{
-		if (this.scale == 10) {
+		if (this.scale == 10 || this.locationZoominTo != null) {
 			this.overlay.showInfoForPanel(x, y, null);
 		} else {
 			this.overlay.showInfoForPanel(x, y, hoveredPanel);

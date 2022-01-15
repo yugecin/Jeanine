@@ -350,6 +350,9 @@ implements MouseListener, MouseMotionListener
 				this.invokeLineSelectionListener(line + this.firstline);
 			}
 		}
+		if (this.jf.scale != 10) {
+			this.jf.panelClickedWhileZoomed(this, e.getX(), e.getY());
+		}
 	}
 
 	/*MouseListener*/
@@ -444,7 +447,7 @@ implements MouseListener, MouseMotionListener
 		}
 	}
 
-	private void putCaretFromMouseInput(int x, int y)
+	public void putCaretFromMouseInput(int x, int y)
 	{
 		x -= Padding.BORDER + Padding.LEFT;
 		x /= this.j.fx;
