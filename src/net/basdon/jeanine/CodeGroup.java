@@ -129,6 +129,16 @@ public class CodeGroup
 		this.position(this.root);
 	}
 
+	public void forceResizeAndReposition()
+	{
+		for (CodePanel pnl : this.panels.values()) {
+			pnl.invalidateSize();
+			pnl.recheckMaxLineLength();
+			pnl.ensureCodeViewSize();
+		}
+		this.position(this.root);
+	}
+
 	public void setLocation(int x, int y)
 	{
 		this.location.x = x;
@@ -178,8 +188,9 @@ public class CodeGroup
 
 	public void position(CodePanel panel)
 	{
-		int x = this.location.x + this.jf.location.x;
-		int y = this.location.y + this.jf.location.y;
+		float scale = this.jf.scale / 10f;
+		float x = scale * this.location.x + this.jf.location.x;
+		float y = scale * this.location.y + this.jf.location.y;
 		if (panel.parent != null) {
 			CodePanel parent = this.panels.get(panel.parent.id);
 			if (parent != null) {
@@ -192,7 +203,8 @@ public class CodeGroup
 				case 'r':
 					int line = PanelLink.getLine(panel.link);
 					x = bounds.x + bounds.width;
-					y = bounds.y + this.j.fy * (line - panel.parent.firstline);
+					y = bounds.y;
+					y += this.j.fy * (line - panel.parent.firstline) * scale;
 					break;
 				case 'b':
 					x = bounds.x + (bounds.width - panel.getWidth()) / 2;
@@ -201,9 +213,9 @@ public class CodeGroup
 				}
 			}
 		}
-		x += panel.location.x * this.j.fx;
-		y += panel.location.y * this.j.fy;
-		panel.setLocation(x, y);
+		x += panel.location.x * this.j.fx * scale;
+		y += panel.location.y * this.j.fy * scale;
+		panel.setLocation((int) x, (int) y);
 		panel.requireValidation = false;
 		this.positionChildrenOf(panel);
 	}

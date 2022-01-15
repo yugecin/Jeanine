@@ -54,6 +54,11 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public char[] liveSearchText;
 	public long searchHighlightTimeout;
 
+	/**
+	 * Div by 10 to get real scale.
+	 */
+	public int scale;
+
 	private Point caretPosBeforeSearch;
 	private CodeGroup activeGroupBeforeSearch;
 	private Point locationMoveFrom, locationMoveTo;
@@ -64,6 +69,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public JeanineFrame(Jeanine j)
 	{
 		this.j = j;
+		this.scale = 10;
 		this.pushedStates = new ArrayDeque<>();
 		this.dragStart = new Point();
 		this.location = new Point();
@@ -71,11 +77,12 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.setIconImage(this.createLogoImg());
 		this.setFocusable(true);
 		this.addKeyListener(this);
-		this.addMouseListener(this);
-		this.addMouseMotionListener(this);
-		this.addMouseWheelListener(this);
 		this.commandbar = new CommandBar(j);
 		this.setContentPane(new BackgroundPanel());
+		// mouse event coordinates on jframe are offset by window chrome, so use contentpane
+		this.getContentPane().addMouseWheelListener(this);
+		this.getContentPane().addMouseListener(this);
+		this.getContentPane().addMouseMotionListener(this);
 		this.setGlassPane(this.overlay = new OverlayPanel(this));
 		this.overlay.setVisible(true);
 		this.setLocationByPlatform(true);
@@ -148,6 +155,17 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			return;
 		}
 		KeyInput event = new KeyInput(e.getKeyChar());
+		if (this.scale != 10) {
+			if (event.c == EditBuffer.ESC) {
+				this.scale = 10;
+				for (CodeGroup group : this.codegroups) {
+					group.forceResizeAndReposition();
+				}
+			} else {
+				this.setError("can't type while zoomed");
+			}
+			return;
+		}
 		if (this.commandbar.active) {
 			this.commandbar.handleKey(event.c);
 			if (this.commandbar.active) {
@@ -314,9 +332,6 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	@Override
 	public void mouseDragged(MouseEvent e)
 	{
-		if (this.shouldBlockInput()) {
-			return;
-		}
 		int x = e.getX() - this.dragStart.x;
 		int y = e.getY() - this.dragStart.y;
 		this.location.x += x;
@@ -373,7 +388,36 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	{
 		if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
 			int units = e.getUnitsToScroll();
-			if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
+			if ((e.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
+				if (this.commandbar.active) {
+					return;
+				}
+				this.locationMoveFrom = null;
+				this.locationMoveTo = null;
+				float mx = e.getX() - this.location.x;
+				float umx = mx / (this.scale / 10f);
+				float my = e.getY() - this.location.y;
+				float umy = my / (this.scale / 10f);
+				if (units < 0) {
+					if (this.scale >= 10) {
+						return;
+					}
+					this.scale += 1;
+				} else {
+					if (this.scale <= 1) {
+						return;
+					}
+					this.scale -= 1;
+				}
+				float nmx = umx * this.scale / 10f;
+				float nmy = umy * this.scale / 10f;
+				this.location.x -= nmx - mx;
+				this.location.y -= nmy - my;
+				for (CodeGroup group : this.codegroups) {
+					group.forceResizeAndReposition();
+				}
+				return;
+			} else if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
 				units *= Preferences.hscrollPercentage;
 				this.location.x -= (int) (units / 100f);
 			} else {
@@ -505,7 +549,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 
 	public boolean shouldBlockInput()
 	{
-		return this.commandbar.active;
+		return this.commandbar.active || this.scale != 10;
 	}
 
 	public boolean shouldDrawCaret()
@@ -955,6 +999,9 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"Copy: yy (y in selection)\n" +
 		"View: z\n" +
 		"Search: / n N *\n" +
+		"\n" +
+		"mousedrag or (shift+)scroll to pan view\n" +
+		"ctrl+scroll to zoom\n" +
 		"\n" +
 		"Commands:\n" +
 		":e - open a file for editing\n" +

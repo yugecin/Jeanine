@@ -97,6 +97,9 @@ implements MouseListener, MouseMotionListener
 		// bg
 		g.setColor(Colors.textBg.col);
 		g.fillRect(0, 0, w, h);
+		if (this.jf.scale != 10) {
+			return;
+		}
 		g.translate(Padding.LEFT, Padding.TOP);
 		w -= Padding.LEFT + Padding.RIGHT;
 		h -= Padding.TOP + Padding.BOT;
@@ -441,6 +444,15 @@ implements MouseListener, MouseMotionListener
 		this.jf.lineSelectionListener.lineSelected(info);
 	}
 
+	/**
+	 * Invoke to force next {@link #ensureCodeViewSize} to always resize the panel.
+	 */
+	public void invalidateSize()
+	{
+		this.cols = -1;
+		this.rows = -1;
+	}
+
 	public void ensureCodeViewSize()
 	{
 		int rows = this.lastline - this.firstline;
@@ -494,6 +506,11 @@ implements MouseListener, MouseMotionListener
 			rows * this.j.fy +
 			Padding.BOT +
 			Padding.BORDER;
+		if (this.jf.scale != 10) {
+			float scale = this.jf.scale / 10f;
+			size.width = (int) (size.width * scale);
+			size.height = (int) (size.height * scale);
+		}
 		if (this.getWidth() != size.width) {
 			this.setSize(size);
 			this.jf.overlay.repaint();
