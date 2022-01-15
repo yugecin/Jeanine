@@ -12,6 +12,7 @@ public class Colors
 	public static final Colors headerFg = new Colors("color.header.fg");
 	public static final Colors headerBg = new Colors("color.header.bg");
 	public static final Colors selectionBg = new Colors("color.selection.bg");
+	public static final Colors selectionFg = new Colors("color.selection.fg");
 	public static final Colors commentFg = new Colors("color.comment.fg");
 	public static final Colors whitespaceBg = new Colors("color.whitespace.bg");
 	public static final Colors caretDefault = new Colors("color.caret.default");
@@ -25,6 +26,7 @@ public class Colors
 		headerFg,
 		headerBg,
 		selectionBg,
+		selectionFg,
 		commentFg,
 		whitespaceBg,
 		caretDefault,
@@ -40,6 +42,7 @@ public class Colors
 		headerFg.col = textFg.col;
 		headerBg.col = new Color(0xdddddd);
 		selectionBg.col = new Color(0x66AAFF);
+		selectionFg.col = null;
 		commentFg.col = Color.gray;
 		whitespaceBg.col = new Color(0xff8c69);
 		caretDefault.col = Color.red;
@@ -55,6 +58,7 @@ public class Colors
 		headerBg.col = textBg.col.darker();
 		headerFg.col = textFg.col;
 		selectionBg.col = new Color(0x008000);
+		selectionFg.col = new Color(0xb0ffb0);
 		commentFg.col = new Color(0x3A96DD);
 		whitespaceBg.col = new Color(0xff8c69);
 		caretDefault.col = Color.red;
@@ -73,6 +77,7 @@ public class Colors
 		headerBg.col = textFg.col;
 		headerFg.col = textBg.col;
 		selectionBg.col = new Color(0x808080);
+		selectionFg.col = null;
 		commentFg.col = new Color(0xeadf10);
 		whitespaceBg.col = new Color(0xff8c69);
 		caretDefault.col = new Color(0xdb4a4a);
@@ -91,6 +96,7 @@ public class Colors
 		headerBg.col = textFg.col;
 		headerFg.col = textBg.col;
 		selectionBg.col = new Color(0x008000);
+		selectionFg.col = new Color(0xb0ffb0);
 		commentFg.col = new Color(0x7d7d7d);
 		whitespaceBg.col = new Color(0xff8c69);
 		caretDefault.col = new Color(0xdb4a4a);

@@ -215,6 +215,17 @@ implements MouseListener, MouseMotionListener
 				// the code text
 				// try coloring comments
 				// this should check if comment start is not in string, but oh well
+				Color commentfg = Colors.commentFg.col;
+				Color normalfg = Colors.textFg.col;
+				// use selection fg if in selection
+				if (Colors.selectionFg.col != null &&
+					this.buffer.mode == EditBuffer.SELECT_LINE_MODE &&
+					this.buffer.lineselectfrom <= i &&
+					i < this.buffer.lineselectto)
+				{
+					commentfg = Colors.selectionFg.col;
+					normalfg = Colors.selectionFg.col;
+				}
 				int from = 0;
 				int to = line.length;
 				int x = 0;
@@ -223,13 +234,13 @@ implements MouseListener, MouseMotionListener
 					if (inBlockComment) {
 						int idx = line.indexOf(BLOCK_COMMENT_END, from);
 						if (idx == -1) {
-							g.setColor(Colors.commentFg.col);
+							g.setColor(commentfg);
 							len = to - from;
 							g.drawChars(line.value, from, len, x, ma);
 							break;
 						}
 						idx += 2;
-						g.setColor(Colors.commentFg.col);
+						g.setColor(commentfg);
 						len = idx - from;
 						g.drawChars(line.value, from, len, x, ma);
 						inBlockComment = false;
@@ -247,13 +258,13 @@ implements MouseListener, MouseMotionListener
 						}
 						if (bidx == -1 && lidx == -1) {
 							// no comment
-							g.setColor(Colors.textFg.col);
+							g.setColor(normalfg);
 							len = to - from;
 							g.drawChars(line.value, from, len, x, ma);
 							break;
 						} else if (bidx != -1) {
 							// block comment
-							g.setColor(Colors.textFg.col);
+							g.setColor(normalfg);
 							len = bidx - from;
 							g.drawChars(line.value, from, len, x, ma);
 							x += this.j.fx * len;
@@ -261,11 +272,11 @@ implements MouseListener, MouseMotionListener
 							from = bidx;
 						} else {
 							// line comment
-							g.setColor(Colors.textFg.col);
+							g.setColor(normalfg);
 							len = lidx - from;
 							g.drawChars(line.value, from, len, x, ma);
 							x += this.j.fx * len;
-							g.setColor(Colors.commentFg.col);
+							g.setColor(commentfg);
 							len = to - lidx;
 							g.drawChars(line.value, lidx, len, x, ma);
 							break;
