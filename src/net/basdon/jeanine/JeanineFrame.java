@@ -348,6 +348,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	@Override
 	public void mouseMoved(MouseEvent e)
 	{
+		this.updateZoomedOverlayMouseHover(e.getX(), e.getY(), (CodePanel) null);
 	}
 
 	/*MouseListener*/
@@ -416,6 +417,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				for (CodeGroup group : this.codegroups) {
 					group.forceResizeAndReposition();
 				}
+				CodePanel panel = this.findHoveringPanel(e.getX(), e.getY());
+				this.updateZoomedOverlayMouseHover(e.getX(), e.getY(), panel);
 				return;
 			} else if ((e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
 				units *= Preferences.hscrollPercentage;
@@ -466,6 +469,18 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 					this.activeGroup.repaintAll();
 				}
 			}
+		}
+	}
+
+	/**
+	 * To draw info panel on overlay for hovering {@link CodePanel} while zoomed out.
+	 */
+	public void updateZoomedOverlayMouseHover(int x, int y, CodePanel hoveredPanel)
+	{
+		if (this.scale == 10) {
+			this.overlay.showInfoForPanel(x, y, null);
+		} else {
+			this.overlay.showInfoForPanel(x, y, hoveredPanel);
 		}
 	}
 
@@ -931,6 +946,21 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			this.locationMoveTo = new Point(this.location.x + dx, this.location.y + dy);
 			this.locationMoveStartTime = System.currentTimeMillis();
 		}
+	}
+
+	private CodePanel findHoveringPanel(int x, int y)
+	{
+		for (CodeGroup group : this.codegroups) {
+			for (CodePanel panel : group.panels.values()) {
+				int px = panel.getX(), py = panel.getY();
+				if (px <= x && x <= px + panel.getWidth() &&
+					py <= y && y <= py + panel.getHeight())
+				{
+					return panel;
+				}
+			}
+		}
+		return null;
 	}
 
 	private void repaintActivePanel()

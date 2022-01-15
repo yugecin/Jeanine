@@ -420,6 +420,9 @@ implements MouseListener, MouseMotionListener
 	@Override
 	public void mouseMoved(MouseEvent e)
 	{
+		int x = e.getX() + this.getX();
+		int y = e.getY() + this.getY();
+		this.jf.updateZoomedOverlayMouseHover(x, y, this);
 	}
 
 	public void handleInput(KeyInput event)
@@ -549,7 +552,7 @@ implements MouseListener, MouseMotionListener
 		if (this.getWidth() != size.width) {
 			this.cachedPaintedInnerContents = null;
 			this.setSize(size);
-			this.jf.overlay.repaint();
+			this.jf.overlay.repaint(); // TODO: hit a lot when multiple panels resize
 			this.group.positionChildrenOf(this);
 		} else if (this.getHeight() != size.height) {
 			this.setSize(size);

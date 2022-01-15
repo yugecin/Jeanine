@@ -10,6 +10,10 @@ public class OverlayPanel extends JComponent
 {
 	private final JeanineFrame jf;
 	private final Jeanine j;
+	private final SB tmpsb;
+
+	private CodePanel infopanel;
+	private int infoX, infoY;
 
 	public OverlayPanel(JeanineFrame jf)
 	{
@@ -17,6 +21,7 @@ public class OverlayPanel extends JComponent
 		this.j = jf.j;
 		this.setLayout(null);
 		this.setFocusable(false);
+		this.tmpsb = new SB(100);
 	}
 
 	@Override
@@ -33,6 +38,30 @@ public class OverlayPanel extends JComponent
 					this.drawLink(g, panel, ad.child, ad.link);
 				}
 			}
+		}
+		if (this.infopanel != null) {
+			tmpsb.length = 0;
+			if (this.infopanel.group.title != null) {
+				tmpsb.append(this.infopanel.group.title);
+				tmpsb.append('|');
+			}
+			tmpsb.append(this.infopanel.firstline);
+			tmpsb.append('-');
+			tmpsb.append(this.infopanel.lastline);
+			int w = tmpsb.length * this.j.fx + 4;
+			int h = this.j.fy + 4;
+			int x = this.infoX + 2;
+			int y = this.infoY - 2 - h;
+			g.setFont(this.j.font);
+			g.translate(x, y);
+			g.setColor(Color.black);
+			g.drawRect(0, 0, w, h);
+			g.translate(1, 1);
+			g.setColor(Color.yellow);
+			g.fillRect(0, 0, w - 2, h - 2);
+			g.translate(1, 1);
+			g.setColor(Color.black);
+			g.drawString(this.tmpsb.toString(), 0, this.j.fmaxascend);
 		}
 	}
 
@@ -127,6 +156,16 @@ public class OverlayPanel extends JComponent
 			y2 = y1;
 			g.drawLine(x1, y1, x2, y2);
 			break;
+		}
+	}
+
+	public void showInfoForPanel(int x, int y, CodePanel panel)
+	{
+		if (this.infopanel != panel || this.infoX != x || this.infoY != y) {
+			this.infopanel = panel;
+			this.infoX = x;
+			this.infoY = y;
+			this.repaint();
 		}
 	}
 }
