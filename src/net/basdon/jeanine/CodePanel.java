@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
@@ -52,6 +53,11 @@ implements MouseListener, MouseMotionListener
 	private int rows, cols;
 	private boolean isDragging;
 	private Point dragStart;
+	/**
+	 * Inner contents as painted by {@link #paintInnerContents} to use when painting contents
+	 * when this panel is drawn scaled. This image should already be scaled.
+	 */
+	private BufferedImage cachedPaintedInnerContents;
 
 	public CodePanel(CodeGroup group, Integer id, int linefrom, int lineto)
 	{
@@ -94,12 +100,50 @@ implements MouseListener, MouseMotionListener
 		g.translate(1, 1);
 		w--;
 		h--;
-		// bg
+		if (this.jf.scale == 10) {
+			// bg
+			g.setColor(Colors.textBg.col);
+			g.fillRect(0, 0, w, h);
+			this.paintInnerContents(g, w, h, hiddenHeight, heightleft);
+		} else {
+			if (this.cachedPaintedInnerContents == null) {
+				BufferedImage i, i2;
+				Graphics g2;
+				Dimension s = this.calculateSize(this.rows, this.cols);
+				int _w = s.width - Padding.BORDER - Padding.BORDER;
+				int _h = s.height - Padding.BORDER - Padding.BORDER;
+				i = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_RGB);
+				g2 = i.createGraphics();
+				g2.setFont(this.j.font);
+				this.paintInnerContents(g2, _w, _h, 0, Integer.MAX_VALUE);
+				g2.dispose();
+				// prescale it
+				this.scaleSize(s);
+				_w = s.width - Padding.BORDER - Padding.BORDER;
+				_h = s.height - Padding.BORDER - Padding.BORDER;
+				i2 = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_RGB);
+				g2 = i2.createGraphics();
+				g2.drawImage(i, 0, 0, _w, _h, null);
+				g2.dispose();
+				this.cachedPaintedInnerContents = i2;
+			}
+			if (w != this.cachedPaintedInnerContents.getWidth() ||
+				h != this.cachedPaintedInnerContents.getHeight())
+			{
+				// We don't want to scale the image every paint, so fix the
+				// dimension mismatch if you ever see a codepanel completely red.
+				g.setColor(Color.red);
+				g.fillRect(0, 0, w, h);
+			} else {
+				g.drawImage(this.cachedPaintedInnerContents, 0, 0, w, h, null);
+			}
+		}
+	}
+
+	private void paintInnerContents(Graphics g, int w, int h, int hiddenHeight, int heightleft)
+	{
 		g.setColor(Colors.textBg.col);
 		g.fillRect(0, 0, w, h);
-		if (this.jf.scale != 10) {
-			return;
-		}
 		g.translate(Padding.LEFT, Padding.TOP);
 		w -= Padding.LEFT + Padding.RIGHT;
 		h -= Padding.TOP + Padding.BOT;
@@ -500,6 +544,20 @@ implements MouseListener, MouseMotionListener
 	{
 		this.rows = rows;
 		this.cols = cols;
+		Dimension size = this.calculateSize(rows, cols);
+		this.scaleSize(size);
+		if (this.getWidth() != size.width) {
+			this.cachedPaintedInnerContents = null;
+			this.setSize(size);
+			this.jf.overlay.repaint();
+			this.group.positionChildrenOf(this);
+		} else if (this.getHeight() != size.height) {
+			this.setSize(size);
+		}
+	}
+
+	private Dimension calculateSize(int rows, int cols)
+	{
 		Dimension size = new Dimension();
 		size.width =
 			Padding.BORDER +
@@ -517,17 +575,15 @@ implements MouseListener, MouseMotionListener
 			rows * this.j.fy +
 			Padding.BOT +
 			Padding.BORDER;
+		return size;
+	}
+
+	private void scaleSize(Dimension size)
+	{
 		if (this.jf.scale != 10) {
 			float scale = this.jf.scale / 10f;
 			size.width = (int) (size.width * scale);
 			size.height = (int) (size.height * scale);
-		}
-		if (this.getWidth() != size.width) {
-			this.setSize(size);
-			this.jf.overlay.repaint();
-			this.group.positionChildrenOf(this);
-		} else if (this.getHeight() != size.height) {
-			this.setSize(size);
 		}
 	}
 
