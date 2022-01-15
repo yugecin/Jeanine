@@ -61,6 +61,24 @@ public class Colors
 		caretInsert.col = Color.green;
 	}
 
+	/**
+	 * Based on colors that Jonathan Blow uses as seen in his videos.
+	 */
+	public static void jblow()
+	{
+		border.col = new Color(0xd1b58c);
+		bg.col = new Color(0x042328);
+		textFg.col = new Color(0xd1b58c);
+		textBg.col = new Color(0x292929);
+		headerBg.col = textFg.col;
+		headerFg.col = textBg.col;
+		selectionBg.col = new Color(0x808080);
+		commentFg.col = new Color(0xeadf10);
+		whitespaceBg.col = new Color(0xff8c69);
+		caretDefault.col = new Color(0xdb4a4a);
+		caretInsert.col = new Color(0x86e08e);
+	}
+
 	public final String name;
 
 	public Color col;

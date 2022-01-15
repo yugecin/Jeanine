@@ -30,6 +30,7 @@ public class DialogPreferences extends JeanineDialogState
 		instructionlines.add(new SB("/*jeanine:p:i:1;p:0;a:b;y:30*/"));
 		instructionlines.add(new SB("Append default light colorscheme"));
 		instructionlines.add(new SB("Append default blue colorscheme"));
+		instructionlines.add(new SB("Append default jblow colorscheme"));
 		instructionlines.add(new SB("Append current font settings"));
 		instructionlines.add(new SB("Exit without saving preferences"));
 	}
@@ -81,7 +82,13 @@ public class DialogPreferences extends JeanineDialogState
 				Colors.blue();
 				Preferences.appendColorScheme(lines::add);
 				break;
-			case 2: // append current font settings
+			case 2: // append default jblow colorscheme
+				lines.add(new SB());
+				lines.add(new SB("/*jblow colorscheme*/"));
+				Colors.jblow();
+				Preferences.appendColorScheme(lines::add);
+				break;
+			case 3: // append current font settings
 				lines.add(new SB());
 				lines.add(new SB("font.family " + this.jf.j.fontFamily));
 				lines.add(new SB("font.size " + this.jf.j.fontSize));
@@ -97,7 +104,7 @@ public class DialogPreferences extends JeanineDialogState
 				}
 				lines.add(sb);
 				break;
-			case 3: // exit without changing settings
+			case 4: // exit without changing settings
 				this.discardChanges = true;
 				this.jf.popState();
 				return;
