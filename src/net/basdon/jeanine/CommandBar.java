@@ -1,12 +1,10 @@
 package net.basdon.jeanine;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
 
 public class CommandBar extends JPanel
 {
@@ -23,10 +21,6 @@ public class CommandBar extends JPanel
 	{
 		this.j = j;
 		this.val = new StringBuilder();
-		this.setFont(j.font);
-		this.setBackground(Color.white);
-		this.setOpaque(true);
-		this.setBorder(new LineBorder(Color.black, 1));
 		this.setVisible(false);
 		this.setFocusable(false);
 	}
@@ -67,11 +61,16 @@ public class CommandBar extends JPanel
 	@Override
 	public void paint(Graphics g)
 	{
-		super.paint(g);
-		g.translate(2, 2);
-		g.setColor(Color.magenta);
+		int w = this.getWidth(), h = this.getHeight();
+		g.setColor(Colors.border.col);
+		g.fillRect(0, 0, w, h);
+		g.translate(1, 1);
+		g.setColor(Colors.textBg.col);
+		g.fillRect(0, 0, w - 2, h - 2);
+		g.translate(1, 1);
+		g.setColor(Colors.caretInsert.col);
 		g.fillRect(this.j.fx * (1 + this.caretPos), 0, this.j.fx, this.j.fy);
-		g.setColor(Color.black);
+		g.setColor(Colors.textFg.col);
 		g.setFont(this.j.font);
 		g.drawString(this.cmdChar + this.val.toString(), 0, this.j.fmaxascend);
 	}
