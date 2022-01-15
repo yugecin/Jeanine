@@ -79,6 +79,24 @@ public class Colors
 		caretInsert.col = new Color(0x86e08e);
 	}
 
+	/**
+	 * Based on colors that Casey Muratori uses (for Handmade Hero) as seen in his videos.
+	 */
+	public static void handmade()
+	{
+		border.col = new Color(0xd0ae85);
+		bg.col = new Color(0x808080);
+		textFg.col = new Color(0xd0ae85);
+		textBg.col = new Color(0x161616);
+		headerBg.col = textFg.col;
+		headerFg.col = textBg.col;
+		selectionBg.col = new Color(0x008000);
+		commentFg.col = new Color(0x7d7d7d);
+		whitespaceBg.col = new Color(0xff8c69);
+		caretDefault.col = new Color(0xdb4a4a);
+		caretInsert.col = new Color(0x86e08e);
+	}
+
 	public final String name;
 
 	public Color col;
