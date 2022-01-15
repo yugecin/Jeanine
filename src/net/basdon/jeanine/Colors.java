@@ -14,6 +14,8 @@ public class Colors
 	public static final Colors selectionBg = new Colors("color.selection.bg");
 	public static final Colors commentFg = new Colors("color.comment.fg");
 	public static final Colors whitespaceBg = new Colors("color.whitespace.bg");
+	public static final Colors caretDefault = new Colors("color.caret.default");
+	public static final Colors caretInsert = new Colors("color.caret.insert");
 
 	public static final Colors[] ALL = {
 		border,
@@ -25,6 +27,8 @@ public class Colors
 		selectionBg,
 		commentFg,
 		whitespaceBg,
+		caretDefault,
+		caretInsert,
 	};
 
 	public static void reset()
@@ -38,6 +42,8 @@ public class Colors
 		selectionBg.col = new Color(0x66AAFF);
 		commentFg.col = Color.gray;
 		whitespaceBg.col = new Color(0xff8c69);
+		caretDefault.col = Color.red;
+		caretInsert.col = Color.green;
 	}
 
 	public static void blue()
@@ -51,6 +57,8 @@ public class Colors
 		selectionBg.col = new Color(0x008000);
 		commentFg.col = new Color(0x3A96DD);
 		whitespaceBg.col = new Color(0xff8c69);
+		caretDefault.col = Color.red;
+		caretInsert.col = Color.green;
 	}
 
 	public final String name;
