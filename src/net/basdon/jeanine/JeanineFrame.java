@@ -838,35 +838,6 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.repaint();
 	}
 
-	public void pushState(
-		List<CodeGroup> codegroups,
-		CodeGroup activeGroup,
-		LineSelectionListener lineSelectionListener,
-		Runnable postStateLeaveListener)
-	{
-		JeanineState state = new JeanineState();
-		state.activeGroup = this.activeGroup;
-		state.codegroups = this.codegroups;
-		state.location = new Point(this.location);
-		state.lineSelectionListener = this.lineSelectionListener;
-		state.postStateLeaveListener = this.postStateLeaveListener;
-		state.font = this.j.font;
-		state.cursorPos = this.findCursorPosition();
-		this.pushedStates.push(state);
-		this.activeGroup = activeGroup;
-		this.codegroups = codegroups;
-		this.lineSelectionListener = lineSelectionListener;
-		this.postStateLeaveListener = postStateLeaveListener;
-		this.getContentPane().removeAll();
-		for (CodeGroup group : this.codegroups) {
-			for (CodePanel panel : group.panels.values()) {
-				this.getContentPane().add(panel);
-			}
-		}
-		this.ensureCaretInView();
-		this.repaint();
-	}
-
 	public void popState()
 	{
 		JeanineState state = this.pushedStates.pop();
