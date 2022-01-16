@@ -565,6 +565,14 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		if (this.activeGroup == null) {
 			return;
 		}
+		// Assign search to liveSearchText, to make highlighting happen
+		this.liveSearchText = text;
+		if (text.length == 0) {
+			// text length may be 0 when deleting the last char in the search bar
+			// still have to repaint since there could be match highlights from before
+			this.activeGroup.repaintAll();
+			return;
+		}
 		EditBuffer buf = this.activeGroup.buffer;
 		Point p;
 		int fromx = buf.caretx;
@@ -600,8 +608,6 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			buf.carety = p.y;
 			this.activeGroup.activePanel = this.activeGroup.panelAtLine(p.y);
 		}
-		// Assign search to liveSearchText, to make highlighting happen
-		this.liveSearchText = text;
 		// Keep highlighting for live search until not searching anymore,
 		// and let the highlighting only stay for a short while for non-live searches.
 		if (live) {
