@@ -372,6 +372,10 @@ implements MouseListener, MouseMotionListener
 			} else if (this.group.focusGained(this)) {
 				this.putCaretFromMouseInput(e.getX(), e.getY());
 			}
+		} else if (this.jf.scale != 10) {
+			int x = e.getX() + this.getX();
+			int y = e.getY() + this.getY();
+			this.jf.panByMouseDragStart(x, y);
 		}
 	}
 
@@ -416,6 +420,11 @@ implements MouseListener, MouseMotionListener
 			} else if (this.group.hasFocus(this)) {
 				this.putCaretFromMouseInput(e.getX(), e.getY());
 			}
+		} else if (this.jf.scale != 10) {
+			int x = e.getX() + this.getX();
+			int y = e.getY() + this.getY();
+			this.jf.panByMouseDragUpdate(x, y);
+			this.jf.updateZoomedOverlayMouseHover(x, y, this);
 		}
 	}
 

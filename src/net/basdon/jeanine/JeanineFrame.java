@@ -334,16 +334,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	@Override
 	public void mouseDragged(MouseEvent e)
 	{
-		int x = e.getX() - this.dragStart.x;
-		int y = e.getY() - this.dragStart.y;
-		this.location.x += x;
-		this.location.y += y;
-		this.dragStart.x = e.getX();
-		this.dragStart.y = e.getY();
-
-		for (CodeGroup cg : this.codegroups) {
-			cg.updateLocation();
-		}
+		this.panByMouseDragUpdate(e.getX(), e.getY());
 	}
 
 	/*MouseMotionListener*/
@@ -363,8 +354,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
-		this.dragStart.x = e.getX();
-		this.dragStart.y = e.getY();
+		this.panByMouseDragStart(e.getX(), e.getY());
 	}
 
 	/*MouseListener*/
@@ -473,6 +463,26 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 					this.activeGroup.repaintAll();
 				}
 			}
+		}
+	}
+
+	public void panByMouseDragStart(int mouseX, int mouseY)
+	{
+		this.dragStart.x = mouseX;
+		this.dragStart.y = mouseY;
+	}
+
+	public void panByMouseDragUpdate(int mouseX, int mouseY)
+	{
+		int x = mouseX - this.dragStart.x;
+		int y = mouseY - this.dragStart.y;
+		this.location.x += x;
+		this.location.y += y;
+		this.dragStart.x = mouseX;
+		this.dragStart.y = mouseY;
+
+		for (CodeGroup cg : this.codegroups) {
+			cg.updateLocation();
 		}
 	}
 
