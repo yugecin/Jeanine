@@ -175,6 +175,9 @@ public class SB implements CharSequence
 
 	public int indexOf(char[] needle, int from)
 	{
+		if (needle.length == 0) {
+			return -1;
+		}
 		for (int i = from; i <= this.value.length - needle.length; i++) {
 			for (int j = 0;;) {
 				if (this.value[i + j] != needle[j]) {
