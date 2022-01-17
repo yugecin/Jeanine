@@ -1,5 +1,7 @@
 package net.basdon.jeanine;
 
+import java.util.Locale;
+
 public class SB implements CharSequence
 {
 	public char[] value;
@@ -99,7 +101,7 @@ public class SB implements CharSequence
 
 	public SB append(float value, int precision)
 	{
-		return this.append(String.format("%." + precision + "f", value));
+		return this.append(String.format(Locale.ENGLISH, "%." + precision + "f", value));
 	}
 
 	public SB append(char[] value)
