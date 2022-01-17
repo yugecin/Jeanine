@@ -112,7 +112,9 @@ public class EditBuffer
 
 	private void addCurrentWritingUndo()
 	{
-		Util.setArrayListSize(this.j.undolist, this.j.undolistptr);
+		for (int i = this.j.undolist.size(); i > this.j.undolistptr;) {
+			this.j.undolist.remove(--i);
+		}
 		this.j.undolist.add(this.writingUndo);
 		this.j.undolistptr++;
 		this.writingUndo = null;
