@@ -651,19 +651,6 @@ public class CodeGroup
 		this.jf.setError("can't unlink, specified link doesn't exist");
 	}
 
-	public void doUndo(Undo undo)
-	{
-		for (CodePanel panel : this.panels.values()) {
-			if (panel.buffer == undo.buffer) {
-				this.activePanel = panel;
-				panel.handleInput(new KeyInput('u'));
-				return;
-			}
-		}
-		// TODO what now
-		this.j.undolistptr--;
-	}
-
 	public void dispose()
 	{
 		for (CodePanel panel : this.panels.values()) {

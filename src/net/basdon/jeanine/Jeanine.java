@@ -4,7 +4,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.io.File;
-import java.util.ArrayList;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -30,15 +29,12 @@ public class Jeanine
 		SwingUtilities.invokeLater(() -> new JeanineFrame(j));
 	}
 
-	public final ArrayList<Undo> undolist;
-
 	public Font font;
 	public String fontFamily;
 	public int fontFlags;
 	public int fontSize;
 	public int fx, fy, fmaxascend;
 	public boolean needUpdateFontMetrics;
-	public int undolistptr;
 	public String pastebuffer = "";
 	public char commandBuf[];
 	public int commandLength;
@@ -49,7 +45,6 @@ public class Jeanine
 		this.fontFlags = Font.BOLD;
 		this.fontSize = 14;
 		this.updateFont();
-		this.undolist = new ArrayList<>();
 		this.commandBuf = new char[100];
 		this.commandLength = 100;
 	}

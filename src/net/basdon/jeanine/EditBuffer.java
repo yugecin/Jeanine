@@ -1,6 +1,7 @@
 package net.basdon.jeanine;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static java.lang.System.arraycopy;
@@ -27,9 +28,14 @@ public class EditBuffer
 		YANK_MODE = 12;
 
 	private final Jeanine j;
-	private final CodeGroup group;
 
 	public final BufferLines lines;
+	public final ArrayList<Undo> undolist;
+	/**
+	 * Tells where we are in {@link #undolist}. Since we can go back with undo, and forwards
+	 * with redo, the current position is not always at the end of the list.
+	 */
+	public int undolistptr;
 
 	private boolean creatingCommand;
 	private char creatingCmdBuf[];
@@ -79,10 +85,10 @@ public class EditBuffer
 	public EditBuffer(Jeanine j, CodeGroup group)
 	{
 		this.j = j;
-		this.group = group;
 		this.creatingCmdBuf = new char[100];
 		this.lines = new BufferLines(group);
 		this.lines.add(new SB());
+		this.undolist = new ArrayList<>();
 	}
 
 	private int curVisualX()
@@ -112,11 +118,11 @@ public class EditBuffer
 
 	private void addCurrentWritingUndo()
 	{
-		for (int i = this.j.undolist.size(); i > this.j.undolistptr;) {
-			this.j.undolist.remove(--i);
+		for (int i = this.undolist.size(); i > this.undolistptr;) {
+			this.undolist.remove(--i);
 		}
-		this.j.undolist.add(this.writingUndo);
-		this.j.undolistptr++;
+		this.undolist.add(this.writingUndo);
+		this.undolistptr++;
 		this.writingUndo = null;
 	}
 
@@ -249,18 +255,13 @@ public class EditBuffer
 			break;
 		case 'u':
 			if (this.readonly) { e.error = true; return; }
-			if (this.j.undolistptr == 0) {
+			if (this.undolistptr == 0) {
 				e.error = true;
 				return;
 			}
 			Undo u;
 			do {
-				u = this.j.undolist.get(this.j.undolistptr - 1);
-				if (u.buffer != this) {
-					this.group.doUndo(u);
-					return;
-				}
-				this.j.undolistptr--;
+				u = this.undolist.get(--this.undolistptr);
 				line = this.lines.get(u.fromy);
 				char[] toappend;
 				if (u.toy > u.fromy) {
