@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -13,6 +14,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 public class CodePanel
 extends JPanel
@@ -335,6 +337,24 @@ implements MouseListener, MouseMotionListener
 		}
 
 		this.needRepaint = false;
+	}
+
+	@Override
+	public Rectangle getBounds(Rectangle rv)
+	{
+		rv = super.getBounds(rv);
+		if (SwingUtilities.getWindowAncestor(this) == null) {
+			// Size from getBounds is unreliable when this panel isn't in a window,
+			// so do manual calculation.
+			this.recheckMaxLineLength();
+			int rows = this.lastline - this.firstline;
+			int cols = this.maxLineLength + /*caret*/1;
+			Dimension size = this.calculateSize(rows, cols);
+			this.scaleSize(size);
+			rv.width = size.width;
+			rv.height = size.height;
+		}
+		return rv;
 	}
 
 	/*MouseListener*/

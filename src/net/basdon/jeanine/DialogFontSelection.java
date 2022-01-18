@@ -49,7 +49,7 @@ public class DialogFontSelection extends JeanineDialogState
 		group.setContents(new Util.String2SBIter(lines.iterator()), true);
 		group.buffer.carety = group.panels.get(Integer.valueOf(1)).firstline;
 		group.activePanel = group.panelAtLine(group.buffer.carety);
-		group.setLocation(0, 30);
+		group.setLocationDontApply(0, 30);
 		this.pushDialogState(jf, group, group);
 	}
 

@@ -47,7 +47,7 @@ public class DialogPreferences extends JeanineDialogState
 		this.instr = new CodeGroup(jf);
 		this.instr.title = "Information";
 		this.instr.setContents(instructionlines.iterator(), true);
-		this.instr.setLocation(80, 30);
+		this.instr.setLocationDontApply(80, 30);
 		this.instr.buffer.readonly = true;
 		Rectangle rect = new Rectangle();
 		this.instr.getBounds(rect);
@@ -55,7 +55,7 @@ public class DialogPreferences extends JeanineDialogState
 		this.main.title = "Preferences";
 		this.main.setContents(Preferences.lines.iterator(), true);
 		this.main.activePanel = this.main.panelAtLine(this.main.buffer.carety);
-		this.main.setLocation(rect.x + rect.width, 30);
+		this.main.setLocationDontApply(rect.x + rect.width, rect.y);
 		Preferences.lines = this.main.buffer.lines.lines;
 		this.pushDialogState(jf, this.main, this.main, this.instr);
 		if (Preferences.file == null) {

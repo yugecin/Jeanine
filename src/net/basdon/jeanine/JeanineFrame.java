@@ -99,8 +99,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			this.activeGroup = this.welcomeCodeGroup;
 			this.activeGroup.setLocation(30, 30);
 			this.activeGroup.setContents(new Util.LineIterator(WELCOMETEXT), true);
+			this.addCodeGroup(this.activeGroup);
 		}
-		this.codegroups.add(this.activeGroup);
 		this.setPreferredSize(new Dimension(800, 800));
 		this.pack();
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -238,7 +238,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 			break;
 		case 'z':
-			this.centerCaret();
+			this.centerCaret(false);
 			return;
 		case 'n':
 			this.doSearch(this.activeSearch, false, true);
@@ -817,7 +817,16 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			// TODO
 			e.printStackTrace();
 		}
-		this.codegroups.add(this.activeGroup);
+		this.addCodeGroup(this.activeGroup);
+	}
+
+	private void addCodeGroup(CodeGroup group)
+	{
+		this.codegroups.add(group);
+		for (CodePanel panel : group.panels.values()) {
+			this.getContentPane().add(panel);
+		}
+		group.revalidateSizesAndReposition();
 	}
 
 	public void setError(String error)
@@ -849,8 +858,9 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			for (CodePanel panel : group.panels.values()) {
 				this.getContentPane().add(panel);
 			}
+			group.revalidateSizesAndReposition();
 		}
-		this.ensureCaretInView();
+		this.centerCaret(true);
 		this.repaint();
 	}
 
@@ -953,18 +963,23 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 	}
 
-	private void centerCaret()
+	private void centerCaret(boolean forceSnappyPan)
 	{
 		Point pt = this.findCursorPosition();
 		Dimension size = this.getContentPane().getSize();
 		int dx = size.width / 2 - pt.x;
 		int dy = size.height / 2 - pt.y;
-		this.panView(dx, dy);
+		this.panView(dx, dy, forceSnappyPan);
 	}
 
 	private void panView(int dx, int dy)
 	{
-		if (Preferences.smoothScrollTimeMs == 0) {
+		this.panView(dx, dy, false);
+	}
+
+	private void panView(int dx, int dy, boolean forceSnappyPan)
+	{
+		if (Preferences.smoothScrollTimeMs == 0 || forceSnappyPan) {
 			this.location.x += dx;
 			this.location.y += dy;
 			for (CodeGroup group : this.codegroups) {

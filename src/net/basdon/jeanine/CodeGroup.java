@@ -87,6 +87,7 @@ public class CodeGroup
 
 	public void setContents(Iterator<SB> lines, boolean interpret)
 	{
+		boolean wasAdded = this.root != null && this.root.getParent() != null;
 		this.buffer.carety = 0;
 		this.buffer.caretx = 0;
 		this.buffer.virtualCaretx = 0;
@@ -114,9 +115,11 @@ public class CodeGroup
 		}
 
 		this.activePanel = this.root;
-		this.revalidateSizesAndReposition();
-		for (CodePanel pnl : this.panels.values()) {
-			this.jf.getContentPane().add(pnl);
+		if (wasAdded) {
+			this.revalidateSizesAndReposition();
+			for (CodePanel pnl : this.panels.values()) {
+				this.jf.getContentPane().add(pnl);
+			}
 		}
 	}
 
@@ -148,6 +151,15 @@ public class CodeGroup
 		}
 	}
 
+	/**
+	 * Sets the location variables but doesn't immediately apply the (new) position.
+	 */
+	public void setLocationDontApply(int x, int y)
+	{
+		this.location.x = x;
+		this.location.y = y;
+	}
+
 	public void fontChanged()
 	{
 		for (CodePanel panel : this.panels.values()) {
@@ -170,6 +182,14 @@ public class CodeGroup
 			rv.height = 0;
 			return;
 		}
+		boolean isOrphan = SwingUtilities.getWindowAncestor(this.root) == null;
+		if (isOrphan) {
+			// If we're not added in a window yet, the sizes will be inaccurate because
+			// sizing code hasn't ran yet. Manually invoke position() so the panels'
+			// locations will be set correctly.
+			// CodePanel#getBounds can handle getting size without being in a window.
+			this.position(this.root);
+		}
 		rv.x = Integer.MAX_VALUE;
 		rv.y = Integer.MAX_VALUE;
 		rv.width = Integer.MIN_VALUE;
@@ -184,6 +204,12 @@ public class CodeGroup
 		}
 		rv.width -= rv.x;
 		rv.height -= rv.y;
+		if (isOrphan) {
+			// Results of getBounds() include jf view offset, but that doesn't make any
+			// sense if this codegroup is not added in jf. Subtract it.
+			rv.x -= this.jf.location.x;
+			rv.y -= this.jf.location.y;
+		}
 	}
 
 	public void position(CodePanel panel)
@@ -194,7 +220,8 @@ public class CodeGroup
 		if (panel.parent != null) {
 			CodePanel parent = this.panels.get(panel.parent.id);
 			if (parent != null) {
-				Rectangle bounds = parent.getBounds();
+				Rectangle bounds = new Rectangle();
+				parent.getBounds(bounds);
 				switch (PanelLink.getAnchor(panel.link)) {
 				case 't':
 					x = bounds.x + bounds.width;
