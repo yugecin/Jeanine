@@ -92,6 +92,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
 		this.welcomeCodeGroup = new CodeGroup(this);
 		if (Jeanine.argsNumFilesToOpen > 0) {
+			// FIXME: font metrics are not set here yet, so panel locations will all
+			// be either mul or div by zero...
 			for (int i = 0; i < Jeanine.argsNumFilesToOpen; i++) {
 				this.openFile(Jeanine.argsFilesToOpen[i]);
 			}
