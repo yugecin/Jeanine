@@ -3538,8 +3538,16 @@ public class EditBufferTest
 		}
 	}
 
+	private static JeanineFrame jf;
+
 	private static EditBufferTest createBuffer(String...lines)
 	{
+		if (jf == null) {
+			Jeanine j = new Jeanine();
+			System.clearProperty(Preferences.FILENAME_PROPERTY);
+			Preferences.load(j);
+			jf = new JeanineFrame(j);
+		}
 		EditBufferTest test = new EditBufferTest();
 		int caretx = 0, carety = 0;
 		for (int i = 0; i < lines.length; i++) {
@@ -3550,7 +3558,7 @@ public class EditBufferTest
 				carety = i;
 			}
 		}
-		test.buf = new EditBuffer(new Jeanine(), null);
+		test.buf = new EditBuffer(jf.j, new CodeGroup(jf));
 		test.buf.lines.clear();
 		for (String line : lines) {
 			test.buf.lines.add(new SB(line));

@@ -587,6 +587,13 @@ public class CodeGroup
 		this.position(this.root);
 	}
 
+	public void forceRaw(boolean raw)
+	{
+		if (this.raw != raw) {
+			this.toggleRaw();
+		}
+	}
+
 	public void reChild(CodePanel child, String position)
 	{
 		if (child == this.activePanel || child.isEventualParentOf(this.activePanel)) {

@@ -28,6 +28,7 @@ public class EditBuffer
 		YANK_MODE = 12;
 
 	private final Jeanine j;
+	private final CodeGroup group;
 
 	public final BufferLines lines;
 	public final ArrayList<Undo> undolist;
@@ -85,6 +86,7 @@ public class EditBuffer
 	public EditBuffer(Jeanine j, CodeGroup group)
 	{
 		this.j = j;
+		this.group = group;
 		this.creatingCmdBuf = new char[100];
 		this.lines = new BufferLines(group);
 		this.lines.add(new SB());
@@ -262,6 +264,8 @@ public class EditBuffer
 			Undo u;
 			do {
 				u = this.undolist.get(--this.undolistptr);
+				// TODO: changes to panel links may still mess up undos
+				this.group.forceRaw(u.raw);
 				line = this.lines.get(u.fromy);
 				char[] toappend;
 				if (u.toy > u.fromy) {
@@ -1490,7 +1494,7 @@ public class EditBuffer
 
 	private Undo newUndo(int x, int y)
 	{
-		return new Undo(this, x, y);
+		return new Undo(this, x, y, this.group.raw);
 	}
 
 	public Point find(char[] text, int fromy, int fromx)
