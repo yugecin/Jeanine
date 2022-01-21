@@ -144,7 +144,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		Preferences.interpretAndApply(this);
 		this.setVisible(true);
-		this.ensureCaretInView();
+		this.ensureCaretInView(true);
 		this.timer = new Timer(25, this);
 		this.timer.start();
 		// make that we get the TAB key events
@@ -276,7 +276,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 			break;
 		case 'z':
-			this.centerCaret(false);
+			this.centerCaret();
 			return;
 		case 'n':
 			this.doSearch(this.activeSearch, false, true);
@@ -898,7 +898,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 			group.revalidateSizesAndReposition();
 		}
-		this.centerCaret(true);
+		this.ensureCaretInView(true);
 		this.repaint();
 	}
 
@@ -974,6 +974,11 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 
 	public void ensureCaretInView()
 	{
+		this.ensureCaretInView(false);
+	}
+
+	public void ensureCaretInView(boolean forceSnappyPan)
+	{
 		Point pt = this.findCursorPosition();
 		if (pt == null) {
 			return;
@@ -997,17 +1002,17 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 		}
 		if (dx != 0 || dy != 0) {
-			this.panView(dx, dy);
+			this.panView(dx, dy, forceSnappyPan);
 		}
 	}
 
-	private void centerCaret(boolean forceSnappyPan)
+	private void centerCaret()
 	{
 		Point pt = this.findCursorPosition();
 		Dimension size = this.getContentPane().getSize();
 		int dx = size.width / 2 - pt.x;
 		int dy = size.height / 2 - pt.y;
-		this.panView(dx, dy, forceSnappyPan);
+		this.panView(dx, dy, false);
 	}
 
 	private void panView(int dx, int dy)
