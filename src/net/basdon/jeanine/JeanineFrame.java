@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -88,19 +90,53 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.setGlassPane(this.overlay = new OverlayPanel(this));
 		this.overlay.setVisible(true);
 		this.setLocationByPlatform(true);
-		this.setError(null);
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
 		this.welcomeCodeGroup = new CodeGroup(this);
+		this.setError(null);
+		boolean runTests = System.getProperty("TEST") != null;
+		if (runTests) {
+			TestRunner.run(this);
+			if (TestRunner.failures != 0) {
+				this.setError("some tests failed");
+			}
+		}
 		if (Jeanine.argsNumFilesToOpen > 0) {
 			// FIXME: font metrics are not set here yet, so panel locations will all
 			// be either mul or div by zero...
 			for (int i = 0; i < Jeanine.argsNumFilesToOpen; i++) {
 				this.openFile(Jeanine.argsFilesToOpen[i]);
 			}
+			if (runTests && TestRunner.failures != 0) {
+				Iterator<SB> testtext = new Util.CombinedIter(Arrays.asList(
+					TestRunner.getSummary(),
+					new Util.StringArray2SBIter(new String[] {
+						"/*jeanine:p:i:1000;p:0;a:b;y:3.0;*/",
+					}),
+					TestRunner.getResults()
+				));
+				new DialogSimpleMessage(this, "FAILED TESTS", testtext);
+			}
 		} else {
+			Iterator<SB> welcometext = new Util.LineIterator(WELCOMETEXT);
+			if (runTests) {
+				welcometext = new Util.CombinedIter(Arrays.asList(
+					TestRunner.getSummary(),
+					new Util.LineIterator(WELCOME_YESTEST),
+					welcometext,
+					new Util.StringArray2SBIter(new String[] {
+						"/*jeanine:p:i:1000;p:0;a:t;x:3.0;*/",
+					}),
+					TestRunner.getResults()
+				));
+			} else {
+				welcometext = new Util.CombinedIter(Arrays.asList(
+					new Util.LineIterator(WELCOME_NOTEST),
+					welcometext
+				));
+			}
 			this.activeGroup = this.welcomeCodeGroup;
 			this.activeGroup.setLocation(30, 30);
-			this.activeGroup.setContents(new Util.LineIterator(WELCOMETEXT), true);
+			this.activeGroup.setContents(welcometext, true);
 			this.addCodeGroup(this.activeGroup);
 		}
 		this.setPreferredSize(new Dimension(800, 800));
@@ -1095,4 +1131,11 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"Some dialogs have lines that can be interacted with by\n" +
 		"pressing ENTER or double clicking\n" +
 		"";
+	private static final String WELCOME_NOTEST =
+		"No tests were run.\n" +
+		"Add JVM arg 'TEST' to run tests on boot.\n" +
+		"========================================\n\n";
+	private static final String WELCOME_YESTEST =
+		"Remove JVM arg 'TEST' to not run tests on boot\n" +
+		"========================================\n\n";
 }

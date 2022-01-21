@@ -1,112 +1,95 @@
 package net.basdon.jeanine;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static net.basdon.jeanine.TestRunner.*;
 
 /**
  * Test both directions, so {@link RawToGroupConverter} and {@link GroupToRawConverter}.
  */
-public class RawGroupConversionTest
+public class TestRawGroupConversion
 {
-	private static ArrayList<SB> lines = new ArrayList<>();
-	private static RawToGroupConverter parser;
-	private static CodePanel p0, p1, p2, p3;
+	public static JeanineFrame jf;
 
-	static
+	private ArrayList<SB> lines = new ArrayList<>();
+	private RawToGroupConverter parser;
+	private CodePanel p0, p1, p2, p3;
+
+	public TestRawGroupConversion()
 	{
-		lines.add(new SB("hi/*jeanine:r:i:1;:s:a:r;i:2;:s:a:r;i:3;*/"));
-		lines.add(new SB("/*jeanine:s:a:b;i:2;:s:a:t;i:1;*/"));
-		lines.add(new SB("/*jeanine:p:i:1;p:0;a:r;*/"));
-		lines.add(new SB("hi2"));
-		lines.add(new SB("/*jeanine:p:i:2;p:1;a:b;x:-3.02;y:8.55;*/"));
-		lines.add(new SB("hi3/*jeanine:s:a:r;i:1;*/"));
-		lines.add(new SB("/*jeanine:p:i:3;p:2;a:b;x:4.11;y:3.00;*/"));
-		lines.add(new SB("hi4"));
-		lines.add(new SB("/*jeanine:s:a:b;i:2;*/"));
-		Jeanine j = new Jeanine();
-		System.clearProperty(Preferences.FILENAME_PROPERTY);
-		Preferences.load(j);
-		JeanineFrame jf = new JeanineFrame(j);
-		parser = new RawToGroupConverter(j, new CodeGroup(jf));
-		parser.interpretSource(lines.iterator());
-		p0 = parser.panels.get(Integer.valueOf(0));
-		p1 = parser.panels.get(Integer.valueOf(1));
-		p2 = parser.panels.get(Integer.valueOf(2));
-		p3 = parser.panels.get(Integer.valueOf(3));
+		this.lines.add(new SB("hi/*jeanine:r:i:1;:s:a:r;i:2;:s:a:r;i:3;*/"));
+		this.lines.add(new SB("/*jeanine:s:a:b;i:2;:s:a:t;i:1;*/"));
+		this.lines.add(new SB("/*jeanine:p:i:1;p:0;a:r;*/"));
+		this.lines.add(new SB("hi2"));
+		this.lines.add(new SB("/*jeanine:p:i:2;p:1;a:b;x:-3.02;y:8.55;*/"));
+		this.lines.add(new SB("hi3/*jeanine:s:a:r;i:1;*/"));
+		this.lines.add(new SB("/*jeanine:p:i:3;p:2;a:b;x:4.11;y:3.00;*/"));
+		this.lines.add(new SB("hi4"));
+		this.lines.add(new SB("/*jeanine:s:a:b;i:2;*/"));
+		this.parser = new RawToGroupConverter(jf.j, new CodeGroup(jf));
+		this.parser.interpretSource(lines.iterator());
+		this.p0 = this.parser.panels.get(Integer.valueOf(0));
+		this.p1 = this.parser.panels.get(Integer.valueOf(1));
+		this.p2 = this.parser.panels.get(Integer.valueOf(2));
+		this.p3 = this.parser.panels.get(Integer.valueOf(3));
 	}
 
-	@Test
 	public void amount_of_panels()
 	{
-		assertEquals(4, parser.panels.size());
+		assertEquals("wrong amount of panels", 4, parser.panels.size());
 	}
 
-	@Test
 	public void amount_of_lines_in_buffer()
 	{
-		assertEquals(4, parser.lines.size());
+		assertEquals("wrong amount of lines in buffer", 4, parser.lines.size());
 	}
 
-	@Test
 	public void buffer_line_contents()
 	{
-		assertEquals("hi", parser.lines.get(0).toString());
-		assertEquals("hi2", parser.lines.get(1).toString());
-		assertEquals("hi3", parser.lines.get(2).toString());
-		assertEquals("hi4", parser.lines.get(3).toString());
+		assertEquals("bad line 1", "hi", parser.lines.get(0).toString());
+		assertEquals("bad line 2", "hi2", parser.lines.get(1).toString());
+		assertEquals("bad line 3", "hi3", parser.lines.get(2).toString());
+		assertEquals("bad line 4", "hi4", parser.lines.get(3).toString());
 	}
 
-	@Test
 	public void panel_ids()
 	{
 		// since p0 p1 p2 p3 are set by getting by id, testing for nullability is enough
-		assertNotNull(p0);
-		assertNotNull(p1);
-		assertNotNull(p2);
-		assertNotNull(p3);
+		assertTrue("no panel with id 0", p0 != null);
+		assertTrue("no panel with id 1", p1 != null);
+		assertTrue("no panel with id 2", p2 != null);
+		assertTrue("no panel with id 3", p3 != null);
 	}
 
-	@Test
 	public void p0_line_range()
 	{
 		assertEquals("bad firstline", 0, p0.firstline);
 		assertEquals("bad lastline", 1, p0.lastline);
 	}
 
-	@Test
 	public void p1_line_range()
 	{
 		assertEquals("bad firstline", 1, p1.firstline);
 		assertEquals("bad lastline", 2, p1.lastline);
 	}
 
-	@Test
 	public void p2_line_range()
 	{
 		assertEquals("bad firstline", 2, p2.firstline);
 		assertEquals("bad lastline", 3, p2.lastline);
 	}
 
-	@Test
 	public void p3_line_range()
 	{
 		assertEquals("bad firstline", 3, p3.firstline);
 		assertEquals("bad lastline", 4, p3.lastline);
 	}
 
-	@Test
 	public void p0_primary_link()
 	{
 		assertEquals("bad parent", null, p0.parent);
 	}
 
-	@Test
 	public void p1_primary_link()
 	{
 		assertEquals("bad parent", p0, p1.parent);
@@ -115,16 +98,14 @@ public class RawGroupConversionTest
 		assertEquals("bad y", 0, p1.location.y, 0.01f);
 	}
 
-	@Test
 	public void p2_primary_link()
 	{
 		assertEquals("bad parent", p1, p2.parent);
 		assertEquals("bad anchor", PanelLink.BOTTOM, p2.link);
 		assertEquals("bad x", -3.01f, p2.location.x, 0.01f);
-		assertEquals("bad y", 8.55, p2.location.y, 0.01f);
+		assertEquals("bad y", 8.55f, p2.location.y, 0.01f);
 	}
 
-	@Test
 	public void p3_primary_link()
 	{
 		assertEquals("bad parent", p2, p3.parent);
@@ -133,7 +114,6 @@ public class RawGroupConversionTest
 		assertEquals("bad y", 3.00f, p3.location.y, 0.01f);
 	}
 
-	@Test
 	public void p0_secondary_links()
 	{
 		assertEquals("bad amount", 4, p0.secondaryLinks.size());
@@ -160,13 +140,11 @@ public class RawGroupConversionTest
 		assertEquals("bad child", p1.id, s.child.id);
 	}
 
-	@Test
 	public void p1_secondary_links()
 	{
 		assertEquals("bad amount", 0, p1.secondaryLinks.size());
 	}
 
-	@Test
 	public void p2_secondary_links()
 	{
 		assertEquals("bad amount", 1, p2.secondaryLinks.size());
@@ -176,7 +154,6 @@ public class RawGroupConversionTest
 		assertEquals("bad child", p1.id, s.child.id);
 	}
 
-	@Test
 	public void p3_secondary_links()
 	{
 		assertEquals("bad amount", 1, p3.secondaryLinks.size());
@@ -185,7 +162,6 @@ public class RawGroupConversionTest
 		assertEquals("bad child", p2.id, s.child.id);
 	}
 
-	@Test
 	public void serialize()
 	{
 		GroupToRawConverter c = new GroupToRawConverter(parser.lines, parser.panels, 0);
@@ -193,6 +169,6 @@ public class RawGroupConversionTest
 			assertTrue("missing line #" + i, c.hasNext());
 			assertEquals("line #" + i, lines.get(i).toString(), c.next().toString());
 		}
-		assertFalse("more lines than expected", c.hasNext());
+		assertTrue("more lines than expected", !c.hasNext());
 	}
 }

@@ -1,6 +1,7 @@
 package net.basdon.jeanine;
 
 import java.util.Iterator;
+import java.util.List;
 
 public class Util
 {
@@ -102,6 +103,40 @@ public class Util
 			this.sb.length = 0;
 			this.sb.append(this.array[this.pos++]);
 			return this.sb;
+		}
+	}
+
+	public static class CombinedIter implements Iterator<SB>
+	{
+		private final List<Iterator<SB>> iters;
+
+		private int idx;
+
+		public CombinedIter(List<Iterator<SB>> iters)
+		{
+			this.iters = iters;
+		}
+
+		@Override
+		public boolean hasNext()
+		{
+			for (;;) {
+				if (this.idx >= this.iters.size()) {
+					return false;
+				}
+				boolean res = this.iters.get(this.idx).hasNext();
+				if (res) {
+					break;
+				}
+				this.idx++;
+			}
+			return true;
+		}
+
+		@Override
+		public SB next()
+		{
+			return this.iters.get(this.idx).next();
 		}
 	}
 }

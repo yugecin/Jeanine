@@ -1,20 +1,12 @@
 package net.basdon.jeanine;
 
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
-
 /**
  * Most important test, to see if the editor can actually edit stuff like it's supposed to.
  */
-@RunWith(Enclosed.class)
-public class EditBufferTest
+public class TestEditBuffer
 {
 	public static class Move
 	{
-		@Test
 		public void h()
 		{
 			createBuffer(
@@ -26,7 +18,6 @@ public class EditBufferTest
 			).executeFail("h");
 		}
 
-		@Test
 		public void j()
 		{
 			createBuffer(
@@ -40,7 +31,6 @@ public class EditBufferTest
 			).executeFail("j");
 		}
 
-		@Test
 		public void k()
 		{
 			createBuffer(
@@ -54,7 +44,6 @@ public class EditBufferTest
 			).executeFail("k");
 		}
 
-		@Test
 		public void l()
 		{
 			createBuffer(
@@ -66,7 +55,6 @@ public class EditBufferTest
 			).executeFail("l");
 		}
 
-		@Test
 		public void caret()
 		{
 			createBuffer(
@@ -78,7 +66,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dollar()
 		{
 			createBuffer(
@@ -90,7 +77,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void gg()
 		{
 			createBuffer(
@@ -104,7 +90,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void G()
 		{
 			createBuffer(
@@ -118,7 +103,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void j_with_virtual_position()
 		{
 			createBuffer(
@@ -150,7 +134,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void k_with_virtual_position()
 		{
 			createBuffer(
@@ -182,7 +165,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void j_with_virtual_position_end()
 		{
 			createBuffer(
@@ -226,7 +208,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void k_with_virtual_position_end()
 		{
 			createBuffer(
@@ -270,7 +251,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void w()
 		{
 			createBuffer(
@@ -360,7 +340,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void b()
 		{
 			createBuffer(
@@ -450,7 +429,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void e()
 		{
 			createBuffer(
@@ -549,7 +527,6 @@ public class EditBufferTest
 
 	public static class Insert
 	{
-		@Test
 		public void at_end_of_line()
 		{
 			createBuffer(
@@ -573,7 +550,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void at_start_of_line()
 		{
 			createBuffer(
@@ -592,7 +568,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void at_start_of_empty_line()
 		{
 			createBuffer(
@@ -616,7 +591,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void enter()
 		{
 			createBuffer(
@@ -633,7 +607,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void enter_copy_indentation()
 		{
 			createBuffer(
@@ -650,7 +623,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void bs()
 		{
 			createBuffer(
@@ -668,7 +640,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void del()
 		{
 			createBuffer(
@@ -689,7 +660,6 @@ public class EditBufferTest
 
 	public static class InsertBeginning
 	{
-		@Test
 		public void at_end_of_line()
 		{
 			createBuffer(
@@ -705,7 +675,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void at_start_of_line()
 		{
 			createBuffer(
@@ -721,7 +690,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void at_start_of_empty_line()
 		{
 			createBuffer(
@@ -737,7 +705,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void line_with_leading_spaces()
 		{
 			createBuffer(
@@ -753,7 +720,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void line_with_leading_tabs()
 		{
 			createBuffer(
@@ -772,7 +738,6 @@ public class EditBufferTest
 
 	public static class InsertLine
 	{
-		@Test
 		public void middle_in_line()
 		{
 			createBuffer(
@@ -789,7 +754,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void with_lines_after()
 		{
 			createBuffer(
@@ -809,7 +773,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void copy_indentation()
 		{
 			createBuffer(
@@ -829,7 +792,6 @@ public class EditBufferTest
 
 	public static class InsertLineBefore
 	{
-		@Test
 		public void middle_in_line()
 		{
 			createBuffer(
@@ -846,7 +808,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void with_lines_before()
 		{
 			createBuffer(
@@ -866,7 +827,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void copy_indentation()
 		{
 			createBuffer(
@@ -886,7 +846,6 @@ public class EditBufferTest
 
 	public static class Append
 	{
-		@Test
 		public void at_end_of_line()
 		{
 			createBuffer(
@@ -905,7 +864,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void at_start_of_line()
 		{
 			createBuffer(
@@ -924,7 +882,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void at_start_of_empty_line()
 		{
 			createBuffer(
@@ -946,7 +903,6 @@ public class EditBufferTest
 
 	public static class AppendEnd
 	{
-		@Test
 		public void at_end_of_line()
 		{
 			createBuffer(
@@ -962,7 +918,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void at_start_of_line()
 		{
 			createBuffer(
@@ -978,7 +933,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void at_start_of_empty_line()
 		{
 			createBuffer(
@@ -997,7 +951,6 @@ public class EditBufferTest
 
 	public static class Delete
 	{
-		@Test
 		public void x()
 		{
 			createBuffer(
@@ -1031,7 +984,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dw()
 		{
 			createBuffer(
@@ -1053,7 +1005,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dw_one_word()
 		{
 			createBuffer(
@@ -1069,7 +1020,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dw_end()
 		{
 			createBuffer(
@@ -1086,7 +1036,6 @@ public class EditBufferTest
 		}
 
 		/*
-		@Test
 		public void de()
 		{
 			createBuffer(
@@ -1098,7 +1047,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void de_lastword()
 		{
 			createBuffer(
@@ -1110,7 +1058,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void de_end()
 		{
 			createBuffer(
@@ -1123,7 +1070,6 @@ public class EditBufferTest
 		}
 		*/
 
-		@Test
 		public void db()
 		{
 			createBuffer(
@@ -1139,7 +1085,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void db_beginning()
 		{
 			createBuffer(
@@ -1155,7 +1100,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void db_one_word()
 		{
 			createBuffer(
@@ -1171,7 +1115,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void diw()
 		{
 			createBuffer(
@@ -1187,7 +1130,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void diw_middle()
 		{
 			createBuffer(
@@ -1203,7 +1145,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void diw_end()
 		{
 			createBuffer(
@@ -1219,7 +1160,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dd_oneline()
 		{
 			createBuffer(
@@ -1235,7 +1175,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dd_first()
 		{
 			createBuffer(
@@ -1253,7 +1192,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dd_last()
 		{
 			createBuffer(
@@ -1271,7 +1209,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dd_empty()
 		{
 			createBuffer(
@@ -1287,7 +1224,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dd_empty_between()
 		{
 			createBuffer(
@@ -1308,7 +1244,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dj_bot()
 		{
 			createBuffer(
@@ -1319,7 +1254,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dj_first()
 		{
 			createBuffer(
@@ -1339,7 +1273,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dj_last()
 		{
 			createBuffer(
@@ -1359,7 +1292,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dj_empty()
 		{
 			createBuffer(
@@ -1377,7 +1309,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dj_empty_between()
 		{
 			createBuffer(
@@ -1400,7 +1331,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dk_top()
 		{
 			createBuffer(
@@ -1411,7 +1341,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dk_first()
 		{
 			createBuffer(
@@ -1431,7 +1360,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dk_last()
 		{
 			createBuffer(
@@ -1449,7 +1377,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dk_empty()
 		{
 			createBuffer(
@@ -1467,7 +1394,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dk_empty_between()
 		{
 			createBuffer(
@@ -1490,7 +1416,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void d$()
 		{
 			createBuffer(
@@ -1506,7 +1431,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void d$_empty()
 		{
 			createBuffer(
@@ -1525,7 +1449,6 @@ public class EditBufferTest
 
 	public static class Change
 	{
-		@Test
 		public void cw()
 		{
 			createBuffer(
@@ -1541,7 +1464,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void cw_end()
 		{
 			createBuffer(
@@ -1557,7 +1479,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void cb()
 		{
 			createBuffer(
@@ -1573,7 +1494,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void cb_begin()
 		{
 			createBuffer(
@@ -1590,7 +1510,6 @@ public class EditBufferTest
 		}
 
 		/*
-		@Test
 		public void ce()
 		{
 			createBuffer(
@@ -1602,7 +1521,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ce_end()
 		{
 			createBuffer(
@@ -1615,7 +1533,6 @@ public class EditBufferTest
 		}
 		*/
 
-		@Test
 		public void cc()
 		{
 			createBuffer(
@@ -1631,7 +1548,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void cc_empty()
 		{
 			createBuffer(
@@ -1647,7 +1563,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void cc_with_indent()
 		{
 			createBuffer(
@@ -1663,7 +1578,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void c$()
 		{
 			createBuffer(
@@ -1682,7 +1596,6 @@ public class EditBufferTest
 
 	public static class ChangeIn
 	{
-		@Test
 		public void ciw()
 		{
 			createBuffer(
@@ -1698,7 +1611,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciw_middle()
 		{
 			createBuffer(
@@ -1718,7 +1630,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciw_end()
 		{
 			createBuffer(
@@ -1734,7 +1645,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciw_empty()
 		{
 			createBuffer(
@@ -1750,7 +1660,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote()
 		{
 			createBuffer(
@@ -1766,7 +1675,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_caret_left()
 		{
 			createBuffer(
@@ -1782,7 +1690,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_caret_right()
 		{
 			createBuffer(
@@ -1798,7 +1705,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_lonely()
 		{
 			createBuffer(
@@ -1814,7 +1720,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_lonely_caret_left()
 		{
 			createBuffer(
@@ -1830,7 +1735,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_lonely_caret_right()
 		{
 			createBuffer(
@@ -1846,7 +1750,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_use_closest_sameline_left()
 		{
 			createBuffer(
@@ -1862,7 +1765,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_multiline()
 		{
 			createBuffer(
@@ -1880,7 +1782,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_multiline2()
 		{
 			createBuffer(
@@ -1900,7 +1801,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_use_closest_sameline_right()
 		{
 			createBuffer(
@@ -1916,7 +1816,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_use_closest_otherline_left()
 		{
 			createBuffer(
@@ -1935,7 +1834,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciquote_use_closest_otherline_right()
 		{
 			createBuffer(
@@ -1963,7 +1861,6 @@ public class EditBufferTest
 		// just adding some tests with bracket here to see behavior when left and right
 		// are different.
 
-		@Test
 		public void cibracket()
 		{
 			createBuffer(
@@ -1979,7 +1876,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void cibracket_pick_correct_one()
 		{
 			createBuffer(
@@ -2000,7 +1896,6 @@ public class EditBufferTest
 	{
 		// The behavior tested in ChangeIn also counts for DeleteIn
 
-		@Test
 		public void diquote()
 		{
 			createBuffer(
@@ -2021,7 +1916,6 @@ public class EditBufferTest
 	{
 		// The behavior tested in ChangeIn also counts for ChangeAround
 
-		@Test
 		public void caparen()
 		{
 			createBuffer(
@@ -2042,7 +1936,6 @@ public class EditBufferTest
 	{
 		// The behavior tested in ChangeIn also counts for DeleteAround
 
-		@Test
 		public void daparen()
 		{
 			createBuffer(
@@ -2061,7 +1954,6 @@ public class EditBufferTest
 
 	public static class Substitute
 	{
-		@Test
 		public void beginning()
 		{
 			createBuffer(
@@ -2077,7 +1969,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void middle()
 		{
 			createBuffer(
@@ -2093,7 +1984,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void end()
 		{
 			createBuffer(
@@ -2112,7 +2002,6 @@ public class EditBufferTest
 
 	public static class Replace
 	{
-		@Test
 		public void simple()
 		{
 			createBuffer(
@@ -2128,7 +2017,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void disallow_on_empty_line()
 		{
 			createBuffer(
@@ -2138,7 +2026,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void nl()
 		{
 			createBuffer(
@@ -2155,7 +2042,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void nl_end()
 		{
 			createBuffer(
@@ -2175,7 +2061,6 @@ public class EditBufferTest
 
 	public static class Join
 	{
-		@Test
 		public void simple()
 		{
 			createBuffer(
@@ -2193,7 +2078,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void trim_leading_ws()
 		{
 			createBuffer(
@@ -2211,7 +2095,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void next_line_empty()
 		{
 			createBuffer(
@@ -2229,7 +2112,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void next_line_ws()
 		{
 			createBuffer(
@@ -2247,7 +2129,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void fail_when_last()
 		{
 			createBuffer(
@@ -2260,7 +2141,6 @@ public class EditBufferTest
 
 	public static class Indent
 	{
-		@Test
 		public void dont_add_when_empty()
 		{
 			createBuffer(
@@ -2272,7 +2152,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void add()
 		{
 			createBuffer(
@@ -2296,7 +2175,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void remove()
 		{
 			createBuffer(
@@ -2327,7 +2205,6 @@ public class EditBufferTest
 
 	public static class Paste
 	{
-		@Test
 		public void yy()
 		{
 			createBuffer(
@@ -2344,7 +2221,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void yanked_line_selection()
 		{
 			createBuffer(
@@ -2374,7 +2250,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void after()
 		{
 			createBuffer(
@@ -2394,7 +2269,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void before()
 		{
 			createBuffer(
@@ -2414,7 +2288,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void after_eol()
 		{
 			createBuffer(
@@ -2434,7 +2307,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void before_start()
 		{
 			createBuffer(
@@ -2454,7 +2326,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void from_dd()
 		{
 			createBuffer(
@@ -2483,7 +2354,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void from_dj()
 		{
 			createBuffer(
@@ -2513,7 +2383,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void from_dk()
 		{
 			createBuffer(
@@ -2546,7 +2415,6 @@ public class EditBufferTest
 
 	public static class LineSelect
 	{
-		@Test
 		public void delete()
 		{
 			createBuffer(
@@ -2571,7 +2439,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void delete_multiple_move_up_down()
 		{
 			createBuffer(
@@ -2611,7 +2478,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void jump_other_side()
 		{
 			createBuffer(
@@ -2633,7 +2499,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void indent()
 		{
 			createBuffer(
@@ -2672,7 +2537,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void deindent()
 		{
 			createBuffer(
@@ -2711,7 +2575,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void change()
 		{
 			createBuffer(
@@ -2747,7 +2610,6 @@ public class EditBufferTest
 		/**
 		 * Horizontal caret position shouldn't matter.
 		 */
-		@Test
 		public void change_lll()
 		{
 			createBuffer(
@@ -2759,7 +2621,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void change_all_one()
 		{
 			createBuffer(
@@ -2782,7 +2643,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void change_all_three()
 		{
 			createBuffer(
@@ -2806,7 +2666,6 @@ public class EditBufferTest
 
 	public static class Repeat
 	{
-		@Test
 		public void insert()
 		{
 			createBuffer(
@@ -2826,7 +2685,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void insert_beginning()
 		{
 			createBuffer(
@@ -2846,7 +2704,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void insert_line()
 		{
 			createBuffer(
@@ -2874,7 +2731,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void insert_line_before()
 		{
 			createBuffer(
@@ -2902,7 +2758,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void append()
 		{
 			createBuffer(
@@ -2922,7 +2777,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void append_end()
 		{
 			createBuffer(
@@ -2942,7 +2796,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void x()
 		{
 			createBuffer(
@@ -2966,7 +2819,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dw()
 		{
 			createBuffer(
@@ -2991,7 +2843,6 @@ public class EditBufferTest
 		}
 
 		/*
-		@Test
 		public void de()
 		{
 			createBuffer(
@@ -3007,7 +2858,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void de_end()
 		{
 			createBuffer(
@@ -3024,7 +2874,6 @@ public class EditBufferTest
 		}
 		*/
 
-		@Test
 		public void db()
 		{
 			createBuffer(
@@ -3046,7 +2895,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void diw()
 		{
 			createBuffer(
@@ -3058,7 +2906,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dd()
 		{
 			createBuffer(
@@ -3072,7 +2919,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dj()
 		{
 			createBuffer(
@@ -3090,7 +2936,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void dk()
 		{
 			createBuffer(
@@ -3107,7 +2952,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void cw()
 		{
 			createBuffer(
@@ -3127,7 +2971,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void cw_end()
 		{
 			createBuffer(
@@ -3148,7 +2991,6 @@ public class EditBufferTest
 		}
 
 		/*
-		@Test
 		public void ce()
 		{
 			createBuffer(
@@ -3165,7 +3007,6 @@ public class EditBufferTest
 		}
 		*/
 
-		@Test
 		public void cb()
 		{
 			createBuffer(
@@ -3185,7 +3026,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void ciw()
 		{
 			createBuffer(
@@ -3201,7 +3041,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void r()
 		{
 			createBuffer(
@@ -3217,7 +3056,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void s()
 		{
 			createBuffer(
@@ -3241,7 +3079,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void J()
 		{
 			createBuffer(
@@ -3261,7 +3098,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void indent()
 		{
 			createBuffer(
@@ -3277,7 +3113,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void deindent()
 		{
 			createBuffer(
@@ -3296,7 +3131,6 @@ public class EditBufferTest
 
 	public static class MoveParagraph
 	{
-		@Test
 		public void up()
 		{
 			createBuffer(
@@ -3312,7 +3146,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void up_but_no_target_should_go_to_first_line()
 		{
 			createBuffer(
@@ -3326,7 +3159,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void up_while_at_first_line_is_nop()
 		{
 			createBuffer(
@@ -3340,7 +3172,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void down()
 		{
 			createBuffer(
@@ -3356,7 +3187,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void down_but_no_target_should_go_to_last_line()
 		{
 			createBuffer(
@@ -3372,7 +3202,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void down_while_at_last_line_is_nop()
 		{
 			createBuffer(
@@ -3386,7 +3215,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void should_keep_virtual_x()
 		{
 			createBuffer(
@@ -3452,7 +3280,6 @@ public class EditBufferTest
 	 */
 	public static class Undo
 	{
-		@Test
 		public void insert_delete_line()
 		{
 			createBuffer(
@@ -3466,7 +3293,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void insert_multiple_lines()
 		{
 			createBuffer(
@@ -3480,7 +3306,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void delete_multiple_lines()
 		{
 			createBuffer(
@@ -3503,7 +3328,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void type_and_bs()
 		{
 			createBuffer(
@@ -3519,7 +3343,6 @@ public class EditBufferTest
 			);
 		}
 
-		@Test
 		public void bs_and_type()
 		{
 			createBuffer(
@@ -3538,17 +3361,11 @@ public class EditBufferTest
 		}
 	}
 
-	private static JeanineFrame jf;
+	public static JeanineFrame jf;
 
-	private static EditBufferTest createBuffer(String...lines)
+	private static TestEditBuffer createBuffer(String...lines)
 	{
-		if (jf == null) {
-			Jeanine j = new Jeanine();
-			System.clearProperty(Preferences.FILENAME_PROPERTY);
-			Preferences.load(j);
-			jf = new JeanineFrame(j);
-		}
-		EditBufferTest test = new EditBufferTest();
+		TestEditBuffer test = new TestEditBuffer();
 		int caretx = 0, carety = 0;
 		for (int i = 0; i < lines.length; i++) {
 			int idx = lines[i].indexOf("<caret>");
@@ -3588,18 +3405,20 @@ public class EditBufferTest
 		return command;
 	}
 
-	private EditBufferTest executeFail(String command)
+	private TestEditBuffer executeFail(String command)
 	{
 		KeyInput e = new KeyInput();
 		for (char c : translateCommand(command).toCharArray()) {
 			e.c = c;
 			this.buf.handlePhysicalInput(e);
 		}
-		assertTrue("did not fail: " + command, e.error);
+		if (!e.error) {
+			throw new RuntimeException("did not fail: " + command);
+		}
 		return this;
 	}
 
-	private EditBufferTest executeSuccess(String command)
+	private TestEditBuffer executeSuccess(String command)
 	{
 		KeyInput e = new KeyInput();
 		char[] chars = translateCommand(command).toCharArray();
@@ -3615,13 +3434,13 @@ public class EditBufferTest
 				}
 				msg.append("\nErrored on: ");
 				appendChar(msg, chars[i]);
-				fail(msg.toString());
+				throw new RuntimeException(msg.toString());
 			}
 		}
 		return this;
 	}
 
-	private EditBufferTest assertBuffer(String...expectedLines)
+	private TestEditBuffer assertBuffer(String...expectedLines)
 	{
 		SB sb = new SB();
 		String exp = String.join("\n", expectedLines);
@@ -3671,7 +3490,7 @@ public class EditBufferTest
 					sb.append("Line ").append(i);
 					sb.append(" has LF, lines shouldn't have LFs:");
 					sb.append("\n>>>\n").append(this.buf.lines.get(i));
-					fail(sb.toString());
+					throw new RuntimeException(sb.toString());
 				}
 			}
 		}
@@ -3683,6 +3502,8 @@ public class EditBufferTest
 
 	private static void failComparison(String message, String expected, String actual)
 	{
-		fail(message + "\nEXPECTED>>>\n" + expected + "\n===\n" + actual + "\n<<<ACTUAL");
+		throw new RuntimeException(
+			message + "\nEXPECTED>>>\n" + expected + "\n===\n" + actual + "\n<<<ACTUAL"
+		);
 	}
 }
