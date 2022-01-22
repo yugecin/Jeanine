@@ -2,6 +2,7 @@ package net.basdon.jeanine;
 
 import java.awt.Dimension;
 import java.awt.FileDialog;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
@@ -93,57 +94,15 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.getLayeredPane().add(this.commandbar, JLayeredPane.POPUP_LAYER);
 		this.welcomeCodeGroup = new CodeGroup(this);
 		this.setError(null);
-		boolean runTests = System.getProperty("TEST") != null;
-		if (runTests) {
-			TestRunner.run(this);
-			if (TestRunner.failures != 0) {
-				this.setError("some tests failed");
-			}
-		}
-		if (Jeanine.argsNumFilesToOpen > 0) {
-			// FIXME: font metrics are not set here yet, so panel locations will all
-			// be either mul or div by zero...
-			for (int i = 0; i < Jeanine.argsNumFilesToOpen; i++) {
-				this.openFile(Jeanine.argsFilesToOpen[i]);
-			}
-			if (runTests && TestRunner.failures != 0) {
-				Iterator<SB> testtext = new Util.CombinedIter(Arrays.asList(
-					TestRunner.getSummary(),
-					new Util.StringArray2SBIter(new String[] {
-						"/*jeanine:p:i:1000;p:0;a:b;y:3.0;*/",
-					}),
-					TestRunner.getResults()
-				));
-				new DialogSimpleMessage(this, "FAILED TESTS", testtext);
-			}
-		} else {
-			Iterator<SB> welcometext = new Util.LineIterator(WELCOMETEXT);
-			if (runTests) {
-				welcometext = new Util.CombinedIter(Arrays.asList(
-					TestRunner.getSummary(),
-					new Util.LineIterator(WELCOME_YESTEST),
-					welcometext,
-					new Util.StringArray2SBIter(new String[] {
-						"/*jeanine:p:i:1000;p:0;a:t;x:3.0;*/",
-					}),
-					TestRunner.getResults()
-				));
-			} else {
-				welcometext = new Util.CombinedIter(Arrays.asList(
-					new Util.LineIterator(WELCOME_NOTEST),
-					welcometext
-				));
-			}
-			this.activeGroup = this.welcomeCodeGroup;
-			this.activeGroup.setLocation(30, 30);
-			this.activeGroup.setContents(welcometext, true);
-			this.addCodeGroup(this.activeGroup);
-		}
 		this.setPreferredSize(new Dimension(800, 800));
 		this.pack();
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		Preferences.interpretAndApply(this);
 		this.setVisible(true);
+		Graphics g = this.getGraphics();
+		assert g != null;
+		this.j.ensureFontMetrics((Graphics2D) g);
+		this.addInitialContent();
 		this.ensureCaretInView(true);
 		this.timer = new Timer(25, this);
 		this.timer.start();
@@ -184,6 +143,57 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB_PRE);
 		img.setRGB(0, 0, 16, 16, d, 0, 16);
 		return img;
+	}
+
+	/**
+	 * Needs to be done _after_ the font metrics have been obtained.
+	 */
+	private void addInitialContent()
+	{
+		boolean runTests = System.getProperty("TEST") != null;
+		if (runTests) {
+			TestRunner.run(this);
+			if (TestRunner.failures != 0) {
+				this.setError("some tests failed");
+			}
+		}
+		if (Jeanine.argsNumFilesToOpen > 0) {
+			for (int i = 0; i < Jeanine.argsNumFilesToOpen; i++) {
+				this.openFile(Jeanine.argsFilesToOpen[i]);
+			}
+			if (runTests && TestRunner.failures != 0) {
+				Iterator<SB> testtext = new Util.CombinedIter(Arrays.asList(
+					TestRunner.getSummary(),
+					new Util.StringArray2SBIter(new String[] {
+						"/*jeanine:p:i:1000;p:0;a:b;y:3.0;*/",
+					}),
+					TestRunner.getResults()
+				));
+				new DialogSimpleMessage(this, "FAILED TESTS", testtext);
+			}
+		} else {
+			Iterator<SB> welcometext;
+			if (runTests) {
+				welcometext = new Util.CombinedIter(Arrays.asList(
+					TestRunner.getSummary(),
+					new Util.LineIterator(WELCOME_YESTEST),
+					new Util.LineIterator(WELCOMETEXT),
+					new Util.StringArray2SBIter(new String[] {
+						"/*jeanine:p:i:1000;p:0;a:t;x:3.0;*/",
+					}),
+					TestRunner.getResults()
+				));
+			} else {
+				welcometext = new Util.CombinedIter(Arrays.asList(
+					new Util.LineIterator(WELCOME_NOTEST),
+					new Util.LineIterator(WELCOMETEXT)
+				));
+			}
+			this.activeGroup = this.welcomeCodeGroup;
+			this.activeGroup.setLocation(30, 30);
+			this.activeGroup.setContents(welcometext, true);
+			this.addCodeGroup(this.activeGroup);
+		}
 	}
 
 	/*KeyListener*/
