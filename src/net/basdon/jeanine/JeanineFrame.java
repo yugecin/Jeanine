@@ -1015,11 +1015,6 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		this.panView(dx, dy, false);
 	}
 
-	private void panView(int dx, int dy)
-	{
-		this.panView(dx, dy, false);
-	}
-
 	private void panView(int dx, int dy, boolean forceSnappyPan)
 	{
 		if (Preferences.smoothScrollTimeMs == 0 || forceSnappyPan) {
