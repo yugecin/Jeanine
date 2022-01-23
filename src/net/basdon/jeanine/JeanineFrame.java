@@ -49,7 +49,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 
 	public ArrayDeque<JeanineState> pushedStates;
 	public List<CodeGroup> codegroups, lastCodegroups;
-	public CodeGroup activeGroup, lastActiveGroup;
+	public CodeGroup activeGroup;
 	public Point location, lastLocation;
 	public LineSelectionListener lineSelectionListener;
 	public Runnable postStateLeaveListener;
@@ -1077,7 +1077,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 		CodeGroup lastActive = this.activeGroup;
 		this.activeGroup = codegroup;
-		if (lastActive.activePanel != null) {
+		if (lastActive != null && lastActive.activePanel != null) {
 			lastActive.activePanel.repaint(); // for cursor
 		}
 		return true;
