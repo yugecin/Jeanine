@@ -1212,6 +1212,7 @@ public class EditBuffer
 				this.writingUndo.linkPrevious = isAdditionalUndo;
 				this.addCurrentWritingUndo();
 				isAdditionalUndo = true;
+				line.ensureCapacity(line.length + 1);
 				System.arraycopy(line.value, 0, line.value, 1, line.length);
 				line.length++;
 				line.value[0] = '\t';
