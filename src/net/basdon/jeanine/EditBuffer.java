@@ -1381,6 +1381,7 @@ public class EditBuffer
 			this.writingUndo.fromx = 0;
 			this.writingUndo.tox = 1;
 			this.addCurrentWritingUndo();
+			line.ensureCapacity(line.length + 1);
 			System.arraycopy(line.value, 0, line.value, 1, line.length);
 			line.length++;
 			line.value[0] = '\t';
