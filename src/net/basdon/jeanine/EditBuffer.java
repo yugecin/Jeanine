@@ -1399,8 +1399,10 @@ public class EditBuffer
 
 	private void handleInputYank(KeyInput e)
 	{
-		if (e.c == 'y') {
+		switch (e.c) {
+		case 'y':
 			this.j.pastebuffer = this.lines.get(this.carety).toString() + '\n';
+		case ESC:
 			this.mode = NORMAL_MODE;
 			return;
 		}
