@@ -1428,6 +1428,10 @@ public class TestEditBuffer
 				"u"
 			).assertBuffer(
 				"xyz<caret>def"
+			).executeSuccess(
+				"p"
+			).assertBuffer(
+				"xyzdde<caret>fef"
 			);
 		}
 
@@ -1590,6 +1594,10 @@ public class TestEditBuffer
 				"u"
 			).assertBuffer(
 				"\t<caret>\they"
+			).executeSuccess(
+				"p"
+			).assertBuffer(
+				"\t\t\the<caret>yhey"
 			);
 		}
 	}
@@ -2415,6 +2423,7 @@ public class TestEditBuffer
 
 	public static class LineSelect
 	{
+		// TODO: test pasting. goes wrong with lineselect+c
 		public void delete()
 		{
 			createBuffer(

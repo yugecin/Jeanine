@@ -699,6 +699,7 @@ public class EditBuffer
 				this.caretx = 0;
 			}
 			this.writingUndo.replacement.append(line.value, this.caretx, line.length);
+			this.j.pastebuffer = this.writingUndo.replacement.toString();
 			line.length = this.caretx;
 			if (next_mode == NORMAL_MODE) {
 				this.caretx--;
