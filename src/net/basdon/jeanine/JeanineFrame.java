@@ -796,10 +796,17 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				if (this.activeGroup == null) {
 					this.setError("can't jump to line - no active group");
 				}
-				int linenr = Integer.parseInt(parts[0]) - 1;
-				if (linenr < 0) {
-					linenr = 0;
-				} else if (linenr >= this.activeGroup.buffer.lines.size()) {
+				int linenr = Math.max(0, Integer.parseInt(parts[0]) - 1);
+				if (!this.activeGroup.raw) {
+					this.activeGroup.buffer.carety = linenr;
+					GroupToRawConverter c;
+					c = new GroupToRawConverter(this.activeGroup);
+					for (int i = 0; i < linenr && c.hasNext(); i++) {
+						c.next();
+					}
+					linenr = c.currentParsedCarety;
+				}
+				if (linenr >= this.activeGroup.buffer.lines.size()) {
 					linenr = this.activeGroup.buffer.lines.size() - 1;
 				}
 				this.activeGroup.buffer.carety = linenr;

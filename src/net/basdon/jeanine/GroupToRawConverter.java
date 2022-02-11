@@ -10,12 +10,27 @@ public class GroupToRawConverter implements Iterator<SB>
 	private final HashMap<Integer, CodePanel> panels;
 
 	private CodePanel currentPanel;
-	private int nextLine;
 	private SB next;
 	private int carety;
 	private CodePanel secondaryLinksPrintedFor;
 
-	public int newCarety;
+	public int nextLine;
+	/**
+	 * This will be the y-location where the caret should be after converting to raw mode so
+	 * that the caret will be on the same line as the line that was given in the constructor
+	 * parameter {@code carety}.
+	 */
+	public int newRawCarety;
+	/**
+	 * The current carety location for the current line being printed, ie the line number where
+	 * the carety should be in parsed mode for the current line number in raw mode.
+	 */
+	public int currentParsedCarety;
+
+	public GroupToRawConverter(CodeGroup group)
+	{
+		this(group.buffer.lines.lines, group.panels, group.buffer.carety);
+	}
 
 	public GroupToRawConverter(
 		ArrayList<SB> lines,
@@ -26,7 +41,7 @@ public class GroupToRawConverter implements Iterator<SB>
 		this.panels = panels;
 		this.currentPanel = panels.get(Integer.valueOf(0));
 		this.carety = carety;
-		this.newCarety = carety;
+		this.newRawCarety = carety;
 	}
 
 	@Override
@@ -88,7 +103,7 @@ public class GroupToRawConverter implements Iterator<SB>
 					}
 					this.next.append("*/");
 					if (this.carety >= 0) {
-						this.newCarety++;
+						this.newRawCarety++;
 					}
 					return true;
 				}
@@ -96,6 +111,7 @@ public class GroupToRawConverter implements Iterator<SB>
 			// fallback if no codepanel owns next line
 		}
 		this.carety--;
+		this.currentParsedCarety++;
 		this.next = lines.get(this.nextLine);
 		boolean hasLink = false;
 		for (CodePanel panel : panels.values()) {

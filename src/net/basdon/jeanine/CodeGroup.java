@@ -70,8 +70,7 @@ public class CodeGroup
 			return;
 		}
 		// TODO: check file modify time, to warn if we're overriding unknown changes
-		ArrayList<SB> lines = this.buffer.lines.lines;
-		GroupToRawConverter converter = new GroupToRawConverter(lines, this.panels, 0);
+		GroupToRawConverter converter = new GroupToRawConverter(this);
 		// TODO: write to tmp file first to not lose data in case of error?
 		try (FileOutputStream fos = new FileOutputStream(this.ownerFile, false)) {
 			OutputStreamWriter writer;
@@ -602,7 +601,7 @@ public class CodeGroup
 		} else {
 			GroupToRawConverter conv = new GroupToRawConverter(lines, panels, carety);
 			this.setContents(conv, false);
-			carety = conv.newCarety;
+			carety = conv.newRawCarety;
 		}
 		this.buffer.carety = carety;
 		this.buffer.caretx = caretx;
