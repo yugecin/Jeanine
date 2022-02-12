@@ -387,20 +387,20 @@ implements MouseListener, MouseMotionListener
 				Padding.IN_HEADER +
 				this.j.fy +
 				Padding.IN_HEADER;
-			if (e.getY() <= dragAreaHeight) {
+			if (e.getY() <= dragAreaHeight * this.jf.scale / 20f) {
 				this.isDragging = true;
 				this.dragStart = e.getLocationOnScreen();
 				this.dragFromLocation = new Point2D.Float(
 					this.location.x,
 					this.location.y
 				);
+			} else if (this.jf.scale != 20) {
+				int x = e.getX() + this.getX();
+				int y = e.getY() + this.getY();
+				this.jf.panByMouseDragStart(x, y);
 			} else if (this.group.focusGained(this)) {
 				this.putCaretFromMouseInput(e.getX(), e.getY());
 			}
-		} else if (this.jf.scale != 20) {
-			int x = e.getX() + this.getX();
-			int y = e.getY() + this.getY();
-			this.jf.panByMouseDragStart(x, y);
 		}
 	}
 
@@ -439,6 +439,13 @@ implements MouseListener, MouseMotionListener
 				Point now = e.getLocationOnScreen();
 				float dx = (now.x - this.dragStart.x) / (float) this.j.fx;
 				float dy = (now.y - this.dragStart.y) / (float) this.j.fy;
+				if (this.jf.scale != 20) {
+					int x = e.getX() + this.getX();
+					int y = e.getY() + this.getY();
+					this.jf.updateZoomedOverlayMouseHover(x, y, this);
+					dx /= this.jf.scale / 20f;
+					dy /= this.jf.scale / 20f;
+				}
 				if (e.isShiftDown()) {
 					if (dx > dy) {
 						this.location.x = this.dragFromLocation.x + dx;
@@ -453,14 +460,14 @@ implements MouseListener, MouseMotionListener
 				}
 				this.group.position(this);
 				this.jf.overlay.repaint();
+			} else if (this.jf.scale != 20) {
+				int x = e.getX() + this.getX();
+				int y = e.getY() + this.getY();
+				this.jf.panByMouseDragUpdate(x, y);
+				this.jf.updateZoomedOverlayMouseHover(x, y, this);
 			} else if (this.group.hasFocus(this)) {
 				this.putCaretFromMouseInput(e.getX(), e.getY());
 			}
-		} else if (this.jf.scale != 20) {
-			int x = e.getX() + this.getX();
-			int y = e.getY() + this.getY();
-			this.jf.panByMouseDragUpdate(x, y);
-			this.jf.updateZoomedOverlayMouseHover(x, y, this);
 		}
 	}
 

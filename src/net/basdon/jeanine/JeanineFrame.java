@@ -671,7 +671,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 
 	public boolean shouldBlockInput()
 	{
-		return this.commandbar.active || this.scale != 20;
+		return this.commandbar.active;
 	}
 
 	public boolean shouldDrawCaret()
