@@ -213,7 +213,7 @@ public class CodeGroup
 
 	public void position(CodePanel panel)
 	{
-		float scale = this.jf.scale / 10f;
+		float scale = this.jf.scale / 20f;
 		float x = scale * this.location.x + this.jf.location.x;
 		float y = scale * this.location.y + this.jf.location.y;
 		if (panel.parent != null) {

@@ -58,7 +58,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public long searchHighlightTimeout;
 
 	/**
-	 * Div by 10 to get real scale.
+	 * Div by 20 to get real scale.
 	 */
 	public int scale;
 
@@ -74,7 +74,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public JeanineFrame(Jeanine j)
 	{
 		this.j = j;
-		this.scale = 10;
+		this.scale = 20;
 		this.pushedStates = new ArrayDeque<>();
 		this.dragStart = new Point();
 		this.location = new Point();
@@ -205,9 +205,9 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			return;
 		}
 		KeyInput event = new KeyInput(e.getKeyChar());
-		if (this.scale != 10) {
+		if (this.scale != 20) {
 			if (event.c == EditBuffer.ESC) {
-				this.scale = 10;
+				this.scale = 20;
 				for (CodeGroup group : this.codegroups) {
 					group.forceResizeAndReposition();
 				}
@@ -438,7 +438,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.locationMoveTo = null;
 				int delta;
 				if (units < 0) {
-					if (this.scale >= 10) {
+					if (this.scale >= 20) {
 						return;
 					}
 					delta = 1;
@@ -493,8 +493,9 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.locationZoominStartTime + 15 < System.currentTimeMillis())
 			{
 				this.locationZoominStartTime = System.currentTimeMillis();
-				this.doZoom(this.locationZoominTo.x, this.locationZoominTo.y, 1);
-				if (this.scale == 10) {
+				int dz = this.scale == 19 ? 1 : 2;
+				this.doZoom(this.locationZoominTo.x, this.locationZoominTo.y, dz);
+				if (this.scale == 20) {
 					this.locationZoominTo = null;
 				}
 			}
@@ -540,14 +541,14 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	 */
 	public void panelClickedWhileZoomed(CodePanel panel, int x, int y)
 	{
-		// TODO: setting to disable or something
+		// TODO: setting to skip the zoom animation
 		this.locationZoominStartTime = System.currentTimeMillis();
 		this.locationZoominTo = new Point(x + panel.getX(), y + panel.getY());
 		this.updateZoomedOverlayMouseHover(0, 0, (CodePanel) null);
 		this.activeGroup = panel.group;
 		this.activeGroup.activePanel = panel;
-		x /= (this.scale / 10f);
-		y /= (this.scale / 10f);
+		x /= (this.scale / 20f);
+		y /= (this.scale / 20f);
 		panel.putCaretFromMouseInput(x, y);
 	}
 
@@ -559,12 +560,12 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	private void doZoom(int x, int y, int delta)
 	{
 		float mx = x - this.location.x;
-		float umx = mx / (this.scale / 10f);
+		float umx = mx / (this.scale / 20f);
 		float my = y - this.location.y;
-		float umy = my / (this.scale / 10f);
+		float umy = my / (this.scale / 20f);
 		this.scale += delta;
-		float nmx = umx * this.scale / 10f;
-		float nmy = umy * this.scale / 10f;
+		float nmx = umx * this.scale / 20f;
+		float nmy = umy * this.scale / 20f;
 		this.location.x -= nmx - mx;
 		this.location.y -= nmy - my;
 		for (CodeGroup group : this.codegroups) {
@@ -577,7 +578,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	 */
 	public void updateZoomedOverlayMouseHover(int x, int y, CodePanel hoveredPanel)
 	{
-		if (this.scale == 10 || this.locationZoominTo != null) {
+		if (this.scale == 20 || this.locationZoominTo != null) {
 			this.overlay.showInfoForPanel(x, y, null);
 		} else {
 			this.overlay.showInfoForPanel(x, y, hoveredPanel);
@@ -670,7 +671,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 
 	public boolean shouldBlockInput()
 	{
-		return this.commandbar.active || this.scale != 10;
+		return this.commandbar.active || this.scale != 20;
 	}
 
 	public boolean shouldDrawCaret()

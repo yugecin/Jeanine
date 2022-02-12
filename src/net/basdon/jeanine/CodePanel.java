@@ -103,7 +103,7 @@ implements MouseListener, MouseMotionListener
 		g.translate(1, 1);
 		w--;
 		h--;
-		if (this.jf.scale == 10) {
+		if (this.jf.scale == 20) {
 			// bg
 			g.setColor(Colors.textBg.col);
 			g.fillRect(0, 0, w, h);
@@ -371,7 +371,7 @@ implements MouseListener, MouseMotionListener
 				this.invokeLineSelectionListener(line + this.firstline);
 			}
 		}
-		if (this.jf.scale != 10) {
+		if (this.jf.scale != 20) {
 			this.jf.panelClickedWhileZoomed(this, e.getX(), e.getY());
 		}
 	}
@@ -397,7 +397,7 @@ implements MouseListener, MouseMotionListener
 			} else if (this.group.focusGained(this)) {
 				this.putCaretFromMouseInput(e.getX(), e.getY());
 			}
-		} else if (this.jf.scale != 10) {
+		} else if (this.jf.scale != 20) {
 			int x = e.getX() + this.getX();
 			int y = e.getY() + this.getY();
 			this.jf.panByMouseDragStart(x, y);
@@ -456,7 +456,7 @@ implements MouseListener, MouseMotionListener
 			} else if (this.group.hasFocus(this)) {
 				this.putCaretFromMouseInput(e.getX(), e.getY());
 			}
-		} else if (this.jf.scale != 10) {
+		} else if (this.jf.scale != 20) {
 			int x = e.getX() + this.getX();
 			int y = e.getY() + this.getY();
 			this.jf.panByMouseDragUpdate(x, y);
@@ -631,8 +631,8 @@ implements MouseListener, MouseMotionListener
 
 	private void scaleSize(Dimension size)
 	{
-		if (this.jf.scale != 10) {
-			float scale = this.jf.scale / 10f;
+		if (this.jf.scale != 20) {
+			float scale = this.jf.scale / 20f;
 			size.width = (int) (size.width * scale);
 			size.height = (int) (size.height * scale);
 		}
