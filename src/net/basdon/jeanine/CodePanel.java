@@ -55,6 +55,7 @@ implements MouseListener, MouseMotionListener
 	private int rows, cols;
 	private boolean isDragging;
 	private Point dragStart;
+	private Point2D.Float dragFromLocation;
 	/**
 	 * Inner contents as painted by {@link #paintInnerContents} to use when painting contents
 	 * when this panel is drawn scaled. This image should already be scaled.
@@ -389,6 +390,10 @@ implements MouseListener, MouseMotionListener
 			if (e.getY() <= dragAreaHeight) {
 				this.isDragging = true;
 				this.dragStart = e.getLocationOnScreen();
+				this.dragFromLocation = new Point2D.Float(
+					this.location.x,
+					this.location.y
+				);
 			} else if (this.group.focusGained(this)) {
 				this.putCaretFromMouseInput(e.getX(), e.getY());
 			}
@@ -432,10 +437,21 @@ implements MouseListener, MouseMotionListener
 		if (!this.jf.shouldBlockInput()) {
 			if (this.isDragging) {
 				Point now = e.getLocationOnScreen();
-				this.location.x += (now.x - this.dragStart.x) / (float) this.j.fx;
-				this.location.y += (now.y - this.dragStart.y) / (float) this.j.fy;
+				float dx = (now.x - this.dragStart.x) / (float) this.j.fx;
+				float dy = (now.y - this.dragStart.y) / (float) this.j.fy;
+				if (e.isShiftDown()) {
+					if (dx > dy) {
+						this.location.x = this.dragFromLocation.x + dx;
+						this.location.y = 0.0f;
+					} else {
+						this.location.x = 0.0f;
+						this.location.y = this.dragFromLocation.y + dy;
+					}
+				} else {
+					this.location.x = this.dragFromLocation.x + dx;
+					this.location.y = this.dragFromLocation.y + dy;
+				}
 				this.group.position(this);
-				this.dragStart = now;
 				this.jf.overlay.repaint();
 			} else if (this.group.hasFocus(this)) {
 				this.putCaretFromMouseInput(e.getX(), e.getY());
