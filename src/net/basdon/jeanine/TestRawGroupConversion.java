@@ -171,4 +171,36 @@ public class TestRawGroupConversion
 		}
 		assertTrue("more lines than expected", !c.hasNext());
 	}
+
+	public void serialize_parsed_carety()
+	{
+		GroupToRawConverter c = new GroupToRawConverter(parser.lines, parser.panels, 0);
+		assertTrue("should have another line", c.hasNext());
+		c.next();
+		assertEquals("wrong parsed carety", 1, c.currentParsedCarety);
+		assertTrue("should have another line", c.hasNext());
+		c.next();
+		assertEquals("wrong parsed carety", 1, c.currentParsedCarety);
+		assertTrue("should have another line", c.hasNext());
+		c.next();
+		assertEquals("wrong parsed carety", 1, c.currentParsedCarety);
+		assertTrue("should have another line", c.hasNext());
+		c.next();
+		assertEquals("wrong parsed carety", 2, c.currentParsedCarety);
+		assertTrue("should have another line", c.hasNext());
+		c.next();
+		assertEquals("wrong parsed carety", 2, c.currentParsedCarety);
+		assertTrue("should have another line", c.hasNext());
+		c.next();
+		assertEquals("wrong parsed carety", 3, c.currentParsedCarety);
+		assertTrue("should have another line", c.hasNext());
+		c.next();
+		assertEquals("wrong parsed carety", 3, c.currentParsedCarety);
+		assertTrue("should have another line", c.hasNext());
+		c.next();
+		assertEquals("wrong parsed carety", 4, c.currentParsedCarety);
+		assertTrue("should have another line", c.hasNext());
+		c.next();
+		assertEquals("wrong parsed carety", 4, c.currentParsedCarety);
+	}
 }
