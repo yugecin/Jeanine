@@ -789,6 +789,18 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 					e.printStackTrace();
 				}
 			}
+		} else if ("arrangerightlinks".equals(parts[0])) {
+			if (this.activeGroup == null || this.activeGroup.activePanel == null) {
+				this.setError("can't arrange - no active group or panel");
+				return;
+			}
+			int spacing = 10;
+			if (parts.length > 1) {
+				try {
+					spacing = Integer.parseInt(parts[1]);
+				} catch (Throwable t) {}
+			}
+			this.activeGroup.arrangeRightLinks(this.activeGroup.activePanel, spacing);
 		} else if (parts[0].length() > 0 &&
 			'0' <= parts[0].charAt(0) &&
 			parts[0].charAt(0) < '9')
@@ -796,6 +808,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			try {
 				if (this.activeGroup == null) {
 					this.setError("can't jump to line - no active group");
+					return;
 				}
 				int linenr = Math.max(0, Integer.parseInt(parts[0]) - 1);
 				if (!this.activeGroup.raw) {
@@ -1145,6 +1158,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		":<number> - jump to a line number\n" +
 		":font - change the font\n" +
 		":prefs - change preferences\n" +
+		":arrangerightlinks - naive auto arrange right linked panels vertically\n" +
 		"\n" +
 		"Some dialogs have lines that can be interacted with by\n" +
 		"pressing ENTER or double clicking\n" +

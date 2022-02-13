@@ -10,6 +10,8 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -682,6 +684,45 @@ public class CodeGroup
 			}
 		}
 		this.jf.setError("can't unlink, specified link doesn't exist");
+	}
+
+	public void arrangeRightLinks(CodePanel ofPanel, int vspacing)
+	{
+		CodePanel[] children = new CodePanel[this.panels.size()];
+		int totalHeight = 0;
+		int numChildren = 0;
+		for (CodePanel child : this.panels.values()) {
+			if (child.parent == ofPanel && PanelLink.getAnchor(child.link) == 'r') {
+				children[numChildren++] = child;
+				totalHeight += child.getHeight();
+			}
+		}
+		if (numChildren == 0) {
+			return;
+		}
+		totalHeight += (numChildren - 1) * vspacing;
+		Arrays.sort(children, 0, numChildren, new Comparator<CodePanel>() {
+			@Override
+			public int compare(CodePanel c, CodePanel d)
+			{
+				return PanelLink.getLine(c.link) - PanelLink.getLine(d.link);
+			}
+		});
+		// TODO: there are some spacing issues - unsure why
+		int start = PanelLink.getLine(children[numChildren - 1].link);
+		start -= PanelLink.getLine(children[0].link);
+		start /= 2;
+		start += PanelLink.getLine(children[0].link);
+		start *= this.j.fy;
+		start -= totalHeight / 2;
+		for (int i = 0; i < numChildren; i++) {
+			CodePanel child = children[i];
+			child.location.x = (20f + 10f * numChildren) / this.j.fx;
+			child.location.y = start / this.j.fy - PanelLink.getLine(child.link);
+			start += child.getHeight();
+			start += vspacing;
+		}
+		this.position(ofPanel); // easiest way to update all child positions
 	}
 
 	public void dispose()
