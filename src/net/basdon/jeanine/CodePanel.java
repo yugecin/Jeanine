@@ -447,7 +447,7 @@ implements MouseListener, MouseMotionListener
 					dy /= this.jf.scale / 20f;
 				}
 				if (e.isShiftDown()) {
-					if (dx > dy) {
+					if (Math.abs(dx) > Math.abs(dy)) {
 						this.location.x = this.dragFromLocation.x + dx;
 						this.location.y = 0.0f;
 					} else {
