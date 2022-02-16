@@ -540,7 +540,7 @@ public class CodeGroup
 				SecondaryLink slink = panel.secondaryLinks.get(i);
 				if (PanelLink.getAnchor(slink.link) == 'r') {
 					int line = PanelLink.getLine(slink.link);
-					if (line >= idx && line < slink.child.lastline) {
+					if (line >= idx) {
 						slink.link = PanelLink.createRightLink(line + 1);
 					}
 				}
@@ -576,7 +576,7 @@ public class CodeGroup
 					int line = PanelLink.getLine(slink.link);
 					if (line == idx) {
 						slink.link = PanelLink.TOP;
-					} else if (line > idx && line < slink.child.lastline) {
+					} else if (line > idx) {
 						slink.link = PanelLink.createRightLink(line - 1);
 					}
 				}
@@ -708,7 +708,7 @@ public class CodeGroup
 				return PanelLink.getLine(c.link) - PanelLink.getLine(d.link);
 			}
 		});
-		// TODO: there are some spacing issues - unsure why
+		// TODO: the resulting vspacing between panels is not consistent, why?
 		int start = PanelLink.getLine(children[numChildren - 1].link);
 		start -= PanelLink.getLine(children[0].link);
 		start /= 2;
