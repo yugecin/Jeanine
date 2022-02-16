@@ -67,8 +67,8 @@ public class OverlayPanel extends JComponent
 
 	private void drawLink(Graphics g, CodePanel parent, CodePanel child, int link)
 	{
-		float scale = this.jf.scale / 20f;
-		int hump = this.jf.scale;
+		float scale = this.jf.getRenderScale();
+		int hump = (int) (10 * scale);
 		int x1, x2, y1, y2;
 		Rectangle a = new Rectangle(), b = new Rectangle();
 		child.getBounds(a);

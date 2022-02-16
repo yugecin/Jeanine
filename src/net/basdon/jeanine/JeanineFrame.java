@@ -40,6 +40,8 @@ public class JeanineFrame
 extends JFrame
 implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, ActionListener
 {
+	private static final int DEFAULT_SCALE = 10;
+
 	private final Timer timer;
 	private final CodeGroup welcomeCodeGroup;
 
@@ -57,11 +59,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public char[] liveSearchText;
 	public long searchHighlightTimeout;
 
-	/**
-	 * Div by 20 to get real scale.
-	 */
-	public int scale;
-
+	private int scale;
 	private Point caretPosBeforeSearch;
 	private CodeGroup activeGroupBeforeSearch;
 	private Point locationMoveFrom, locationMoveTo;
@@ -74,7 +72,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	public JeanineFrame(Jeanine j)
 	{
 		this.j = j;
-		this.scale = 20;
+		this.scale = DEFAULT_SCALE;
 		this.pushedStates = new ArrayDeque<>();
 		this.dragStart = new Point();
 		this.location = new Point();
@@ -205,9 +203,9 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			return;
 		}
 		KeyInput event = new KeyInput(e.getKeyChar());
-		if (this.scale != 20) {
+		if (this.isRenderScaled()) {
 			if (event.c == EditBuffer.ESC) {
-				this.scale = 20;
+				this.scale = DEFAULT_SCALE;
 				for (CodeGroup group : this.codegroups) {
 					group.forceResizeAndReposition();
 				}
@@ -438,7 +436,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.locationMoveTo = null;
 				int delta;
 				if (units < 0) {
-					if (this.scale >= 20) {
+					if (this.scale >= DEFAULT_SCALE) {
 						return;
 					}
 					delta = 1;
@@ -493,9 +491,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.locationZoominStartTime + 15 < System.currentTimeMillis())
 			{
 				this.locationZoominStartTime = System.currentTimeMillis();
-				int dz = this.scale == 19 ? 1 : 2;
-				this.doZoom(this.locationZoominTo.x, this.locationZoominTo.y, dz);
-				if (this.scale == 20) {
+				this.doZoom(this.locationZoominTo.x, this.locationZoominTo.y, 1);
+				if (this.scale == 10) {
 					this.locationZoominTo = null;
 				}
 			}
@@ -559,13 +556,15 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	 */
 	private void doZoom(int x, int y, int delta)
 	{
+		float s = this.getRenderScale();
 		float mx = x - this.location.x;
-		float umx = mx / (this.scale / 20f);
+		float umx = mx / s;
 		float my = y - this.location.y;
-		float umy = my / (this.scale / 20f);
+		float umy = my / s;
 		this.scale += delta;
-		float nmx = umx * this.scale / 20f;
-		float nmy = umy * this.scale / 20f;
+		s = this.getRenderScale();
+		float nmx = umx * s;
+		float nmy = umy * s;
 		this.location.x -= nmx - mx;
 		this.location.y -= nmy - my;
 		for (CodeGroup group : this.codegroups) {
@@ -578,7 +577,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	 */
 	public void updateZoomedOverlayMouseHover(int x, int y, CodePanel hoveredPanel)
 	{
-		if (this.scale == 20 || this.locationZoominTo != null) {
+		if (this.scale == DEFAULT_SCALE || this.locationZoominTo != null) {
 			this.overlay.showInfoForPanel(x, y, null);
 		} else {
 			this.overlay.showInfoForPanel(x, y, hoveredPanel);
@@ -1127,6 +1126,16 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		rv.x -= this.location.x;
 		rv.y -= this.location.y;
 		return rv;
+	}
+
+	public float getRenderScale()
+	{
+		return this.scale * this.scale / 100f;
+	}
+
+	public boolean isRenderScaled()
+	{
+		return this.scale != DEFAULT_SCALE;
 	}
 
 	private static final String WELCOMETEXT =

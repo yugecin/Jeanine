@@ -103,7 +103,7 @@ implements MouseListener, MouseMotionListener
 		g.translate(1, 1);
 		w--;
 		h--;
-		if (this.jf.scale == 20) {
+		if (!this.jf.isRenderScaled()) {
 			// bg
 			g.setColor(Colors.textBg.col);
 			g.fillRect(0, 0, w, h);
@@ -115,18 +115,21 @@ implements MouseListener, MouseMotionListener
 				Dimension s = this.calculateSize(this.rows, this.cols);
 				int _w = s.width - Padding.BORDER - Padding.BORDER;
 				int _h = s.height - Padding.BORDER - Padding.BORDER;
+				this.scaleSize(s);
+				int _w2 = s.width - Padding.BORDER - Padding.BORDER;
+				int _h2 = s.height - Padding.BORDER - Padding.BORDER;
+				if (_w2 <= 0 || _h2 <= 0) {
+					return;
+				}
 				i = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_RGB);
 				g2 = i.createGraphics();
 				g2.setFont(this.j.font);
 				this.paintInnerContents(g2, _w, _h, 0, Integer.MAX_VALUE);
 				g2.dispose();
 				// prescale it
-				this.scaleSize(s);
-				_w = s.width - Padding.BORDER - Padding.BORDER;
-				_h = s.height - Padding.BORDER - Padding.BORDER;
-				i2 = new BufferedImage(_w, _h, BufferedImage.TYPE_INT_RGB);
+				i2 = new BufferedImage(_w2, _h2, BufferedImage.TYPE_INT_RGB);
 				g2 = i2.createGraphics();
-				g2.drawImage(i, 0, 0, _w, _h, null);
+				g2.drawImage(i, 0, 0, _w2, _h2, null);
 				g2.dispose();
 				this.cachedPaintedInnerContents = i2;
 			}
@@ -371,7 +374,7 @@ implements MouseListener, MouseMotionListener
 				this.invokeLineSelectionListener(line + this.firstline);
 			}
 		}
-		if (this.jf.scale != 20) {
+		if (this.jf.isRenderScaled()) {
 			this.jf.panelClickedWhileZoomed(this, e.getX(), e.getY());
 		}
 	}
@@ -387,14 +390,14 @@ implements MouseListener, MouseMotionListener
 				Padding.IN_HEADER +
 				this.j.fy +
 				Padding.IN_HEADER;
-			if (e.getY() <= dragAreaHeight * this.jf.scale / 20f) {
+			if (e.getY() <= dragAreaHeight * this.jf.getRenderScale()) {
 				this.isDragging = true;
 				this.dragStart = e.getLocationOnScreen();
 				this.dragFromLocation = new Point2D.Float(
 					this.location.x,
 					this.location.y
 				);
-			} else if (this.jf.scale != 20) {
+			} else if (this.jf.isRenderScaled()) {
 				int x = e.getX() + this.getX();
 				int y = e.getY() + this.getY();
 				this.jf.panByMouseDragStart(x, y);
@@ -439,12 +442,12 @@ implements MouseListener, MouseMotionListener
 				Point now = e.getLocationOnScreen();
 				float dx = (now.x - this.dragStart.x) / (float) this.j.fx;
 				float dy = (now.y - this.dragStart.y) / (float) this.j.fy;
-				if (this.jf.scale != 20) {
+				if (this.jf.isRenderScaled()) {
 					int x = e.getX() + this.getX();
 					int y = e.getY() + this.getY();
 					this.jf.updateZoomedOverlayMouseHover(x, y, this);
-					dx /= this.jf.scale / 20f;
-					dy /= this.jf.scale / 20f;
+					dx /= this.jf.getRenderScale();
+					dy /= this.jf.getRenderScale();
 				}
 				if (e.isShiftDown()) {
 					if (Math.abs(dx) > Math.abs(dy)) {
@@ -460,7 +463,7 @@ implements MouseListener, MouseMotionListener
 				}
 				this.group.position(this);
 				this.jf.overlay.repaint();
-			} else if (this.jf.scale != 20) {
+			} else if (this.jf.isRenderScaled()) {
 				int x = e.getX() + this.getX();
 				int y = e.getY() + this.getY();
 				this.jf.panByMouseDragUpdate(x, y);
@@ -638,8 +641,8 @@ implements MouseListener, MouseMotionListener
 
 	private void scaleSize(Dimension size)
 	{
-		if (this.jf.scale != 20) {
-			float scale = this.jf.scale / 20f;
+		if (this.jf.isRenderScaled()) {
+			float scale = this.jf.getRenderScale();
 			size.width = (int) (size.width * scale);
 			size.height = (int) (size.height * scale);
 		}
