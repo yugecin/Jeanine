@@ -802,7 +802,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			this.activeGroup.arrangeRightLinks(this.activeGroup.activePanel, spacing);
 		} else if (parts[0].length() > 0 &&
 			'0' <= parts[0].charAt(0) &&
-			parts[0].charAt(0) < '9')
+			parts[0].charAt(0) <= '9')
 		{
 			try {
 				if (this.activeGroup == null) {
