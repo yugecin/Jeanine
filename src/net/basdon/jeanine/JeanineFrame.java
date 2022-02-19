@@ -793,13 +793,16 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.setError("can't arrange - no active group or panel");
 				return;
 			}
-			int spacing = 10;
+			int vsp = 10, xsp = 0;
 			if (parts.length > 1) {
 				try {
-					spacing = Integer.parseInt(parts[1]);
+					vsp = Integer.parseInt(parts[1]);
+					if (parts.length > 2) {
+						xsp = Integer.parseInt(parts[2]);
+					}
 				} catch (Throwable t) {}
 			}
-			this.activeGroup.arrangeRightLinks(this.activeGroup.activePanel, spacing);
+			this.activeGroup.arrangeRightLinks(this.activeGroup.activePanel, vsp, xsp);
 		} else if (parts[0].length() > 0 &&
 			'0' <= parts[0].charAt(0) &&
 			parts[0].charAt(0) <= '9')

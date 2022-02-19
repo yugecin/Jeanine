@@ -686,7 +686,7 @@ public class CodeGroup
 		this.jf.setError("can't unlink, specified link doesn't exist");
 	}
 
-	public void arrangeRightLinks(CodePanel ofPanel, int vspacing)
+	public void arrangeRightLinks(CodePanel ofPanel, int vspacing, float xoffset)
 	{
 		CodePanel[] children = new CodePanel[this.panels.size()];
 		int totalHeight = 0;
@@ -708,6 +708,10 @@ public class CodeGroup
 				return PanelLink.getLine(c.link) - PanelLink.getLine(d.link);
 			}
 		});
+		if (xoffset == 0) {
+			xoffset = (20f + 10f * numChildren);
+		}
+		xoffset /= this.j.fx;
 		// TODO: the resulting vspacing between panels is not consistent, why?
 		int start = PanelLink.getLine(children[numChildren - 1].link);
 		start -= PanelLink.getLine(children[0].link);
@@ -717,7 +721,7 @@ public class CodeGroup
 		start -= totalHeight / 2;
 		for (int i = 0; i < numChildren; i++) {
 			CodePanel child = children[i];
-			child.location.x = (20f + 10f * numChildren) / this.j.fx;
+			child.location.x = xoffset;
 			child.location.y = start / this.j.fy - PanelLink.getLine(child.link);
 			start += child.getHeight();
 			start += vspacing;
