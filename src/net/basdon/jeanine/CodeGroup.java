@@ -609,10 +609,10 @@ public class CodeGroup
 		this.buffer.caretx = caretx;
 		this.buffer.virtualCaretx = caretx;
 		this.activePanel = this.panelAtLine(this.buffer.carety);
-		this.jf.moveToGetCursorAtPosition(cursorPos);
 		this.raw = !this.raw;
 		this.root.location = rootLocation;
 		this.position(this.root);
+		this.jf.moveToGetCursorAtPosition(cursorPos);
 	}
 
 	public void forceRaw(boolean raw)
