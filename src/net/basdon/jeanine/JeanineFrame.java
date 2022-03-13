@@ -966,14 +966,16 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			if (panel != null) {
 				Point p = panel.getLocation();
 				p.x +=
-					/*border*/ 1 +
-					/*padding*/ 1 +
+					Padding.BORDER +
+					Padding.LEFT +
 					this.j.fx * buf.caretx;
 				p.y +=
-					/*border*/ 1 +
-					/*padding title up/down*/ 2 +
-					/*title*/ this.j.fy +
-					/*padding content*/ 1 +
+					Padding.BORDER +
+					Padding.TOP +
+					Padding.IN_HEADER +
+					this.j.fy +
+					Padding.IN_HEADER +
+					Padding.BETWEEN_HEADER_AND_CONTENTS +
 					this.j.fy * (buf.carety - panel.firstline);
 				return p;
 			}
@@ -990,7 +992,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			for (CodeGroup group : this.codegroups) {
 				group.updateLocation();
 			}
-			this.getGlassPane().repaint();
+			this.overlay.repaint();
 		}
 	}
 
