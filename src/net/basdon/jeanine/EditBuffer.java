@@ -482,6 +482,7 @@ public class EditBuffer
 			e.needRepaint = true;
 			this.creatingCmdBuf[0] = e.c; this.creatingCmdLength = 1;
 			break;
+		case BS:
 		case 'h':
 			if (this.caretx > 0) {
 				this.caretx--;
@@ -512,6 +513,7 @@ public class EditBuffer
 				e.error = true;
 			}
 			return;
+		case ' ':
 		case 'l':
 			line = this.lines.get(this.carety);
 			if (this.caretx < line.length() - 1) {
