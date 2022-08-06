@@ -73,6 +73,7 @@ public class OverlayPanel extends JComponent
 		Rectangle a = new Rectangle(), b = new Rectangle();
 		child.getBounds(a);
 		parent.getBounds(b);
+		Jeanine.Padding p = this.j.pad;
 		switch (PanelLink.getAnchor(link)) {
 		case 'b':
 			// top line (child)
@@ -95,9 +96,9 @@ public class OverlayPanel extends JComponent
 			x1 = a.x;
 			x2 = a.x - hump;
 			y1 = a.y + (int) (scale * (
-					Padding.BORDER +
-					Padding.TOP +
-					Padding.IN_HEADER +
+					Jeanine.Padding.BORDER +
+					p.top +
+					p.in_header +
 					this.j.fy / 2
 				));
 			y2 = y1;
@@ -105,9 +106,9 @@ public class OverlayPanel extends JComponent
 			// connecting line
 			x1 = b.x + b.width + hump;
 			y1 = b.y + (int) (scale * (
-					Padding.BORDER +
-					Padding.TOP +
-					Padding.IN_HEADER +
+					Jeanine.Padding.BORDER +
+					p.top +
+					p.in_header +
 					this.j.fy / 2
 				));
 			g.drawLine(x1, y1, x2, y2);
@@ -122,12 +123,12 @@ public class OverlayPanel extends JComponent
 			x1 = a.x;
 			x2 = a.x - hump;
 			y1 = a.y + (int) (scale * (
-					Padding.BORDER +
-					Padding.TOP +
-					Padding.IN_HEADER +
+					Jeanine.Padding.BORDER +
+					p.top +
+					p.in_header +
 					this.j.fy +
-					Padding.IN_HEADER +
-					Padding.BETWEEN_HEADER_AND_CONTENTS +
+					p.in_header +
+					p.between_header_and_contents +
 					this.j.fy / 2
 				));
 			y2 = y1;
@@ -136,12 +137,12 @@ public class OverlayPanel extends JComponent
 			int localLine = line - parent.firstline;
 			x1 = b.x + b.width + hump;
 			y1 = b.y + (int) (scale * (
-					Padding.BORDER +
-					Padding.TOP +
-					Padding.IN_HEADER +
+					Jeanine.Padding.BORDER +
+					p.top +
+					p.in_header +
 					this.j.fy +
-					Padding.IN_HEADER +
-					Padding.BETWEEN_HEADER_AND_CONTENTS +
+					p.in_header +
+					p.between_header_and_contents +
 					this.j.fy * localLine + this.j.fy / 2
 				));
 			g.drawLine(x1, y1, x2, y2);
@@ -150,8 +151,8 @@ public class OverlayPanel extends JComponent
 			SB l = parent.buffer.lines.get(line);
 			x2 = b.x + (int) (scale * (
 					(Line.visualLength(l) + 1) * this.j.fx +
-					Padding.BORDER +
-					Padding.RIGHT
+					Jeanine.Padding.BORDER +
+					p.right
 				));
 			y2 = y1;
 			g.drawLine(x1, y1, x2, y2);

@@ -881,7 +881,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 		this.activeGroup = new CodeGroup(this);
 		Rectangle rect = this.getGroupsBounds();
-		this.activeGroup.setLocation(rect.x + rect.width + 25, rect.y);
+		this.activeGroup.setLocation(rect.x + rect.width + 26, rect.y);
 		try {
 			this.activeGroup.readFile(file);
 		} catch (IOException e) {
@@ -966,16 +966,16 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			if (panel != null) {
 				Point p = panel.getLocation();
 				p.x +=
-					Padding.BORDER +
-					Padding.LEFT +
+					Jeanine.Padding.BORDER +
+					this.j.pad.left +
 					this.j.fx * buf.caretx;
 				p.y +=
-					Padding.BORDER +
-					Padding.TOP +
-					Padding.IN_HEADER +
+					Jeanine.Padding.BORDER +
+					this.j.pad.top +
+					this.j.pad.in_header +
 					this.j.fy +
-					Padding.IN_HEADER +
-					Padding.BETWEEN_HEADER_AND_CONTENTS +
+					this.j.pad.in_header +
+					this.j.pad.between_header_and_contents +
 					this.j.fy * (buf.carety - panel.firstline);
 				return p;
 			}

@@ -113,11 +113,11 @@ implements MouseListener, MouseMotionListener
 				BufferedImage i, i2;
 				Graphics g2;
 				Dimension s = this.calculateSize(this.rows, this.cols);
-				int _w = s.width - Padding.BORDER - Padding.BORDER;
-				int _h = s.height - Padding.BORDER - Padding.BORDER;
+				int _w = s.width - Jeanine.Padding.BORDER - Jeanine.Padding.BORDER;
+				int _h = s.height - Jeanine.Padding.BORDER - Jeanine.Padding.BORDER;
 				this.scaleSize(s);
-				int _w2 = s.width - Padding.BORDER - Padding.BORDER;
-				int _h2 = s.height - Padding.BORDER - Padding.BORDER;
+				int _w2 = s.width - Jeanine.Padding.BORDER - Jeanine.Padding.BORDER;
+				int _h2 = s.height - Jeanine.Padding.BORDER - Jeanine.Padding.BORDER;
 				if (_w2 <= 0 || _h2 <= 0) {
 					return;
 				}
@@ -150,13 +150,13 @@ implements MouseListener, MouseMotionListener
 	{
 		g.setColor(Colors.textBg.col);
 		g.fillRect(0, 0, w, h);
-		g.translate(Padding.LEFT, Padding.TOP);
-		w -= Padding.LEFT + Padding.RIGHT;
-		h -= Padding.TOP + Padding.BOT;
-		hiddenHeight -= Padding.BORDER + Padding.TOP;
+		g.translate(this.j.pad.left, this.j.pad.top);
+		w -= this.j.pad.left + this.j.pad.right;
+		h -= this.j.pad.top + this.j.pad.bot;
+		hiddenHeight -= Jeanine.Padding.BORDER + this.j.pad.top;
 		if (hiddenHeight <= this.j.fy) { // title
 			g.setColor(Colors.headerBg.col);
-			g.fillRect(0, 0, w, Padding.IN_HEADER + this.j.fy + Padding.IN_HEADER);
+			g.fillRect(0, 0, w, this.j.pad.in_header + this.j.fy + this.j.pad.in_header);
 			g.setColor(Colors.headerFg.col);
 			SB title = new SB(100);
 			title.append(String.valueOf(this.id));
@@ -173,15 +173,15 @@ implements MouseListener, MouseMotionListener
 			if (this.group.raw) {
 				title.append("|RAW");
 			}
-			g.drawString(title.toString(), 0, Padding.IN_HEADER + this.j.fmaxascend);
+			g.drawString(title.toString(), 0, this.j.pad.in_header + this.j.fmaxascend);
 		}
 
 		{
 			int offset =
-				Padding.IN_HEADER +
+				this.j.pad.in_header +
 				this.j.fy +
-				Padding.IN_HEADER +
-				Padding.BETWEEN_HEADER_AND_CONTENTS;
+				this.j.pad.in_header +
+				this.j.pad.between_header_and_contents;
 			hiddenHeight -= offset;
 			heightleft -= offset;
 			h -= offset;
@@ -385,11 +385,11 @@ implements MouseListener, MouseMotionListener
 	{
 		if (!this.jf.shouldBlockInput()) {
 			int dragAreaHeight =
-				Padding.BORDER +
-				Padding.TOP +
-				Padding.IN_HEADER +
+				Jeanine.Padding.BORDER +
+				this.j.pad.top +
+				this.j.pad.in_header +
 				this.j.fy +
-				Padding.IN_HEADER;
+				this.j.pad.in_header;
 			if (e.getY() <= dragAreaHeight * this.jf.getRenderScale()) {
 				this.isDragging = true;
 				this.dragStart = e.getLocationOnScreen();
@@ -439,6 +439,7 @@ implements MouseListener, MouseMotionListener
 	{
 		if (!this.jf.shouldBlockInput()) {
 			if (this.isDragging) {
+				float lastX = this.location.x, lastY = this.location.y;
 				Point now = e.getLocationOnScreen();
 				float dx = (now.x - this.dragStart.x) / (float) this.j.fx;
 				float dy = (now.y - this.dragStart.y) / (float) this.j.fy;
@@ -461,7 +462,11 @@ implements MouseListener, MouseMotionListener
 					this.location.x = this.dragFromLocation.x + dx;
 					this.location.y = this.dragFromLocation.y + dy;
 				}
-				this.group.position(this);
+				this.location.x = Math.round(this.location.x);
+				this.location.y = Math.round(this.location.y);
+				if (this.location.x != lastX || this.location.y != lastY) {
+					this.group.position(this);
+				}
 				this.jf.overlay.repaint();
 			} else if (this.jf.isRenderScaled()) {
 				int x = e.getX() + this.getX();
@@ -504,7 +509,7 @@ implements MouseListener, MouseMotionListener
 
 	public void putCaretFromMouseInput(int x, int y)
 	{
-		x -= Padding.BORDER + Padding.LEFT;
+		x -= Jeanine.Padding.BORDER + this.j.pad.left;
 		x /= this.j.fx;
 		y = this.getLineAtY(y);
 		SB line = this.buffer.lines.get(y);
@@ -529,12 +534,12 @@ implements MouseListener, MouseMotionListener
 	private int getLocalLineAtY(int y)
 	{
 		y -=
-			Padding.BORDER +
-			Padding.TOP +
-			Padding.IN_HEADER +
+			Jeanine.Padding.BORDER +
+			this.j.pad.top +
+			this.j.pad.in_header +
 			this.j.fy +
-			Padding.IN_HEADER +
-			Padding.BETWEEN_HEADER_AND_CONTENTS;
+			this.j.pad.in_header +
+			this.j.pad.between_header_and_contents;
 		y /= this.j.fy;
 		return y;
 	}
@@ -621,21 +626,21 @@ implements MouseListener, MouseMotionListener
 	{
 		Dimension size = new Dimension();
 		size.width =
-			Padding.BORDER +
-			Padding.LEFT +
+			Jeanine.Padding.BORDER +
+			this.j.pad.left +
 			cols * this.j.fx +
-			Padding.RIGHT +
-			Padding.BORDER;
+			this.j.pad.right +
+			Jeanine.Padding.BORDER;
 		size.height =
-			Padding.BORDER +
-			Padding.TOP +
-			Padding.IN_HEADER +
+			Jeanine.Padding.BORDER +
+			this.j.pad.top +
+			this.j.pad.in_header +
 			this.j.fy +
-			Padding.IN_HEADER +
-			Padding.BETWEEN_HEADER_AND_CONTENTS +
+			this.j.pad.in_header +
+			this.j.pad.between_header_and_contents +
 			rows * this.j.fy +
-			Padding.BOT +
-			Padding.BORDER;
+			this.j.pad.bot +
+			Jeanine.Padding.BORDER;
 		return size;
 	}
 

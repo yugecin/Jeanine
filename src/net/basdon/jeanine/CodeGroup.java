@@ -216,8 +216,8 @@ public class CodeGroup
 	public void position(CodePanel panel)
 	{
 		float scale = this.jf.getRenderScale();
-		float x = scale * this.location.x + this.jf.location.x;
-		float y = scale * this.location.y + this.jf.location.y;
+		float x = scale * this.location.x - this.location.x % this.j.fx + this.jf.location.x;
+		float y = scale * this.location.y - this.location.y % this.j.fy + this.jf.location.y;
 		if (panel.parent != null) {
 			CodePanel parent = this.panels.get(panel.parent.id);
 			if (parent != null) {
