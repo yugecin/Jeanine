@@ -461,6 +461,8 @@ implements MouseListener, MouseMotionListener
 					this.location.x = this.dragFromLocation.x + dx;
 					this.location.y = this.dragFromLocation.y + dy;
 				}
+				this.location.x -= this.location.x % 2;
+				this.location.y = Math.round(this.location.y);
 				this.group.position(this);
 				this.jf.overlay.repaint();
 			} else if (this.jf.isRenderScaled()) {
