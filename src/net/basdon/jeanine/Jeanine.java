@@ -66,14 +66,18 @@ public class Jeanine
 			this.fy = metrics.getHeight();
 			this.fmaxascend = metrics.getMaxAscent();
 			Padding p = this.pad;
-			p.top = (this.fy - Padding.BORDER * 2);
-			p.bot = p.top / 2;
-			p.top -= p.bot;
-			// plus one so panels can overlap one pixel - a border pixel
-			p.between_header_and_contents = this.fy - p.in_header * 2 + 1;
+			p.top = (this.fy - Padding.BORDER * 2 - p.in_header * 2);
+			p.bot = p.top / 3;
+			p.between_header_and_contents = p.bot;
+			p.top -= p.bot + p.between_header_and_contents;
+			// and add one more so panels can overlap one pixel - a border pixel
+			//p.bot++;
+
 			p.left = this.fx - Padding.BORDER * 2;
 			p.right = p.left / 2;
 			p.left -= p.right;
+			// and add one more so panels can overlap one pixel - a border pixel
+			//p.right++;
 			return true;
 		}
 		return false;
@@ -95,7 +99,7 @@ public class Jeanine
 		public int bot = 10;
 		public int left = 10;
 		public int right = 10;
-		public int in_header = 1;
+		public int in_header = 0;
 		public int between_header_and_contents = 7;
 	}
 }
