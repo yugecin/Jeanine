@@ -85,6 +85,26 @@ public class Colors
 	}
 
 	/**
+	 * Based on colors that Jonathan Blow uses as seen in his videos (2024).
+	 */
+	public static void jblow2024()
+	{
+		border.col = new Color(0xd1b58c);
+		bg.col = new Color(0x292929);
+		textFg.col = new Color(0xd1b58c);
+		textBg.col = new Color(0x062626);
+		headerBg.col = textFg.col;
+		headerFg.col = textBg.col;
+		selectionBg.col = new Color(0x000eff);
+		selectionFg.col = null;
+		commentFg.col = new Color(0x4dd938);
+		whitespaceBg.col = new Color(0xff8c69);
+		caretDefault.col = new Color(0xdb4a4a);
+		caretInsert.col = new Color(0x86e08e);
+		// other colors: literals=0x79Fbcc keywords=0xf3fff5, #directives=0xa0dfac
+	}
+
+	/**
 	 * Based on colors that Casey Muratori uses (for Handmade Hero) as seen in his videos.
 	 */
 	public static void handmade()
