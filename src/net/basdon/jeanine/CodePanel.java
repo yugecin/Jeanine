@@ -54,6 +54,12 @@ implements MouseListener, MouseMotionListener
 	private int maxLineLength;
 	private int rows, cols;
 	private boolean isDragging;
+	/**
+	 * Gets set when BUTTON2 is pressed, unset when BUTTON2 is released.
+	 * Need this because mouse events in {@link #mouseDragged} don't include information about
+	 * which buttons are currently pressed, only buttons that are changed state since last event...
+	 */
+	private boolean isPanningFrame;
 	private Point dragStart;
 	private Point2D.Float dragFromLocation;
 	/**
@@ -365,6 +371,9 @@ implements MouseListener, MouseMotionListener
 	@Override
 	public void mouseClicked(MouseEvent e)
 	{
+		if (e.getButton() == MouseEvent.BUTTON2) {
+			return;
+		}
 		if (!this.jf.shouldBlockInput() &&
 			e.getClickCount() == 2 &&
 			this.jf.lineSelectionListener != null)
@@ -383,6 +392,11 @@ implements MouseListener, MouseMotionListener
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
+		if (e.getButton() == MouseEvent.BUTTON2) {
+			this.isPanningFrame = true;
+			this.jf.panByMouseDragStart(this.getX() + e.getX(), this.getY() + e.getY());
+			return;
+		}
 		if (!this.jf.shouldBlockInput()) {
 			int dragAreaHeight =
 				Jeanine.Padding.BORDER +
@@ -411,6 +425,7 @@ implements MouseListener, MouseMotionListener
 	@Override
 	public void mouseReleased(MouseEvent e)
 	{
+		this.isPanningFrame = false;
 		if (!this.jf.shouldBlockInput()) {
 			if (this.isDragging) {
 				this.isDragging = false;
@@ -437,6 +452,10 @@ implements MouseListener, MouseMotionListener
 	@Override
 	public void mouseDragged(MouseEvent e)
 	{
+		if (this.isPanningFrame) {
+			this.jf.panByMouseDragUpdate(this.getX() + e.getX(), this.getY() + e.getY());
+			return;
+		}
 		if (!this.jf.shouldBlockInput()) {
 			if (this.isDragging) {
 				float lastX = this.location.x, lastY = this.location.y;
