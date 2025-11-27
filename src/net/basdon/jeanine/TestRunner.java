@@ -27,6 +27,8 @@ public class TestRunner
 		startNewPanelInResults();
 		TestRawGroupConversion.jf = jf;
 		run(TestRawGroupConversion.class);
+		startNewPanelInResults();
+		run(TestLine.class);
 		totalTime = (int) (System.currentTimeMillis() - time);
 	}
 

@@ -36,21 +36,22 @@ public class Line
 
 	public static int visualToLogicalPos(SB sb, int visualPos)
 	{
+		int tologic = visualPos;
 		int pos = 0;
 		for (int i = 0; i < sb.length; i++) {
-			if (visualPos <= 0) {
+			if (tologic <= 0) {
 				return i;
 			}
 			if (sb.value[i] == '\t') {
 				int diff = (8 - pos % 8);
 				pos += diff;
-				visualPos -= diff;
+				tologic -= diff;
 			} else {
 				pos++;
-				visualPos--;
+				tologic--;
 			}
 		}
-		return visualPos;
+		return tologic <= 0 ? (visualPos > 0 && sb.length > 0 ? sb.length - 1 : 0) : tologic;
 	}
 
 	private static final char[] spaces = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
