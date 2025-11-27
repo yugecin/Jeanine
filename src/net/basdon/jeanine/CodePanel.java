@@ -50,6 +50,10 @@ implements MouseListener, MouseMotionListener
 	 * The location as a factor of font xy size.
 	 */
 	public Point2D.Float location;
+	/**
+	 * Name of the panel as defined in its Jeanine comment
+	 */
+	public String name;
 
 	private int maxLineLength;
 	private int rows, cols;
@@ -68,7 +72,7 @@ implements MouseListener, MouseMotionListener
 	 */
 	private BufferedImage cachedPaintedInnerContents;
 
-	public CodePanel(CodeGroup group, Integer id, int linefrom, int lineto)
+	public CodePanel(CodeGroup group, Integer id, int linefrom, int lineto, String name)
 	{
 		this.jf = group.jf;
 		this.j = this.jf.j;
@@ -77,6 +81,7 @@ implements MouseListener, MouseMotionListener
 		this.buffer = group.buffer;
 		this.firstline = linefrom;
 		this.lastline = lineto;
+		this.name = name;
 		this.secondaryLinks = new ArrayList<>();
 		this.location = new Point2D.Float();
 		this.setFocusable(false);
@@ -173,6 +178,9 @@ implements MouseListener, MouseMotionListener
 				title.append('|').append(this.group.title);
 			}
 			title.append('|').append(this.firstline).append('-').append(this.lastline);
+			if (this.name != null) {
+				title.append('|').append(this.name);
+			}
 			if (this.buffer.readonly) {
 				title.append("|RO");
 			}

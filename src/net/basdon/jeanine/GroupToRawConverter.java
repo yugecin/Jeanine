@@ -101,6 +101,11 @@ public class GroupToRawConverter implements Iterator<SB>
 						this.next.append(panel.location.y, 2);
 						this.next.append(';');
 					}
+					if (panel.name != null) {
+						this.next.append("n:");
+						this.next.append(panel.name);
+						this.next.append(';');
+					}
 					this.next.append("*/");
 					if (this.carety >= 0) {
 						this.newRawCarety++;

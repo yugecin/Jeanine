@@ -41,15 +41,23 @@ public class OverlayPanel extends JComponent
 		}
 		if (this.infopanel != null) {
 			tmpsb.length = 0;
-			if (this.infopanel.group.title != null) {
-				tmpsb.append(this.infopanel.group.title);
-				tmpsb.append('|');
-			}
 			tmpsb.append(this.infopanel.firstline);
 			tmpsb.append('-');
 			tmpsb.append(this.infopanel.lastline);
-			int w = tmpsb.length * this.j.fx + 4;
-			int h = this.j.fy + 4;
+			String groupTitle = this.infopanel.group.title;
+			String panelName = this.infopanel.name;
+			int w = tmpsb.length;
+			int h = 1;
+			if (groupTitle != null) {
+				w = Math.max(w, groupTitle.length());
+				h++;
+			}
+			if (panelName != null) {
+				w = Math.max(w, panelName.length());
+				h++;
+			}
+			w = w * this.j.fx + 4;
+			h = h * this.j.fy + 4;
 			int x = this.infoX + 2;
 			int y = this.infoY - 2 - h;
 			g.setFont(this.j.font);
@@ -61,7 +69,15 @@ public class OverlayPanel extends JComponent
 			g.fillRect(0, 0, w - 1, h - 1);
 			g.translate(1, 1);
 			g.setColor(Color.black);
+			if (groupTitle != null) {
+				g.drawString(groupTitle, 0, this.j.fmaxascend);
+				g.translate(0, this.j.fy);
+			}
 			g.drawString(this.tmpsb.toString(), 0, this.j.fmaxascend);
+			if (panelName != null) {
+				g.translate(0, this.j.fy);
+				g.drawString(panelName, 0, this.j.fmaxascend);
+			}
 		}
 	}
 

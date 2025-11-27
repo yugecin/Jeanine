@@ -722,6 +722,29 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			if (this.doLinkCommandPrechecks(parts, child, position)) {
 				this.activeGroup.unlink(child[0], position[0]);
 			}
+		} else if ("name".equals(parts[0])) {
+			if (this.activeGroup == null || this.activeGroup.activePanel == null) {
+				this.setError("can't set panel name: no active panel");
+			} else if (this.activeGroup.activePanel == this.activeGroup.root) {
+				this.setError("can't set the name of a group's root panel");
+			} else if (command.length() < "name A".length()) {
+				this.activeGroup.activePanel.name = null;
+				this.activeGroup.activePanel.repaint();
+			} else {
+				SB sb = new SB();
+				for (int i= "name ".length(); i < command.length(); i++) {
+					char c = command.charAt(i);
+					if (c != '*' && c != ';') {
+						sb.append(c);
+					}
+				}
+				if (sb.length == 0) {
+					this.setError("can't set name, given name only contains invalid chars");
+				} else {
+					this.activeGroup.activePanel.name = sb.toString();
+					this.activeGroup.activePanel.repaint();
+				}
+			}
 		} else if ("raw".equals(parts[0])) {
 			if (this.activeGroup == null) {
 				this.setError("no active panel");
@@ -1168,6 +1191,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		":link <bot|right|top> <id> - link a child\n" +
 		":slink <bot|right|top> <id> - like :link but as a secondary link\n" +
 		":unlink <bot|right|top> <id> - like :slink but removes a secondary link\n" +
+		":name [name] - set or delete the name of the current panel\n" +
 		":raw - toggle between raw and 2d mode\n" +
 		":<number> - jump to a line number\n" +
 		":font - change the font\n" +

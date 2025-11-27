@@ -52,7 +52,7 @@ public class RawToGroupConverter
 			e.append(this.physicalLine).append(": missing panel id in props\n");
 		}
 		int line = this.panel.lastline;
-		this.panel = new CodePanel(this.group, id, line, line);
+		this.panel = new CodePanel(this.group, id, line, line, dir.strValue['n']);
 		this.panels.put(id, this.panel);
 		this.nextInvalidId = Integer.valueOf(this.nextInvalidId.intValue() + 1);
 		// p: parent
@@ -163,7 +163,7 @@ public class RawToGroupConverter
 	public void interpretSource(Iterator<SB> lines)
 	{
 		SB e = this.errors;
-		this.panel = this.root = new CodePanel(this.group, Integer.valueOf(0), 0, 0);
+		this.panel = this.root = new CodePanel(this.group, Integer.valueOf(0), 0, 0, "ROOT");
 		this.panels.put(this.root.id, this.root);
 		while (lines.hasNext()) {
 			this.physicalLine++;

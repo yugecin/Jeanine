@@ -13,6 +13,8 @@ Currently C-style block comments are always used.
 
 If a value is a floating point number, it must include a decimal point.
 
+String values may contain anything but * or ;
+
 Examples:
 
 /*jeanine:p:i:1;p:0;a:b;x:0;y:30;*/
@@ -53,6 +55,7 @@ Examples:
 | | - y: the y-offset where this panel is located, relatively to the standard
 | |      location as determined by the anchor. If this is a float value,
 | |      it is a multiple of the font height, otherwise it's in pixels.
+| | - n: the name of the panel
 
 
 

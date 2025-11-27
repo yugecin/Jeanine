@@ -107,7 +107,7 @@ public class CodeGroup
 			this.panels.putAll(parser.panels);
 		} else {
 			Integer id = Integer.valueOf(0);
-			this.root = new CodePanel(this, id, 0, 0);
+			this.root = new CodePanel(this, id, 0, 0, "ROOT");
 			this.panels.put(id, this.root);
 			while (lines.hasNext()) {
 				this.buffer.lines.lines.add(new SB(lines.next()));
@@ -370,7 +370,7 @@ public class CodeGroup
 		int linefrom,
 		int lineto)
 	{
-		CodePanel cf = new CodePanel(this, id, linefrom, lineto);
+		CodePanel cf = new CodePanel(this, id, linefrom, lineto, null);
 		this.panels.put(id, cf);
 		cf.parent = parent;
 		cf.link = link;
