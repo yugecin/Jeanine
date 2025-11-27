@@ -123,6 +123,25 @@ public class Colors
 		caretInsert.col = new Color(0x86e08e);
 	}
 
+	/**
+	 * Based on colors used by the Acme editor (and rio) on Plan 9
+	 */
+	public static void acme()
+	{
+		border.col = new Color(0x99994c);
+		bg.col = new Color(0x55aaaa);
+		textFg.col = Color.black;
+		textBg.col = new Color(0xffffea);
+		headerBg.col = border.col;
+		headerFg.col = textFg.col;
+		selectionBg.col = new Color(0xeeee9e);
+		selectionFg.col = textFg.col;
+		commentFg.col = new Color(0x4092ff);
+		whitespaceBg.col = new Color(0x8888cc);
+		caretDefault.col = new Color(0xdb4a4a);
+		caretInsert.col = new Color(0x86e08e);
+	}
+
 	public final String name;
 
 	public Color col;
