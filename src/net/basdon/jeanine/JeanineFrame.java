@@ -1157,7 +1157,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		"View: z\n" +
 		"Search: / n N *\n" +
 		"\n" +
-		"mousedrag or (shift+)scroll to pan view\n" +
+		"mousedrag the background or MMB-drag or (shift+)scroll to pan view\n" +
 		"ctrl+scroll to zoom\n" +
 		"\n" +
 		"Commands:\n" +
