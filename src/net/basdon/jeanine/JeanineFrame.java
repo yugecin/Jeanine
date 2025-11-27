@@ -773,6 +773,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			for (File file : files) {
 				this.openFile(file);
 			}
+			this.repaint();
 			this.ensureCaretInView();
 		} else if ("bp".equals(parts[0])) {
 			int size = this.codegroups.size();
@@ -902,16 +903,18 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				return;
 			}
 		}
-		this.activeGroup = new CodeGroup(this);
-		Rectangle rect = this.getGroupsBounds();
-		this.activeGroup.setLocation(rect.x + rect.width + 26, rect.y);
+		CodeGroup g = new CodeGroup(this);
 		try {
-			this.activeGroup.readFile(file);
+			g.readFile(file);
 		} catch (IOException e) {
 			// TODO
 			e.printStackTrace();
+			return;
 		}
-		this.addCodeGroup(this.activeGroup);
+		Rectangle rect = this.getGroupsBounds();
+		g.setLocation(rect.x + rect.width + 26, rect.y);
+		this.addCodeGroup(g);
+		this.activeGroup = g;
 	}
 
 	private void addCodeGroup(CodeGroup group)
