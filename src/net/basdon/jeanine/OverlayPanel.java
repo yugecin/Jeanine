@@ -58,7 +58,7 @@ public class OverlayPanel extends JComponent
 			g.drawRect(0, 0, w, h);
 			g.translate(1, 1);
 			g.setColor(Color.yellow);
-			g.fillRect(0, 0, w - 2, h - 2);
+			g.fillRect(0, 0, w - 1, h - 1);
 			g.translate(1, 1);
 			g.setColor(Color.black);
 			g.drawString(this.tmpsb.toString(), 0, this.j.fmaxascend);
