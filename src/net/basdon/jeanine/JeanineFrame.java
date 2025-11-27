@@ -22,6 +22,8 @@ import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -906,7 +908,19 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		try {
 			g.readFile(file);
 		} catch (IOException e) {
-			// TODO
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String title = "Failed to open file " + file.getName();
+			Iterator<SB> lines = new Util.CombinedIter(
+				new Util.StringArray2SBIter(new String[] {
+					"Failed to open file " + file.getAbsolutePath(),
+					"",
+					"press ENTER or ESC to continue",
+					""
+				}),
+				new Util.StringArray2SBIter(sw.toString().split("\n"))
+			);
+			new DialogSimpleMessage(this, title, lines);
 			e.printStackTrace();
 			return;
 		}
