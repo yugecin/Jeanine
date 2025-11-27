@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -160,19 +159,19 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				this.openFile(Jeanine.argsFilesToOpen[i]);
 			}
 			if (runTests && TestRunner.failures != 0) {
-				Iterator<SB> testtext = new Util.CombinedIter(Arrays.asList(
+				Iterator<SB> testtext = new Util.CombinedIter(
 					TestRunner.getSummary(),
 					new Util.StringArray2SBIter(new String[] {
 						"/*jeanine:p:i:1000;p:0;a:b;y:3.0;*/",
 					}),
 					TestRunner.getResults()
-				));
+				);
 				new DialogSimpleMessage(this, "FAILED TESTS", testtext);
 			}
 		} else {
 			Iterator<SB> welcometext;
 			if (runTests) {
-				welcometext = new Util.CombinedIter(Arrays.asList(
+				welcometext = new Util.CombinedIter(
 					TestRunner.getSummary(),
 					new Util.LineIterator(WELCOME_YESTEST),
 					new Util.LineIterator(WELCOMETEXT),
@@ -180,12 +179,12 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 						"/*jeanine:p:i:1000;p:0;a:t;x:3.0;*/",
 					}),
 					TestRunner.getResults()
-				));
+				);
 			} else {
-				welcometext = new Util.CombinedIter(Arrays.asList(
+				welcometext = new Util.CombinedIter(
 					new Util.LineIterator(WELCOME_NOTEST),
 					new Util.LineIterator(WELCOMETEXT)
-				));
+				);
 			}
 			this.activeGroup = this.welcomeCodeGroup;
 			this.activeGroup.setLocation(30, 30);
