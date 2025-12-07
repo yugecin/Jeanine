@@ -99,12 +99,31 @@ public class CodeGroup
 		this.panels.clear();
 
 		if (interpret) {
-			// TODO: show the errors if not empty
 			RawToGroupConverter parser = new RawToGroupConverter(this.j, this);
 			parser.interpretSource(lines);
 			this.buffer.lines.lines.addAll(parser.lines);
 			this.root = parser.root;
 			this.panels.putAll(parser.panels);
+			if (parser.errors.length > 0) {
+				Iterator<SB> errorLines = new Util.CombinedIter(
+					new Util.StringArray2SBIter(new String[] {
+						"Errors occured while parsing",
+						"",
+						"press ENTER or ESC to continue",
+						""
+					}),
+					new Util.LineIterator(parser.errors)
+				);
+				// HACKS HACKS HACKS since this function is often called while a group is
+				// being added, pushing dialog state now will allow whatever's calling this
+				// function to still add groups even though we're supposed to be in dialog
+				// state. So invokelater to ensure we're only pushing dialog state after
+				// whatever's going on here has finished.
+				SwingUtilities.invokeLater(() -> {
+					// important to disable interpreting here. it may result in infinite recursion
+					new DialogSimpleMessage(this.jf, "parsing errors", errorLines, false);
+				});
+			}
 		} else {
 			Integer id = Integer.valueOf(0);
 			this.root = new CodePanel(this, id, 0, 0, "ROOT");

@@ -16,6 +16,7 @@ public class Util
 	public static class LineIterator implements Iterator<SB>
 	{
 		private char[] text;
+		private int textLength;
 		private int pos;
 		private SB sb;
 		private boolean hasNext;
@@ -23,16 +24,24 @@ public class Util
 		public LineIterator(String text)
 		{
 			this.text = text.toCharArray();
+			this.textLength = this.text.length;
+			this.sb = new SB();
+		}
+
+		public LineIterator(SB text)
+		{
+			this.text = text.value;
+			this.textLength = text.length;
 			this.sb = new SB();
 		}
 
 		@Override
 		public boolean hasNext()
 		{
-			if (!this.hasNext && this.pos < this.text.length) {
+			if (!this.hasNext && this.pos < this.textLength) {
 				this.hasNext = true;
 				this.sb.length = 0;
-				for (; this.pos < this.text.length; this.pos++) {
+				for (; this.pos < this.textLength; this.pos++) {
 					if (this.text[this.pos] == '\n') {
 						this.pos++;
 						return true;
