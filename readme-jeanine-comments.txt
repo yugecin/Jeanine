@@ -1,19 +1,27 @@
 Jeanine comments
 ================
-Jeanine comments specify how to layout the source text. They start with a
-jeanine: prefix, followed by the directive character and a colon (like p:),
-followed by properties (like i:1;), optionally followed by a colon and
-another directive with properties and so on. There may only be maximum one
-jeanine comment on a single line.
+Jeanine comments specify how to layout the source text. These are simply
+C-style block comments that start with a 'jeanine:' prefix.
+There may only be maximum one jeanine comment on a single line.
+The comment may be on its own line or at the end of a non-empty line but
+certain directives require specific placement, this will be mentioned
+throughout this document.
 
-Currently, both directives and property names are a single character in length.
-Property values can be of any length, but they cannot include a semicolon.
+After the prefix (jeanine:) follows one or more directives, which are separated
+by a colon character (:).
 
-Currently C-style block comments are always used.
+A directive is a single character, followed by a colon (:), optionally followed
+by one or more properties.
 
-If a value is a floating point number, it must include a decimal point.
+A directive property is a single character, followed by a colon (:), followed
+by its value, and ends with a semicolon (;)
 
-String values may contain anything but * or ;
+If a property value is supposed to be a float, it must include a decimal point.
+
+String property values cannot contain the semicolon character (;) as that marks
+the end of a property (value). It also cannot contain the sequence '*/' as that
+(early) marks the end of a (jeanine) comment. Any other character (apart from
+the obvious line break characters) is permitted.
 
 Examples:
 
@@ -23,20 +31,29 @@ Examples:
             i:1;p:0;a:b;x:0;y:30;   properties and their values
 
 /*jeanine:s:a:b;i:2;:s:a:b;i:3;*/
-  jeanine:                      standard jeanine comment prefix
-          s:                    "secondary link" directive
-            a:b;i:2;            properties and their values
-                    :           directive separator
-                     s:         "secondary link" directive
-                       a:b;i:3; properties and their values
+  jeanine:                        standard jeanine comment prefix
+          s:                      "secondary link" directive
+            a:b;i:2;              properties and their values
+                    :             directive separator
+                     s:           "secondary link" directive
+                       a:b;i:3;   properties and their values
 
+/*jeanine:x::x:y:z;:x:*/
+  jeanine:               standard jeanine comment prefix
+          x:             'x' directive (does not exist, just an example)
+            :            directive separator (meaning the previous x directive
+                           has no properties)
+             x:          another 'x' directive
+               y:z;      properties and their values
+                   :     directive separator
+                    x:   another 'x' directive
 
 
 | Panel directive (p)
 | -------------------
 | These define a "panel", which is a section of text. Everything from the start
 | of a panel directive until the next panel directive (or EOF) will be put in
-| the same panel. Panel directives should be placed on a dedicated source line.
+| the same panel. Panel directives must be placed on a dedicated source line.
 | The start of the source implicitely defines the root panel, which has an id
 | of 0. The root panel is the only panel that has no parent.
 | 
@@ -110,6 +127,11 @@ Examples:
 
 | Legacy right link directive (l)
 | -------------------------------
+|
+| | THIS DIRECTIVE IS LEGACY AND DOES NOT FOLLOW THE PROPER DIRECTIVE SYNTAX.
+| | Implementations may parse these directive but are not allowed to produce them.
+| | When parsed, they should be converted to right link directives (r).
+|
 | These were in use when jeanine comments weren't fully specced out yet. They
 | are deprecated and won't newly appear any more, but might still be interpreted
 | for backward compatibility reasons. The 'l' initially stood for 'link'. This

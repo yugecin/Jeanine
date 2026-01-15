@@ -6,6 +6,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * This class holds state, therefor {@link #interpretSource} should only be called once
+ * and instances must not be reused.
+ */
 public class RawToGroupConverter
 {
 	private final Jeanine j;
@@ -38,7 +42,7 @@ public class RawToGroupConverter
 		this.nextInvalidId = Integer.valueOf(9000);
 	}
 
-	private void handlePanelDirective(JeanineDirective dir)
+	private void handlePanelDirective(Directive dir)
 	{
 		SB e = this.errors;
 		Integer id = this.nextInvalidId;
@@ -87,32 +91,35 @@ public class RawToGroupConverter
 	}
 
 	// TODO remove legacy right links
-	private void handleLegacyRightLinkDirective(JeanineDirective dir, SB sb, int idx)
+	private void handleLegacyRightLinkDirective(SB sb, int idx)
 	{
-		if (idx >= sb.length) {
-			return;
-		}
+		boolean hasNumber = false;
 		int childId = 0;
 		char c = 0;
 		for (;;) {
 			if (idx >= sb.length || (c = sb.value[idx++]) == ',' || c == '*') {
-				RightLink rl = new RightLink();
-				rl.childId = Integer.valueOf(childId);
-				rl.logicalLine = this.logicalLine;
-				rl.physicalLine = this.physicalLine;
-				this.rightLinks.add(rl);
-				if (idx >= sb.length || c != ',') {
+				if (hasNumber) {
+					RightLink rl = new RightLink();
+					rl.childId = Integer.valueOf(childId);
+					rl.logicalLine = this.logicalLine;
+					rl.physicalLine = this.physicalLine;
+					this.rightLinks.add(rl);
+					hasNumber = false;
+					childId = 0;
+				}
+				if (c != ',') {
 					break;
 				}
 			} else if ('0' <= c && c <= '9') {
 				childId = childId * 10 + c - '0';
+				hasNumber = true;
 			} else {
 				break;
 			}
 		}
 	}
 
-	public void handleRightLinkDirective(JeanineDirective dir)
+	public void handleRightLinkDirective(Directive dir)
 	{
 		SB e = this.errors;
 		// i: child id
@@ -131,7 +138,7 @@ public class RawToGroupConverter
 	/**
 	 * @return the link
 	 */
-	public int handleSecondaryLinkDirective(JeanineDirective dir)
+	public int handleSecondaryLinkDirective(Directive dir)
 	{
 		SB e = this.errors;
 		ScndryLink scnd = new ScndryLink();
@@ -175,25 +182,21 @@ public class RawToGroupConverter
 				lineLength = idx;
 				idx += 10;
 			}
-			JeanineDirective dir;
+			Directive dir;
 			while (idx != -1) {
-				dir = JeanineDirective.parse(sb, idx);
-				// TODO remove legacy right links
-				if (dir.directive == 'l') {
-					// legacy right links have unexpected syntax, ignore errors
-					dir.errors.length = 0;
+				if (sb.value[idx] == 'l') {
+					// TODO remove legacy right links
+					this.handleLegacyRightLinkDirective(sb, idx + 2);
+					idx = -1; // skip to end
+					break;
 				}
+				dir = Directive.parse(sb, idx);
 				if (dir.errors.length != 0) {
-					e.append(this.physicalLine).append(
-						": while parsing jeanine comment" +
-						" directives:\n"
-					).append(dir.errors);
+					e.append(this.physicalLine);
+					e.append(": while parsing jeanine comment directives:\n");
+					e.append(dir.errors);
 				}
 				switch (dir.directive) {
-				case 'l':
-					// TODO remove legacy right links
-					this.handleLegacyRightLinkDirective(dir, sb, idx + 2);
-					break;
 				case 'p':
 					this.handlePanelDirective(dir);
 					// panel directives are defined on their own line

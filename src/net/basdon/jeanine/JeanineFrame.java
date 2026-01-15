@@ -735,7 +735,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				SB sb = new SB();
 				for (int i= "name ".length(); i < command.length(); i++) {
 					char c = command.charAt(i);
-					if (c != '*' && c != ';') {
+					if (c != ';') {
 						sb.append(c);
 					}
 				}
