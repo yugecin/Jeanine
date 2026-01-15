@@ -294,7 +294,11 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			this.doSearch(this.activeSearch, false, false);
 			return;
 		case '*':
-			this.doSearchWordUnderCaret();
+			// The search on this doesn't check if the word is isolated, unlike in vim.
+			this.activeSearch = this.getCharacterSequenceUnderCaret();
+			if (this.activeSearch != null) {
+				this.doSearch(this.activeSearch, false, true);
+			}
 			return;
 		case ':':
 			if (!this.pushedStates.isEmpty()) {
@@ -585,24 +589,27 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 	}
 
-	// The search on this doesn't check if the word is isolated, unlike in vim.
-	private void doSearchWordUnderCaret()
+	/**
+	 * Starting from the character under caret, collect all sibling characters (both directions)
+	 * that are in the same group as the character under caret and return that sequence.
+	 */
+	private char[] getCharacterSequenceUnderCaret()
 	{
 		if (this.activeGroup == null) {
 			Toolkit.getDefaultToolkit().beep();
-			return;
+			return null;
 		}
 
 		EditBuffer buf = this.activeGroup.buffer;
 		SB line = buf.lines.get(buf.carety);
 		if (buf.caretx >= line.length) {
 			Toolkit.getDefaultToolkit().beep();
-			return;
+			return null;
 		}
 		Point p = VimOps.getWordUnderCaret(line, buf.caretx);
-		this.activeSearch = new char[p.y - p.x];
-		System.arraycopy(line.value, p.x, this.activeSearch, 0, p.y - p.x);
-		this.doSearch(this.activeSearch, false, true);
+		char[] result = new char[p.y - p.x];
+		System.arraycopy(line.value, p.x, result, 0, p.y - p.x);
+		return result;
 	}
 
 	private void doSearch(char[] text, boolean live, boolean forwards)
@@ -723,23 +730,31 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			if (this.doLinkCommandPrechecks(parts, child, position)) {
 				this.activeGroup.unlink(child[0], position[0]);
 			}
-		} else if ("name".equals(parts[0])) {
+		} else if ("name".equals(parts[0]) || "sn".equals(parts[0])) {
 			if (this.activeGroup == null || this.activeGroup.activePanel == null) {
 				this.setError("can't set panel name: no active panel");
 			} else if (this.activeGroup.activePanel == this.activeGroup.root) {
 				this.setError("can't set the name of a group's root panel");
-			} else if (command.length() < "name A".length()) {
+			} else if ("name".equals(parts[0]) && parts.length == 1) {
 				this.activeGroup.activePanel.name = null;
 				this.activeGroup.activePanel.repaint();
 			} else {
-				SB sb = new SB();
-				for (int i= "name ".length(); i < command.length(); i++) {
-					char c = command.charAt(i);
-					if (c != ';') {
-						sb.append(c);
+				SB sb = null;
+				if ("sn".equals(parts[0])) {
+					char[] name = this.getCharacterSequenceUnderCaret();
+					if (name != null) {
+						sb = new SB(name);
+					}
+				} else {
+					sb = new SB();
+					for (int i= "name ".length(); i < command.length(); i++) {
+						char c = command.charAt(i);
+						if (c != ';') {
+							sb.append(c);
+						}
 					}
 				}
-				if (sb.length == 0) {
+				if (sb == null || sb.length == 0) {
 					this.setError("can't set name, given name only contains invalid chars");
 				} else {
 					this.activeGroup.activePanel.name = sb.toString();
@@ -1208,6 +1223,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		":slink <bot|right|top> <id> - like :link but as a secondary link\n" +
 		":unlink <bot|right|top> <id> - like :slink but removes a secondary link\n" +
 		":name [name] - set or delete the name of the current panel\n" +
+		":sn - set the name of the current panel to the symbol sequence under caret\n" +
 		":raw - toggle between raw and 2d mode\n" +
 		":<number> - jump to a line number\n" +
 		":font - change the font\n" +
