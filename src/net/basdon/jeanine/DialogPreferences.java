@@ -27,7 +27,7 @@ public class DialogPreferences extends JeanineDialogState
 		instructionlines.add(new SB("The actions in the panel below"));
 		instructionlines.add(new SB("can be invoked by pressing ENTER or"));
 		instructionlines.add(new SB("double cliking whilst on the line"));
-		instructionlines.add(new SB("/*jeanine:p:i:1;p:0;a:b;y:30*/"));
+		instructionlines.add(new SB("/*jeanine:p:i:1;p:0;a:b;y:30;*/"));
 		instructionlines.add(new SB("Append default light colorscheme"));
 		instructionlines.add(new SB("Append default blue colorscheme"));
 		instructionlines.add(new SB("Append default jblow colorscheme"));

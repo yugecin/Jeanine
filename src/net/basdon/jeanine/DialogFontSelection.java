@@ -16,7 +16,7 @@ public class DialogFontSelection extends JeanineDialogState
 		lines.add("c Put the caret on a setting and press enter.");
 		lines.add("c Settings can be persisted using the preferences editor");
 		lines.add("c Exit by pressing ESC.");
-		lines.add("/*jeanine:p:i:2;p:0;x:0;y:20;a:b*/");
+		lines.add("/*jeanine:p:i:2;p:0;x:0;y:20;a:b;*/");
 		lines.add("c Font size:");
 		lines.add("s 6");
 		lines.add("s 7");
@@ -33,11 +33,11 @@ public class DialogFontSelection extends JeanineDialogState
 		lines.add("s 18");
 		lines.add("s 19");
 		lines.add("s 20");
-		lines.add("/*jeanine:p:i:3;p:2;x:0;y:20;a:b*/");
+		lines.add("/*jeanine:p:i:3;p:2;x:0;y:20;a:b;*/");
 		lines.add("c Font style:");
 		lines.add("b bold");
 		lines.add("p plain");
-		lines.add("/*jeanine:p:i:1;p:0;x:20;y:0;a:t*/");
+		lines.add("/*jeanine:p:i:1;p:0;x:20;y:0;a:t;*/");
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String[] fonts = ge.getAvailableFontFamilyNames();
 		for (String font : fonts) {
