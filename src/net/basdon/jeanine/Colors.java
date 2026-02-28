@@ -133,7 +133,7 @@ public class Colors
 		textFg.col = Color.black;
 		textBg.col = new Color(0xffffea);
 		headerBg.col = border.col;
-		headerFg.col = textFg.col;
+		headerFg.col = textBg.col;
 		selectionBg.col = new Color(0xeeee9e);
 		selectionFg.col = textFg.col;
 		commentFg.col = new Color(0x4092ff);
