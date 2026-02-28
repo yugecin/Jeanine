@@ -285,7 +285,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 			break;
 		case 'z':
-			this.centerCaret();
+			this.centerCaret(false);
 			return;
 		case 'n':
 			this.doSearch(this.activeSearch, false, true);
@@ -817,6 +817,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 					break;
 				}
 			}
+		} else if ("b".equals(parts[0])) {
+			new DialogBufferlist(this, this.codegroups, this.activeGroup);
 		} else if ("w".equals(parts[0])) {
 			if (this.activeGroup == null) {
 				this.setError("no active panel");
@@ -1095,13 +1097,13 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		}
 	}
 
-	private void centerCaret()
+	public void centerCaret(boolean forceSnappyPan)
 	{
 		Point pt = this.findCursorPosition();
 		Dimension size = this.getContentPane().getSize();
 		int dx = size.width / 2 - pt.x;
 		int dy = size.height / 2 - pt.y;
-		this.panView(dx, dy, false);
+		this.panView(dx, dy, forceSnappyPan);
 	}
 
 	private void panView(int dx, int dy, boolean forceSnappyPan)
@@ -1218,6 +1220,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		":e - open a file for editing\n" +
 		":bd - close the active editing group\n" +
 		":bp/:bn - go to previous/next editing group\n" +
+		":b - show bufferlist, a list of currently open files and panels to navigate\n" +
 		":spl - split current view based on the visual line selection (ctrl-v)\n" +
 		":link <bot|right|top> <id> - link a child\n" +
 		":slink <bot|right|top> <id> - like :link but as a secondary link\n" +

@@ -169,25 +169,7 @@ implements MouseListener, MouseMotionListener
 			g.setColor(Colors.headerBg.col);
 			g.fillRect(0, 0, w, this.j.pad.in_header + this.j.fy + this.j.pad.in_header);
 			g.setColor(Colors.headerFg.col);
-			SB title = new SB(100);
-			title.append(String.valueOf(this.id));
-			if (this.parent != null) {
-				title.append('^').append(String.valueOf(this.parent.id));
-			}
-			if (this.group.title != null) {
-				title.append('|').append(this.group.title);
-			}
-			title.append('|').append(this.firstline).append('-').append(this.lastline);
-			if (this.name != null) {
-				title.append('|').append(this.name);
-			}
-			if (this.buffer.readonly) {
-				title.append("|RO");
-			}
-			if (this.group.raw) {
-				title.append("|RAW");
-			}
-			g.drawString(title.toString(), 0, this.j.pad.in_header + this.j.fmaxascend);
+			g.drawString(this.getTitle(), 0, this.j.pad.in_header + this.j.fmaxascend);
 		}
 
 		{
@@ -590,6 +572,49 @@ implements MouseListener, MouseMotionListener
 		info.lineNumber = lineNumber;
 		info.lineContent = this.buffer.lines.get(lineNumber);
 		this.jf.lineSelectionListener.lineSelected(info);
+	}
+
+	public String getTitle()
+	{
+		SB title = new SB(100);
+		title.append(String.valueOf(this.id));
+		if (this.parent != null) {
+			title.append('^').append(String.valueOf(this.parent.id));
+		}
+		if (this.group.title != null) {
+			title.append('|').append(this.group.title);
+		}
+		title.append('|').append(this.firstline).append('-').append(this.lastline);
+		if (this.name != null) {
+			title.append('|').append(this.name);
+		}
+		if (this.buffer.readonly) {
+			title.append("|RO");
+		}
+		if (this.group.raw) {
+			title.append("|RAW");
+		}
+		return title.toString();
+	}
+
+	public void getNameForBufferlist(SB sb)
+	{
+		if (this.name != null) {
+			sb.append(this.name);
+		} else {
+			sb.append("unnamed");
+			sb.append(String.valueOf(this.id));
+			if (this.parent != null) {
+				sb.append('^').append(String.valueOf(this.parent.id));
+			}
+			sb.append('|').append(this.firstline).append('-').append(this.lastline);
+		}
+		if (this.buffer.readonly) {
+			sb.append("|RO");
+		}
+		if (this.group.raw) {
+			sb.append("|RAW");
+		}
 	}
 
 	/**

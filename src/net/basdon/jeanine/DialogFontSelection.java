@@ -13,7 +13,7 @@ public class DialogFontSelection extends JeanineDialogState
 		this.jf = jf;
 		ArrayList<String> lines = new ArrayList<>();
 		lines.add("c Welcome to font selection.");
-		lines.add("c Put the caret on a setting and press enter.");
+		lines.add("c Put the caret on a setting and press ENTER.");
 		lines.add("c Settings can be persisted using the preferences editor");
 		lines.add("c Exit by pressing ESC.");
 		lines.add("/*jeanine:p:i:2;p:0;x:0;y:20;a:b;*/");
