@@ -21,6 +21,7 @@ public class Preferences
 	public static final String VSCROLL_NAME = "scrolling.vertical.speed.modifier.percentage";
 	public static final String HSCROLL_NAME = "scrolling.horizontal.speed.modifier.percentage";
 	public static final String SEARCH_HL_NAME = "search.highlight.timeout";
+	public static final String RENDER_MAX_LINES_WHEN_SCALED = "rendermaxlineswhenscaled";
 
 	public static Jeanine j;
 	public static File file;
@@ -29,6 +30,7 @@ public class Preferences
 	public static int vscrollPercentage = 100;
 	public static int hscrollPercentage = 200;
 	public static int searchHighlightTime = 200;
+	public static int renderMaxLinesWhenScaled = 500;
 
 	public static void load(Jeanine _j)
 	{
@@ -86,6 +88,7 @@ public class Preferences
 		lines.add(new SB(VSCROLL_NAME + " " + vscrollPercentage));
 		lines.add(new SB(HSCROLL_NAME + " " + hscrollPercentage));
 		lines.add(new SB(SEARCH_HL_NAME + " " + searchHighlightTime));
+		lines.add(new SB(RENDER_MAX_LINES_WHEN_SCALED + " " + renderMaxLinesWhenScaled));
 		lines.add(new SB());
 		appendColorScheme(lines::add);
 	}
@@ -172,6 +175,7 @@ public class Preferences
 		vscrollPercentage = getIntProp(properties, VSCROLL_NAME, vscrollPercentage);
 		hscrollPercentage = getIntProp(properties, HSCROLL_NAME, hscrollPercentage);
 		searchHighlightTime = getIntProp(properties, SEARCH_HL_NAME, searchHighlightTime);
+		renderMaxLinesWhenScaled = getIntProp(properties, RENDER_MAX_LINES_WHEN_SCALED, renderMaxLinesWhenScaled);
 		String fontFamily = properties.get("font.family");
 		String fontFlagss = properties.get("font.flags");
 		int fontSize = getIntProp(properties, "font.size", j.fontSize);

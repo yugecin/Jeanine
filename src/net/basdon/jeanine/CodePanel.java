@@ -115,11 +115,13 @@ implements MouseListener, MouseMotionListener
 		w--;
 		h--;
 		if (!this.jf.isRenderScaled()) {
-			// bg
-			g.setColor(Colors.textBg.col);
-			g.fillRect(0, 0, w, h);
 			this.paintInnerContents(g, w, h, hiddenHeight, heightleft);
 		} else {
+			if (this.lastline - this.firstline > Preferences.renderMaxLinesWhenScaled) {
+				g.setColor(Colors.textBg.col);
+				g.fillRect(0, 0, w, h);
+				return;
+			}
 			if (this.cachedPaintedInnerContents == null) {
 				BufferedImage i, i2;
 				Graphics g2;
