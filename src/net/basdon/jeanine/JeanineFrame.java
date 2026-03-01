@@ -256,6 +256,17 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			return;
 		}
 		if (this.activeGroup != null && this.activeGroup.activePanel != null) {
+			if (event.c == 'd' && this.activeGroup.buffer.mode == EditBuffer.G_MODE) {
+				this.activeGroup.buffer.mode = EditBuffer.NORMAL_MODE;
+				event.needRepaintCaret = true;
+				CodePanel oldActivePanel = this.activeGroup.activePanel;
+				if (this.gotoDefinition()) {
+					this.ensureCaretInView();
+					this.activeGroup.activePanel.repaint();
+					oldActivePanel.repaint();
+				}
+				return;
+			}
 			this.activeGroup.dispatchInputEvent(event, this.activeGroup.activePanel);
 			this.ensureCaretInView();
 			if (!event.error) {
@@ -587,6 +598,29 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		} else {
 			this.overlay.showInfoForPanel(x, y, hoveredPanel);
 		}
+	}
+
+	private boolean gotoDefinition()
+	{
+		char[] sym = this.getCharacterSequenceUnderCaret();
+		if (sym == null) {
+			this.setError("no identifier under caret");
+			return false;
+		}
+		String symStr = new String(sym);
+		for (CodeGroup group : this.codegroups) {
+			for (CodePanel panel : group.panels.values()) {
+				if (symStr.equals(panel.name)) {
+					group.buffer.caretx = 0;
+					group.buffer.virtualCaretx = 0;
+					group.buffer.carety = panel.firstline;
+					this.activeGroup = group;
+					this.activeGroup.activePanel = panel;
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -1202,7 +1236,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 	private static final String WELCOMETEXT =
 		"Welcome to Jeanine, a 2d editor with some Vim-like keybindings\n" +
 		"\n" +
-		"Move: h j k l ^ $ w b e gg G ^D ^U { }\n" +
+		"Move: h j k l ^ $ w b e gg gd G ^D ^U { }\n" +
 		"Insert: i I a A o O p P\n" +
 		"Delete: x dw db dd dj dk diw di' di\" di[ di( di{ da' da\" da[ da( da{ d$\n" +
 		"Change: cw cb ciw ci' ci\" ci[ ci( ci{ ca' ca\" ca[ ca( ca{ c$ r s\n" +
