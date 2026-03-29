@@ -263,8 +263,10 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				if (this.gotoDefinition()) {
 					this.ensureCaretInView();
 					this.activeGroup.activePanel.repaint();
-					oldActivePanel.repaint();
 				}
+				// Repaint old active panel unconditionally, because if we can't go to definition
+				// it still needs a repaint to update the caret since buffer changed to normal mode.
+				oldActivePanel.repaint();
 				return;
 			}
 			this.activeGroup.dispatchInputEvent(event, this.activeGroup.activePanel);
