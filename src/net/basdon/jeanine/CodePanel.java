@@ -266,8 +266,7 @@ implements MouseListener, MouseMotionListener
 				Color commentfg = Colors.commentFg.col;
 				Color normalfg = Colors.textFg.col;
 				// use selection fg if in selection
-				if (Colors.selectionFg.col != null &&
-					this.buffer.mode == EditBuffer.SELECT_LINE_MODE &&
+				if (this.buffer.mode == EditBuffer.SELECT_LINE_MODE &&
 					this.buffer.lineselectfrom <= i &&
 					i < this.buffer.lineselectto)
 				{

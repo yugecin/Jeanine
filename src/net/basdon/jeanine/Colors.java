@@ -2,6 +2,12 @@ package net.basdon.jeanine;
 
 import java.awt.*;
 
+/**
+ * Note: colors in colorschemes should not use 'null' (exception: bg.col because that will
+ * result in a gradient color) because dumping multiple colorschemes to preferences means
+ * that any value that was 'null' in the latest colorscheme will now have the color of the
+ * colorscheme dumped above it.
+ */
 public class Colors
 {
 	public static final Colors border = new Colors("color.border");
@@ -42,7 +48,7 @@ public class Colors
 		headerFg.col = textFg.col;
 		headerBg.col = new Color(0xdddddd);
 		selectionBg.col = new Color(0x66AAFF);
-		selectionFg.col = null;
+		selectionFg.col = textFg.col;
 		commentFg.col = Color.gray;
 		whitespaceBg.col = new Color(0xff8c69);
 		caretDefault.col = Color.red;
@@ -77,7 +83,7 @@ public class Colors
 		headerBg.col = textFg.col;
 		headerFg.col = textBg.col;
 		selectionBg.col = new Color(0x000eff);
-		selectionFg.col = null;
+		selectionFg.col = textFg.col;
 		commentFg.col = new Color(0xeadf10);
 		whitespaceBg.col = new Color(0xff8c69);
 		caretDefault.col = new Color(0xdb4a4a);
@@ -96,7 +102,7 @@ public class Colors
 		headerBg.col = textFg.col;
 		headerFg.col = textBg.col;
 		selectionBg.col = new Color(0x000eff);
-		selectionFg.col = null;
+		selectionFg.col = textFg.col;
 		commentFg.col = new Color(0x4dd938);
 		whitespaceBg.col = new Color(0xff8c69);
 		caretDefault.col = new Color(0xdb4a4a);
