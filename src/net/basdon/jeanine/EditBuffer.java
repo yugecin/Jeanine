@@ -79,6 +79,8 @@ public class EditBuffer
 	 */
 	private Undo writingUndo;
 
+	private int didJustCopyIndent;
+
 	/**
 	 * Interact with {@link #lines} to change the contents.
 	 * Always ensure there's at least one line.
@@ -316,6 +318,7 @@ public class EditBuffer
 			if (this.readonly) { e.error = true; return; }
 			line = this.lines.get(this.carety);
 			len = Line.getStartingWhitespaceLen(line);
+			this.didJustCopyIndent = len > 0 ? 1 : 0;
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = line.length();
 			this.writingUndo.fromy = this.carety;
@@ -332,6 +335,7 @@ public class EditBuffer
 			if (this.readonly) { e.error = true; return; }
 			line = this.lines.get(this.carety);
 			len = Line.getStartingWhitespaceLen(line);
+			this.didJustCopyIndent = len > 0 ? 1 : 0;
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
 			this.writingUndo.fromx = 0;
 			this.writingUndo.fromy = this.carety;
@@ -660,8 +664,13 @@ public class EditBuffer
 			}
 			char[] dst = new char[wslen + line.length() - this.caretx];
 			arraycopy(line.value, 0, dst, 0, wslen);
-			arraycopy(line.value, this.caretx, dst, wslen, line.length - this.caretx);
-			line.delete(this.caretx, line.length());
+			if (this.didJustCopyIndent > 0 && line.isAllWhitespace()) {
+				line.setLength(0);
+			} else {
+				arraycopy(line.value, this.caretx, dst, wslen, line.length - this.caretx);
+				line.delete(this.caretx, line.length());
+			}
+			this.didJustCopyIndent += wslen > 0 ? 1 : 0;
 			this.lines.add(++this.carety, new SB(dst));
 			this.caretx = this.virtualCaretx = wslen;
 			e.needCheckLineLength = true;
@@ -1417,6 +1426,10 @@ public class EditBuffer
 	 */
 	private void handleInput(KeyInput e)
 	{
+		// need to know if the previous input copied indent, and if this input will also copy
+		// indent, so a simple boolean doesn't work. use ints that will increment
+		int oldDidJustCopyIndent = this.didJustCopyIndent;
+
 		switch (mode) {
 		case NORMAL_MODE:
 			this.handleInputNormal(e);
@@ -1457,6 +1470,12 @@ public class EditBuffer
 		case YANK_MODE:
 			this.handleInputYank(e);
 			break;
+		}
+
+		if (oldDidJustCopyIndent == this.didJustCopyIndent) {
+			// if the input didn't trigger new copying of indent, reset the counter so next event
+			// won't compensate for it
+			this.didJustCopyIndent = 0;
 		}
 	}
 

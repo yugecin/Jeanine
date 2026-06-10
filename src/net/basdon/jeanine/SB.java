@@ -265,6 +265,16 @@ o:
 		return -1;
 	}
 
+	public boolean isAllWhitespace()
+	{
+		for (int offset = 0; offset < this.length; offset++) {
+			if (this.value[offset] != '\t' && this.value[offset] != ' ') {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	@Override
 	public String toString()
 	{
