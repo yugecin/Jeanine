@@ -641,6 +641,40 @@ public class TestEditBuffer
 			);
 		}
 
+		public void esc_on_copied_indentation_removes_indentation()
+		{
+			createBuffer(
+				"\t\tsomething<caret>"
+			).executeSuccess(
+				"i\n<esc>"
+			).assertBuffer(
+				"\t\tsomething",
+				"<caret>"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"\t\tsomething<caret>"
+			);
+		}
+
+		public void remove_copied_indentation_combination_of_above_two_scenarios()
+		{
+			createBuffer(
+				"\t\tsomething<caret>"
+			).executeSuccess(
+				"i\n\n\n<esc>"
+			).assertBuffer(
+				"\t\tsomething",
+				"",
+				"",
+				"<caret>"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"\t\tsomething<caret>"
+			);
+		}
+
 		public void bs()
 		{
 			createBuffer(
@@ -823,6 +857,22 @@ public class TestEditBuffer
 				"<caret>\t\ta"
 			);
 		}
+
+		public void remove_copied_indentation_when_esc_without_other_changes()
+		{
+			createBuffer(
+				"<caret>\t\ta"
+			).executeSuccess(
+				"o<esc>"
+			).assertBuffer(
+				"\t\ta",
+				"<caret>"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>\t\ta"
+			);
+		}
 	}
 
 	public static class InsertLineBefore
@@ -887,6 +937,22 @@ public class TestEditBuffer
 			).assertBuffer(
 				"",
 				"\t\the<caret>y",
+				"\t\ta"
+			).executeSuccess(
+				"u"
+			).assertBuffer(
+				"<caret>\t\ta"
+			);
+		}
+
+		public void remove_copied_indentation_when_esc_without_other_changes()
+		{
+			createBuffer(
+				"<caret>\t\ta"
+			).executeSuccess(
+				"O<esc>"
+			).assertBuffer(
+				"<caret>",
 				"\t\ta"
 			).executeSuccess(
 				"u"

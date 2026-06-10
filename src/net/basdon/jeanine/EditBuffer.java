@@ -629,11 +629,15 @@ public class EditBuffer
 			break;
 		case ESC:
 			this.mode = NORMAL_MODE;
-			if (this.caretx > 0) {
+			line = this.lines.get(this.carety);
+			if (this.didJustCopyIndent > 0 && line.isAllWhitespace()) {
+				line.length = 0;
+				this.caretx = 0;
+				this.writingUndo.tox = 0;
+			} else if (this.caretx > 0) {
 				this.caretx--;
 			}
 			this.addCurrentWritingUndo();
-			line = this.lines.get(this.carety);
 			this.virtualCaretx = Line.logicalToVisualPos(line, this.caretx);
 			e.needRepaintCaret = true;
 			return;
