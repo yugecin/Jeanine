@@ -74,6 +74,8 @@ public class CodeGroup
 		Point cursorPos = this.jf.findCursorPosition();
 		int caretx = this.buffer.caretx;
 		int carety = this.buffer.carety;
+		float x = this.root.location.x;
+		float y = this.root.location.y;
 		SB line = this.buffer.lines.get(carety);
 		this.readFile(this.ownerFile, !this.raw);
 		for (CodePanel panel : this.panels.values()) {
@@ -82,6 +84,9 @@ public class CodeGroup
 				break;
 			}
 		}
+		// the above will have reset the location to the default again, so restore it
+		this.root.location.setLocation(x, y);
+		this.position(this.root);
 
 		// restore caret position
 		// first: text match
