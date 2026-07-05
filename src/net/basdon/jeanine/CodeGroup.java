@@ -40,7 +40,7 @@ public class CodeGroup
 		this.location = new Point();
 	}
 
-	public void readFile(File file) throws IOException
+	public void readFile(File file, boolean interpret) throws IOException
 	{
 		this.title = file.getName();
 		this.ownerFile = file;
@@ -62,7 +62,58 @@ public class CodeGroup
 				sb.append(iter.next());
 				return sb;
 			}
-		}, true);
+		}, interpret);
+	}
+
+	public void reloadFile() throws IOException
+	{
+		if (this.ownerFile == null) {
+			this.jf.setError("can't reload - no file linked");
+			return;
+		}
+		Point cursorPos = this.jf.findCursorPosition();
+		int caretx = this.buffer.caretx;
+		int carety = this.buffer.carety;
+		SB line = this.buffer.lines.get(carety);
+		this.readFile(this.ownerFile, !this.raw);
+		for (CodePanel panel : this.panels.values()) {
+			if (panel.firstline <= carety && carety < panel.lastline) {
+				this.activePanel = panel;
+				break;
+			}
+		}
+
+		// restore caret position
+		// first: text match
+		int up = -1, down = Integer.MAX_VALUE;
+		for (int i = carety - 1; i >= 0; i--) {
+			if (this.buffer.lines.get(i).equals(line)) {
+				up = i;
+				break;
+			}
+		}
+		for (int i = carety; i < this.buffer.lines.size(); i++) {
+			if (this.buffer.lines.get(i).equals(line)) {
+				down = i;
+				break;
+			}
+		}
+		if (up != -1 && (carety - up) < (down - carety)) {
+			this.buffer.carety = up;
+			this.buffer.caretx = caretx;
+			this.jf.moveToGetCursorAtPosition(cursorPos);
+		} else  if (down != Integer.MAX_VALUE) {
+			this.buffer.carety = down;
+			this.buffer.caretx = caretx;
+			this.jf.moveToGetCursorAtPosition(cursorPos);
+		} else {
+			// getting here means no exact line match, so have to use stored position
+			this.buffer.carety = Math.max(0, Math.min(carety, this.buffer.lines.size() - 1));
+			int linelen = this.buffer.lines.get(this.buffer.carety).length;
+			this.buffer.caretx = Math.max(0, Math.min(caretx, linelen - 1));
+			this.jf.ensureCaretInView();
+		}
+		this.jf.repaint(); // sometimes needed because the caret might need repaint
 	}
 
 	public void saveFile() throws IOException
@@ -97,6 +148,7 @@ public class CodeGroup
 			this.jf.getContentPane().remove(panel);
 		}
 		this.panels.clear();
+		this.raw = !interpret;
 
 		if (interpret) {
 			RawToGroupConverter parser = new RawToGroupConverter(this.j, this);
@@ -628,7 +680,6 @@ public class CodeGroup
 		this.buffer.caretx = caretx;
 		this.buffer.virtualCaretx = caretx;
 		this.activePanel = this.panelAtLine(this.buffer.carety);
-		this.raw = !this.raw;
 		this.root.location = rootLocation;
 		this.position(this.root);
 		this.jf.moveToGetCursorAtPosition(cursorPos);

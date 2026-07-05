@@ -294,4 +294,17 @@ o:
 		}
 		return true;
 	}
+
+	public boolean equals(SB other)
+	{
+		if (other.length != this.length) {
+			return false;
+		}
+		for (int i = 0; i < other.value.length; i++) {
+			if (other.value[i] != this.value[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

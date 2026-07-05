@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.Timer;
@@ -804,6 +803,10 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 				// TODO don't allow while in line selection mode (it gets offset)
 				this.activeGroup.toggleRaw();
 			}
+		} else if ("reload".equals(parts[0])) {
+			if (this.activeGroup != null) {
+				this.catchFileIOException(this.activeGroup.ownerFile, this.activeGroup::reloadFile);
+			}
 		} else if ("e".equals(parts[0])) {
 			FileDialog dlg = new FileDialog(this, "Open file");
 			dlg.setVisible(true);
@@ -859,12 +862,7 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			if (this.activeGroup == null) {
 				this.setError("no active panel");
 			} else {
-				try {
-					this.activeGroup.saveFile();
-				} catch (IOException e) {
-					// TODO
-					e.printStackTrace();
-				}
+				this.catchFileIOException(this.activeGroup.ownerFile, this.activeGroup::saveFile);
 			}
 		} else if ("arrangerightlinks".equals(parts[0])) {
 			if (this.activeGroup == null || this.activeGroup.activePanel == null) {
@@ -958,15 +956,31 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			}
 		}
 		CodeGroup g = new CodeGroup(this);
+		if (!this.catchFileIOException(file, () -> g.readFile(file, true))) {
+			return;
+		}
+		Rectangle rect = this.getGroupsBounds();
+		g.setLocation(rect.x + rect.width + 26, rect.y);
+		this.addCodeGroup(g);
+		this.activeGroup = g;
+	}
+
+	interface ThrowableRunnable
+	{
+		void run() throws IOException;
+	}
+
+	private boolean catchFileIOException(File file, ThrowableRunnable operation) {
 		try {
-			g.readFile(file);
+			operation.run();
+			return true;
 		} catch (IOException e) {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			String title = "Failed to open file " + file.getName();
 			Iterator<SB> lines = new Util.CombinedIter(
 				new Util.StringArray2SBIter(new String[] {
-					"Failed to open file " + file.getAbsolutePath(),
+					"Failed to open/read/write file " + file.getAbsolutePath(),
 					"",
 					"press ENTER or ESC to continue",
 					""
@@ -975,12 +989,8 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 			);
 			new DialogSimpleMessage(this, title, lines);
 			e.printStackTrace();
-			return;
 		}
-		Rectangle rect = this.getGroupsBounds();
-		g.setLocation(rect.x + rect.width + 26, rect.y);
-		this.addCodeGroup(g);
-		this.activeGroup = g;
+		return false;
 	}
 
 	private void addCodeGroup(CodeGroup group)
