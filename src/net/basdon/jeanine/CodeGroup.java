@@ -587,7 +587,7 @@ public class CodeGroup
 		this.position(newParent);
 	}
 
-	public void beforeLineAdded(int idx)
+	public void beforeLineAdded(int idx, boolean insertedAfterCurrentCaretLine)
 	{
 		for (CodePanel panel : this.panels.values()) {
 			if (panel.firstline == panel.lastline) {
@@ -595,12 +595,12 @@ public class CodeGroup
 				// but the root panel can't be deleted
 				continue;
 			}
-			if (panel.firstline >= idx && idx != 0) {
+			if (panel.firstline > idx || insertedAfterCurrentCaretLine && panel.firstline == idx) {
 				panel.firstline++;
 				panel.requireValidation = true;
 				panel.needRepaint = true;
 			}
-			if (panel.lastline >= idx) {
+			if (panel.lastline > idx || insertedAfterCurrentCaretLine && panel.lastline == idx) {
 				panel.lastline++;
 				panel.requireValidation = true;
 				panel.needRepaint = true;

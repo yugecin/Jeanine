@@ -30,15 +30,15 @@ public class BufferLines
 	{
 		this.lines.add(line);
 		if (this.group != null) {
-			this.group.beforeLineAdded(this.lines.size() - 1);
+			this.group.beforeLineAdded(this.lines.size() - 1, false);
 		}
 	}
 
-	public void add(int idx, SB line)
+	public void add(int idx, boolean insertedAfterCurrentCaretLine, SB line)
 	{
 		this.lines.add(idx, line);
 		if (this.group != null) {
-			this.group.beforeLineAdded(idx);
+			this.group.beforeLineAdded(idx, insertedAfterCurrentCaretLine);
 		}
 	}
 

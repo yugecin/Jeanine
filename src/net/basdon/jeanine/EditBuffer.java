@@ -300,7 +300,7 @@ public class EditBuffer
 					nextfrom = idx + 1;
 					idx = u.replacement.indexOf('\n', idx + 1);
 					line = new SB();
-					this.lines.add(linenr, line);
+					this.lines.add(linenr, /*just picking a value here..*/ false, line);
 					linenr++;
 				}
 				line.append(u.replacement.value, from, u.replacement.length);
@@ -325,7 +325,7 @@ public class EditBuffer
 			this.writingUndo.tox = len;
 			this.writingUndo.toy = this.carety + 1;
 			this.carety++;
-			this.lines.add(this.carety, new SB(line.value, 0, len));
+			this.lines.add(this.carety, true, new SB(line.value, 0, len));
 			this.caretx = len;
 			this.mode = INSERT_MODE;
 			e.needRepaint = true;
@@ -341,7 +341,7 @@ public class EditBuffer
 			this.writingUndo.fromy = this.carety;
 			this.writingUndo.tox = 0;
 			this.writingUndo.toy = this.carety + 1;
-			this.lines.add(this.carety, new SB(line.value, 0, len));
+			this.lines.add(this.carety, false, new SB(line.value, 0, len));
 			this.caretx = len;
 			this.mode = INSERT_MODE;
 			e.needRepaint = true;
@@ -433,7 +433,7 @@ public class EditBuffer
 				this.writingUndo.fromx = this.lines.get(this.carety).length();
 				String lines[] = this.j.pastebuffer.split("\n");
 				for (int i = lines.length - 1; i >= 0; i--) {
-					this.lines.add(this.carety + 1, new SB(lines[i]));
+					this.lines.add(this.carety + 1, true, new SB(lines[i]));
 				}
 				this.writingUndo.tox = lines[lines.length - 1].length();
 				this.writingUndo.toy = this.carety + lines.length;
@@ -465,7 +465,7 @@ public class EditBuffer
 			if (this.j.pastebuffer.endsWith("\n")) {
 				String lines[] = this.j.pastebuffer.split("\n");
 				for (int i = lines.length - 1; i >= 0; i--) {
-					this.lines.add(this.carety, new SB(lines[i]));
+					this.lines.add(this.carety, false, new SB(lines[i]));
 				}
 				this.virtualCaretx = this.caretx = 0;
 				this.writingUndo.fromx = 0;
@@ -675,7 +675,7 @@ public class EditBuffer
 				line.delete(this.caretx, line.length());
 			}
 			this.didJustCopyIndent += wslen > 0 ? 1 : 0;
-			this.lines.add(++this.carety, new SB(dst));
+			this.lines.add(++this.carety, true, new SB(dst));
 			this.caretx = this.virtualCaretx = wslen;
 			e.needCheckLineLength = true;
 			e.needEnsureViewSize = true;
@@ -1320,7 +1320,7 @@ public class EditBuffer
 			this.writingUndo.replacement.append(line.value[this.caretx]);
 			this.addCurrentWritingUndo();
 			SB newline = new SB(line.value, this.caretx + 1, line.length);
-			this.lines.add(this.carety + 1, newline);
+			this.lines.add(this.carety + 1, true, newline);
 			line.length = this.caretx;
 			this.carety++;
 			this.caretx = 0;
