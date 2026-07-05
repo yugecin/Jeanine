@@ -1044,9 +1044,14 @@ public class EditBuffer
 	{
 		SB line;
 		if (e.c == 'd') {
+			CodePanel ap = this.group.activePanel;
+			boolean needOffset = ap != null && this.carety == ap.lastline - 1;
 			line = new SB(this.lines.get(this.carety));
 			this.lines.remove(this.carety);
 			this.writingUndo = this.newUndo(this.caretx, this.carety);
+			if (needOffset) {
+				this.carety--;
+			}
 		} else if (e.c == 'j') {
 			if (this.carety == this.lines.size() - 1) {
 				e.error = true;
