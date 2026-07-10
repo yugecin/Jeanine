@@ -375,7 +375,7 @@ public class CodeGroup
 			a.ensureCodeViewSize();
 			from = this.buffer.lineselectto;
 			to = initialLastline;
-			b = this.add(nextId, a, 1, 0, 30, from, to);
+			b = this.add(nextId, a, 1, 0, 30, from, to, a.name);
 			newBotPanel = b;
 		} else {
 			a.lastline = this.buffer.lineselectfrom;
@@ -383,15 +383,15 @@ public class CodeGroup
 			a.ensureCodeViewSize();
 			if (this.buffer.lineselectto == initialLastline) {
 				from = this.buffer.lineselectfrom; to = initialLastline;
-				b = this.add(nextId, a, 1, 0, 30, from, to);
+				b = this.add(nextId, a, 1, 0, 30, from, to, a.name);
 				newBotPanel = b;
 			} else {
 				from = this.buffer.lineselectfrom; to = this.buffer.lineselectto;
-				b = this.add(nextId, a, 1, 0, 30, from, to);
+				b = this.add(nextId, a, 1, 0, 30, from, to, a.name);
 				nextId = Integer.valueOf(nextId.intValue() + 1);
 				from = to;
 				to = initialLastline;
-				c = this.add(nextId, b, 1, 0, 30, from, to);
+				c = this.add(nextId, b, 1, 0, 30, from, to, a.name);
 				newBotPanel = c;
 			}
 		}
@@ -444,9 +444,10 @@ public class CodeGroup
 		int posX,
 		int posY,
 		int linefrom,
-		int lineto)
+		int lineto,
+		String name)
 	{
-		CodePanel cf = new CodePanel(this, id, linefrom, lineto, null);
+		CodePanel cf = new CodePanel(this, id, linefrom, lineto, name);
 		this.panels.put(id, cf);
 		cf.parent = parent;
 		cf.link = link;
