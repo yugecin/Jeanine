@@ -547,6 +547,9 @@ implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, 
 		for (CodeGroup cg : this.codegroups) {
 			cg.updateLocation();
 		}
+
+		this.overlay.invalidate();
+		this.overlay.repaint();
 	}
 
 	/**

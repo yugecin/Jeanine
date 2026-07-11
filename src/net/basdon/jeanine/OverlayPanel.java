@@ -134,10 +134,12 @@ public class OverlayPanel extends JComponent
 			g.drawLine(x1, y1, x2, y2);
 			break;
 		case 'r':
+			boolean draw_via_right = a.x < b.x + b.width + hump;
+
 			int line = PanelLink.getLine(link);
 			// right line (child)
 			x1 = a.x;
-			x2 = a.x - hump;
+			x2 = (draw_via_right ? Math.min(a.x, b.x) : a.x) - hump;
 			y1 = a.y + (int) (scale * (
 					Jeanine.Padding.BORDER +
 					p.top +
@@ -149,18 +151,33 @@ public class OverlayPanel extends JComponent
 				));
 			y2 = y1;
 			g.drawLine(x1, y1, x2, y2);
+
+			if (draw_via_right) {
+				// connecting line (vertical)
+				x1 = x2;
+				y2 = yLinkPositionForLine(b, line - parent.firstline);
+				g.drawLine(x1, y1, x2, y2);
+				// right line (parent)
+				y1 = y2;
+				int firstNonWhitespaceCharAt = 0;
+				SB l = parent.buffer.lines.get(line);
+				for (; firstNonWhitespaceCharAt < l.value.length; firstNonWhitespaceCharAt++) {
+					if (l.value[firstNonWhitespaceCharAt] != ' ' && l.value[firstNonWhitespaceCharAt] != '\t') {
+						break;
+					}
+				}
+				x2 = b.x + (int) (scale * (
+						p.left +
+						Jeanine.Padding.BORDER +
+						(Line.logicalToVisualPos(l, firstNonWhitespaceCharAt)) * this.j.fx
+					));
+				g.drawLine(x1, y1, x2, y2);
+				break;
+			}
+
 			// connecting line
-			int localLine = line - parent.firstline;
 			x1 = b.x + b.width + hump;
-			y1 = b.y + (int) (scale * (
-					Jeanine.Padding.BORDER +
-					p.top +
-					p.in_header +
-					this.j.fy +
-					p.in_header +
-					p.between_header_and_contents +
-					this.j.fy * localLine + this.j.fy / 2
-				));
+			y1 = yLinkPositionForLine(b, line - parent.firstline);
 			g.drawLine(x1, y1, x2, y2);
 			// left line (parent)
 			// draw it to where the text ends
@@ -174,6 +191,20 @@ public class OverlayPanel extends JComponent
 			g.drawLine(x1, y1, x2, y2);
 			break;
 		}
+	}
+
+	private int yLinkPositionForLine(Rectangle codeGroupBounds, int localLine)
+	{
+		Jeanine.Padding p = this.j.pad;
+		return codeGroupBounds.y + (int) (this.jf.getRenderScale() * (
+				Jeanine.Padding.BORDER +
+				p.top +
+				p.in_header +
+				this.j.fy +
+				p.in_header +
+				p.between_header_and_contents +
+				this.j.fy * localLine + this.j.fy / 2
+			));
 	}
 
 	public void showInfoForPanel(int x, int y, CodePanel panel)
